@@ -58,7 +58,7 @@ const EmailOtp = () => {
                 <InputOTPSlot
                   key={index}
                   index={index}
-                  value={otpValues[index] || ""}
+                  // value={otpValues[index] || ""}
                   onChange={(e) => handleChange(index, (e.target as HTMLInputElement).value)}
                 />
               ))}

@@ -5,7 +5,6 @@ import Image from "next/image";
 // import { UsersFour } from "@phosphor-icons/react";
 import PlaceWager from "./PlaceWager";
 import JoinWager from "./JoinWager";
-import GameCategories from "./GameCategories";
 
 const games = [
   {
