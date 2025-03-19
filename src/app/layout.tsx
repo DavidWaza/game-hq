@@ -7,9 +7,7 @@ import Navbar from "./components/Navbar";
 import { usePathname } from "next/navigation";
 import { queryClient } from "@/lib/QueryClient";
 import { Toaster } from "sonner";
-import Sidebar from "./components/dashboard/Sidebar";
-import { useState } from "react";
-import DashboardNavbar from "./components/dashboard/DashboardNavbar";
+
 
 const inter = Inter({
   variable: "--font-inter-sans",
