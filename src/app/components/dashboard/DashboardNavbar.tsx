@@ -10,11 +10,19 @@ import { BellSimple, Headset, CaretDown } from "@phosphor-icons/react";
 // import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const DashboardNavbar = () => {
+interface Navbar {
+  bgColor?: string;
+  color?: string
+}
+
+const DashboardNavbar: React.FC<Navbar> = ({ bgColor,color }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // const [useBgColor, setUseBgColor] = useState(false)
 
   return (
-    <div className="bg-transparent border-[#CBD5E1] py-5 px-5 w-full fixed top-0 z-50">
+    <div
+      className={`bg-transparent border-[#CBD5E1] py-5 px-5 w-full fixed top-0 z-50 ${bgColor}`}
+    >
       <nav className="flex justify-between items-center gap-5">
         {/* Search Bar */}
         <div>
@@ -28,14 +36,14 @@ const DashboardNavbar = () => {
             sizes="100vw"
             className="w-20 h-auto object-cover object-center"
           /> */}
-          <p className="text-white text-2xl font-medium">GameHQ</p>
+          <p className={`text-2xl font-medium ${color}`}>GameHQ</p>
         </div>
 
         {/* Right Side: Wallet & Dropdown */}
         <div className="relative flex gap-10">
           {/* Wallet & Avatar Button */}
           <button
-            className="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-xl border border-gray-300 shadow-md hover:shadow-lg transition-all"
+            className="flex items-center gap-3 bg-[#f4f6f7] px-4 py-2 rounded-xl border border-gray-300 shadow-md hover:shadow-lg transition-all"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
             {/* Wallet Balance */}

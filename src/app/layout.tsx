@@ -8,7 +8,6 @@ import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import { queryClient } from "@/lib/QueryClient";
 import { Toaster } from "sonner";
-import DashboardNavbar from "./components/dashboard/DashboardNavbar";
 import FullScreenLoader from "./components/dashboard/FullScreenLoader";
 
 const inter = Plus_Jakarta_Sans({
@@ -23,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isDashboard = pathname.includes("dashboard");
+  const isDashboard = pathname.startsWith("/dashboard");
 
   const [, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
@@ -40,14 +39,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>{/* Add metadata, title, and links here */}</head>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${inter.className} antialiased `}>
         <QueryClientProvider client={queryClient}>
           <FullScreenLoader isLoading={isLoading} />
+
           {isDashboard ? (
-            <>
-              <DashboardNavbar />
-              {children}
-            </>
+            <div className="">
+             
+              <div>{children}</div>
+            </div>
           ) : (
             <>
               <Navbar />
