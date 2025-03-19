@@ -9,10 +9,13 @@ import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 const Login = () => {
   const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+  const router = useRouter();
 
   const { register, handleSubmit } = useForm<{
     // email: string;
@@ -52,34 +55,33 @@ const Login = () => {
   };
 
   return (
-    <div className="rounded-t-0 rounded-lg bg-white p-5 md:p-20 max-w-[650px] md:w-2/3 lg:w-1/2 m-auto">
+    <div className="rounded-t-0 rounded-lg bg-white py-5 px-2 md:p-20 max-w-[650px] md:w-2/3 lg:w-1/2 m-auto">
       <div className="bg-[#222254] py-4 rounded-t-lg">
         <h1 className="text-white text-center text-lg">Login</h1>
       </div>
-      <div className="px-10 space-y-5 pb-5 border rounded-lg rounded-t-0">
+      <div className="px-5 space-y-5 pb-5 border rounded-lg !rounded-t-none">
         <div className="text-center flex flex-col space-y-2 py-4">
           <span className="font-bold text-lg text-[#334155]">
             Welcome back!
           </span>
-          <span className="text-sm text-[#64748B]">
-            Fill in your details below to log in to your account
-          </span>
-
           <form onSubmit={handleSubmit(onSubmit)} className="my-2 space-y-4 ">
             <div className="grid w-full items-center gap-1.5 mt-4 !text-left">
-              <Input
-                type="email"
-                id="email"
-                {...register("username")}
-                placeholder="Email or Phone number"
-              />
+              <div>
+                <Label className="text-[#64748B]">Email address</Label>
+                <Input
+                  type="email"
+                  id="email"
+                  {...register("username")}
+                  placeholder="Ex. davidwaza@gmail.com"
+                />
+              </div>
             </div>
 
             {/* password */}
             <div className="grid w-full items-center gap-1.5 !text-left">
-              {/* <Label htmlFor="password" className="text-[#64748B]">
+              <Label htmlFor="password" className="text-[#64748B]">
                 Password
-              </Label> */}
+              </Label>
               <div className="relative">
                 <Input
                   value={password}
@@ -87,7 +89,7 @@ const Login = () => {
                   id="password"
                   {...register("password")}
                   onChange={handleChange}
-                  placeholder="Password"
+                  placeholder="*********"
                 />
                 <button
                   type="button"
@@ -107,7 +109,7 @@ const Login = () => {
                 </Link>
               </p>
             </div>
-            <Button variant="primary" size="md" width="full">
+            <Button variant="primary" size="sm" width="full">
               {loginMutation.isPending ? "Loading..." : "Login"}
             </Button>
           </form>
@@ -135,7 +137,12 @@ const Login = () => {
         <p className="text-[#64748B] text-center">
           Do not have an account?{" "}
           <span className="text-[#1A5EFF] font-medium">
-            <Link href={"/register"}>Register</Link>
+            <Link
+              href={"/auth/register"}
+              onClick={() => router.push("/auth/register")}
+            >
+              Register
+            </Link>
           </span>
         </p>
       </div>

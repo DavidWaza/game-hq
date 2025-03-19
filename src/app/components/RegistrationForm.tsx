@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
 import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
@@ -144,10 +144,9 @@ const RegistrationForm: React.FC<{
         <div className="px-10 space-y-5">
           <div className="text-center flex flex-col space-y-2 py-4">
             <span className="text-sm text-[#64748B]">
-              Fill in the required details below to complete your account <br />
-              registration.
+            
             </span>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               {registrationType === "email" ? (
                 <>
                   <div className="grid w-full items-center gap-1.5 !text-left">
@@ -250,11 +249,11 @@ const RegistrationForm: React.FC<{
                 )}
               </div>
 
-              <div className="flex items-center space-x-2 text-[#64748B]">
+              {/* <div className="flex items-center space-x-2 text-[#64748B]">
                 <Checkbox id="terms" className="text-[#64748B]" />
                 <label
                   htmlFor="terms"
-                  className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  className="text-[11px] md:text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   I agree to{" "}
                   <span className="text-[#1A5EFF] font-medium">
@@ -265,8 +264,8 @@ const RegistrationForm: React.FC<{
                     Privacy Policy
                   </span>
                 </label>
-              </div>
-              <Button variant="primary">
+              </div> */}
+              <Button variant="primary" size="sm">
                 {registerMutation.isPending ? "Loading..." : "Create Account"}
               </Button>
             </form>
@@ -275,7 +274,7 @@ const RegistrationForm: React.FC<{
             </div>
             <Button
               variant="secondary"
-              size="md"
+              size="sm"
               width="full"
               onClick={switchRegistrationType}
               icon={
@@ -294,7 +293,7 @@ const RegistrationForm: React.FC<{
             </Button>
             <Button
               variant="secondary"
-              size="md"
+              size="sm"
               width="full"
               icon={
                 <Image
@@ -313,7 +312,7 @@ const RegistrationForm: React.FC<{
           <p className="text-[#64748B] text-center">
             Already have an account?{" "}
             <span className="text-[#1A5EFF]">
-              <Link href={"/auth/login"}>Log In</Link>
+            <Link href={"/auth/login"} onClick={() => onDialogChange(false)}>Log In</Link>
             </span>
           </p>
         </div>

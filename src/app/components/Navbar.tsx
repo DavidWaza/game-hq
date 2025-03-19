@@ -21,6 +21,7 @@ const Navbar = () => {
     "email"
   );
   const [openDialog, setOpenDialog] = useState(false);
+  const [openAgeConfirmation, setOpenAgeConfirmation] = useState(false);
 
   const switchRegistrationType = () => {
     setRegistrationType(registrationType === "email" ? "phone" : "email");
@@ -28,8 +29,8 @@ const Navbar = () => {
 
   return (
     <div className="bg-[#222254] py-7 px-10 ">
-      <nav className="flex justify-between items-center">
-        <div>
+      <nav className="flex justify-between items-center gap-3">
+        <div className="hidden md:block">
           <Link href={"/"}>
             <Image
               src={"/assets/icons/logo.png"}
@@ -41,10 +42,27 @@ const Navbar = () => {
             />
           </Link>
         </div>
-        <div className="flex items-center gap-5">
+        <div className="block md:hidden">
+          <Link href={"/"}>
+            <Image
+              src={
+                "https://res.cloudinary.com/dgbl43ljm/image/upload/v1742387812/logo-short-white_vzer05.png"
+              }
+              alt=""
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="w-20 h-10 object-contain object-center"
+            />
+          </Link>
+        </div>
+        <div className="flex items-center gap-3">
           {/* First Modal (Age Confirmation) */}
-          <Dialog>
-            <DialogTrigger className="bg-transparent border border-[#1A5EFF] hover:bg-[#1A5EFF] px-6 py-3 text-base rounded-lg text-white transition-all duration-500 ease-in-out">
+          <Dialog
+            open={openAgeConfirmation}
+            onOpenChange={setOpenAgeConfirmation}
+          >
+            <DialogTrigger className="bg-transparent border border-[#1A5EFF] hover:bg-[#1A5EFF] px-6 py-2 text-base rounded-lg text-white transition-all duration-500 ease-in-out">
               Register
             </DialogTrigger>
             <DialogContent className="pt-0 px-0">
@@ -62,7 +80,10 @@ const Navbar = () => {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => setOpenCreateAccount(true)}
+                  onClick={() => {
+                    setOpenCreateAccount(true);
+                    setOpenAgeConfirmation(false);
+                  }}
                 >
                   Create Account
                 </Button>
@@ -83,11 +104,7 @@ const Navbar = () => {
                   <span className="font-bold text-lg text-black">
                     Welcome to GameHQ!
                   </span>
-                  <span className="text-sm">
-                    You can register for an account by using any of the options{" "}
-                    <br />
-                    below.
-                  </span>
+                  <span className="text-sm"></span>
                   <Button
                     variant="secondary"
                     size="md"
@@ -95,6 +112,7 @@ const Navbar = () => {
                     onClick={() => {
                       setRegistrationType("phone");
                       setOpenDialog(true);
+                      setOpenCreateAccount(false);
                     }}
                     icon={
                       <Image
@@ -113,6 +131,7 @@ const Navbar = () => {
                     variant="secondary"
                     size="md"
                     width="full"
+                    onClick={() => setOpenCreateAccount(false)}
                     icon={
                       <Image
                         src={"/assets/icons/google-icons.svg"}
@@ -133,6 +152,7 @@ const Navbar = () => {
                     onClick={() => {
                       setRegistrationType("email");
                       setOpenDialog(true);
+                      setOpenCreateAccount(false);
                     }}
                     icon={
                       <Image
@@ -152,7 +172,9 @@ const Navbar = () => {
                   Already have an account?{" "}
                   <span className="text-[#1A5EFF]">
                     {/* {window.location.href = '/login'} */}
-                    <button onClick={() => (window.location.href = "/auth/login")}>
+                    <button
+                      onClick={() => (window.location.href = "/auth/login")}
+                    >
                       Login
                     </button>
                   </span>
@@ -172,7 +194,7 @@ const Navbar = () => {
 
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             onClick={() => router.push("/auth/login")}
           >
             Login

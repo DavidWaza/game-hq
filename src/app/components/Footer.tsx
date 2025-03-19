@@ -5,7 +5,7 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-between h-20 py-5 bg-[#0F172A] relative bottom-0 text-white px-10">
+    <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-between py-5 bg-[#0F172A] relative bottom-0 text-white px-10">
       <div>&copy; {new Date().getFullYear()} GameHQ. All rights reserved.</div>
       <div>
         <p>

@@ -6,7 +6,6 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
@@ -58,7 +57,7 @@ const RegisterUser: React.FC = () => {
     reset();
     setPassword("");
     setConfirmPassword("");
-    setStrength(0); 
+    setStrength(0);
   };
 
   // Handle Password Change
@@ -129,7 +128,7 @@ const RegisterUser: React.FC = () => {
   ];
 
   return (
-    <div className="w-full px-10 md:w-2/3 lg:w-1/2 m-auto my-20">
+    <div className="w-full px-5 md:w-[40%] m-auto my-10">
       <div className="pt-0 px-0">
         <div>
           <div className="text-center bg-[#222254] py-3 text-white text-lg">
@@ -137,12 +136,8 @@ const RegisterUser: React.FC = () => {
             {registrationType === "email" ? "Email" : "Phone Number"}
           </div>
         </div>
-        <div className="px-10 space-y-5 border rounded-lg rounded-t-0">
+        <div className="px-10 space-y-5 border rounded-lg rounded-t-none py-3">
           <div className="text-center flex flex-col space-y-2 py-4">
-            <span className="text-sm text-[#64748B]">
-              Fill in the required details below to complete your account <br />
-              registration.
-            </span>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {registrationType === "email" ? (
                 <>
@@ -150,7 +145,12 @@ const RegisterUser: React.FC = () => {
                     <Label htmlFor="email" className="text-[#64748B]">
                       Email
                     </Label>
-                    <Input type="email" id="email" {...register("email")} />
+                    <Input
+                      type="email"
+                      id="email"
+                      {...register("email")}
+                      placeholder="Ex. davidwaza@gmail.com"
+                    />
                   </div>
                 </>
               ) : (
@@ -174,6 +174,7 @@ const RegisterUser: React.FC = () => {
                     value={password}
                     type={isVisible ? "text" : "password"}
                     id="password"
+                    placeholder="******"
                     {...register("password", {
                       required: "Password is required",
                       minLength: {
@@ -183,6 +184,7 @@ const RegisterUser: React.FC = () => {
                     })}
                     onChange={handlePasswordChange}
                   />
+
                   <button
                     type="button"
                     className="absolute top-1/2 -translate-y-1/2 right-2"
@@ -246,22 +248,7 @@ const RegisterUser: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center space-x-2 text-[#64748B]">
-                <Checkbox id="terms" className="text-[#64748B]" />
-                <label
-                  htmlFor="terms"
-                  className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  I agree to{" "}
-                  <span className="text-[#1A5EFF] font-medium">
-                    Terms & Conditions
-                  </span>{" "}
-                  and{" "}
-                  <span className="text-[#1A5EFF] font-medium">
-                    Privacy Policy
-                  </span>
-                </label>
-              </div>
+             
               <Button variant="primary">
                 {registerMutation.isPending ? "Loading..." : "Create Account"}
               </Button>

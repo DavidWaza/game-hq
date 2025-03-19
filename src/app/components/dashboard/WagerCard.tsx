@@ -47,7 +47,11 @@ const WagerCard: React.FC<WagerCards> = ({
         {/* Wager title */}
         <div className="flex gap-2 items-center">
           <SoccerBall size={16} weight="duotone" color="#bdc3c7" />
-          <p className={`font-semibold tracking-tight !text-left ${gameTitle.length > 20 ? 'text-sm font-bold' : 'text-xl'}`}>
+          <p
+            className={`font-semibold tracking-tight !text-left ${
+              gameTitle.length > 20 ? "text-sm font-bold" : "text-xl"
+            }`}
+          >
             {gameTitle}
           </p>
         </div>
@@ -70,7 +74,7 @@ const WagerCard: React.FC<WagerCards> = ({
           </div>
 
           <div className="flex items-center gap-2">
-          <Timer size={16} weight="duotone" color="#bdc3c7" />
+            <Timer size={16} weight="duotone" color="#bdc3c7" />
             <p className="text-sm font-normal tracking-tight whitespace-nowrap text-nowrap">
               Countdown timer
             </p>
