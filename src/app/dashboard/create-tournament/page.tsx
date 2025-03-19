@@ -41,9 +41,9 @@ const CreateTournament = () => {
   };
 
   return (
-    <>
-      <DashboardNavbar bgColor={"bg-[#f2f3f4]"} />
-      <div className="rounded-t-0 rounded-lg p-5 md:p-20 max-w-[650px] md:w-2/3 lg:w-1/2 m-auto mt-20">
+    <div className='bg-[#fffdf6] h-screen'>
+      <DashboardNavbar bgColor={"!bg-white"} />
+      <div className="rounded-t-0 rounded-lg p-5 md:p-20 max-w-[650px] md:w-2/3 lg:w-1/2 m-auto relative top-24">
         <div className="bg-[#222254] py-4 rounded-t-lg">
           <h1 className="text-white text-center text-lg">Create Tournament</h1>
         </div>
@@ -160,7 +160,7 @@ const CreateTournament = () => {
           )}
         </form>
       </div>
-    </>
+    </div>
   );
 };
 export default CreateTournament;
