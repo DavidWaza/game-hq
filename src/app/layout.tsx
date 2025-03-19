@@ -1,5 +1,5 @@
 "use client";
-import { Inter } from "next/font/google";
+import {  Plus_Jakarta_Sans } from "next/font/google";
 import { QueryClientProvider } from "@tanstack/react-query";
 import "./globals.css";
 import Footer from "./components/Footer";
@@ -7,10 +7,11 @@ import Navbar from "./components/Navbar";
 import { usePathname } from "next/navigation";
 import { queryClient } from "@/lib/QueryClient";
 import { Toaster } from "sonner";
+import DashboardNavbar from "./components/dashboard/DashboardNavbar";
 
 
-const inter = Inter({
-  variable: "--font-inter-sans",
+const inter = Plus_Jakarta_Sans({
+  variable: "--font-jakarta-sans",
   display: "swap",
   subsets: ["latin"],
 });
@@ -30,7 +31,10 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <QueryClientProvider client={queryClient}>
           {isDashboard ? (
-            <>{children}</>
+            <>
+            <DashboardNavbar />
+            {children}
+            </>
           ) : (
             <>
               <Navbar />

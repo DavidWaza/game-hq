@@ -6,28 +6,33 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { BellSimple, Headset, MagnifyingGlass, CaretDown } from "@phosphor-icons/react";
-import { Input } from "@/components/ui/input";
+import { BellSimple, Headset, CaretDown } from "@phosphor-icons/react";
+// import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Image from "next/image";
 
 const DashboardNavbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <div className="bg-white border-b border-[#CBD5E1] py-5 px-5 w-full sticky top-0 z-50 shadow-md">
+    <div className="bg-transparent border-[#CBD5E1] py-5 px-5 w-full fixed top-0 z-50">
       <nav className="flex justify-between items-center gap-5">
         {/* Search Bar */}
-        <div className="flex items-center gap-2 bg-white px-3 rounded-md md:w-[30%] border border-[#CBD5E1]">
-          <MagnifyingGlass size={20} className="text-gray-500" />
-          <Input
-            type="text"
-            placeholder="Search games, events"
-            className="bg-transparent outline-none border-none focus:ring-0 focus:outline-none w-full"
+        <div>
+          <Image
+            src={
+              "https://res.cloudinary.com/dgbl43ljm/image/upload/v1742387812/logo-short-white_vzer05.png"
+            }
+            alt="logo"
+            width={0}
+            height={0}
+            sizes="100vw"
+            className="w-20 h-auto object-cover object-center"
           />
         </div>
 
         {/* Right Side: Wallet & Dropdown */}
-        <div className="relative">
+        <div className="relative flex gap-10">
           {/* Wallet & Avatar Button */}
           <button
             className="flex items-center gap-3 bg-gray-100 px-4 py-2 rounded-xl border border-gray-300 shadow-md hover:shadow-lg transition-all"
@@ -72,27 +77,33 @@ const DashboardNavbar = () => {
               </TooltipProvider>
             </div>
           )}
+          <div className="hidden md:flex items-center gap-4">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="w-10 h-10 flex items-center justify-center">
+                  <BellSimple
+                    size={22}
+                    className="text-gray-400 hover:text-blue-700"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>Notification</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="w-10 h-10 flex items-center justify-center">
+                  <Headset
+                    size={22}
+                    className="text-gray-400 hover:text-blue-700"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>Support</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
 
         {/* Desktop View: Show Notifications & Support */}
-        <div className="hidden md:flex items-center gap-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger className="w-10 h-10 flex items-center justify-center">
-                <BellSimple size={22} className="text-gray-400 hover:text-blue-700" />
-              </TooltipTrigger>
-              <TooltipContent>Notification</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger className="w-10 h-10 flex items-center justify-center">
-                <Headset size={22} className="text-gray-400 hover:text-blue-700" />
-              </TooltipTrigger>
-              <TooltipContent>Support</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
       </nav>
     </div>
   );
