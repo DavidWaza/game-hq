@@ -55,7 +55,7 @@ const DashboardNavbar = () => {
 
           {/* Dropdown Menu (Only Visible on Mobile) */}
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 p-2 md:hidden">
+            <div className="absolute right-0 top-12 mt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 p-2 md:hidden">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-md">
