@@ -14,7 +14,7 @@ const Banner = () => {
   }
 
   return (
-    <div className="border border-[#D4AF37] rounded-lg bg-[#FDFBF3] mt-5 mx-3 md:mx-20 p-3">
+    <div className="border border-[#D4AF37] rounded-lg bg-[#FDFBF3] mt-5 mx-3 md:mx-10 p-3">
       <div className="flex gap-5 justify-between items-center">
         <div className="md:inline-flex items-center gap-5 space-y-3 md:space-y-0">
           <div className="rounded-lg border border-[#D4AF37] p-2 inline-flex whitespace-nowrap">
@@ -23,8 +23,8 @@ const Banner = () => {
           <div>
             <p className="text-[#94A3B8] font-medium">
               You have a wager game starting in{" "}
-              <span className="text-[#D4AF37]">24 mins.</span> Ensure you
-              join before game starts to avoid forfeiture
+              <span className="text-[#D4AF37]">24 mins.</span> Ensure you join
+              before game starts to avoid forfeiture
             </p>
           </div>
         </div>

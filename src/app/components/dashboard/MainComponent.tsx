@@ -13,7 +13,7 @@ const MainComponent = () => {
       <div className="mt-5 px-4 sm:px-6 md:px-10 mx-auto">
         <CustomCarousel />
         <div className="">
-          <div className="flex justify-between items-center">
+          <div className="lg:flex justify-between items-center order-1">
             <CreatePublicWager />
             <FinancialStatements />
           </div>

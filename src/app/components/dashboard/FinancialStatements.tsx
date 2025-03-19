@@ -19,7 +19,7 @@ import {
 const FinancialStatements = () => {
   const [showBalance, setShowBalance] = useState(false);
   return (
-    <div className="border border-[#CBD5E1] rounded-lg p-5 w-96 h-auto ml-auto bg-white shadow-sm mt-5">
+    <div className="border border-[#CBD5E1] rounded-lg p-5 lg:w-96 h-auto ml-auto bg-white shadow-sm mt-5">
       <div className="inline-flex bg-[#E5EEFD] text-[#3F61E8] py-1 px-2 rounded-lg items-center space-x-2">
         <Money
           size={20}
