@@ -17,50 +17,63 @@ const slides = [
 ];
 
 const Carousel = () => {
+  const invitationCount = 3;
   return (
     <div className="relative w-full h-screen">
       {/* Permanent Description */}
+     
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-center z-10 w-full px-4">
         <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 lg:gap-20">
+          {/* Create Wagers */}
           <div className="flex flex-col items-center">
-            <Link href={"#"}>
+            <Link href={"#"} className="group">
               <GameController
-                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14"
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
                 weight="duotone"
                 color="#ad9007"
               />
-              <p className="text-white text-sm sm:text-lg md:text-xl font-bold">
+              <p className="text-white text-sm sm:text-lg md:text-xl font-bold transition-colors duration-300 group-hover:text-yellow-400">
                 Create Wagers
               </p>
             </Link>
           </div>
-          <div className="flex flex-col items-center">
-            <Link href={"#"}>
-              <EnvelopeSimple
-                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14"
-                weight="duotone"
-                color="#ad9007"
-              />
-              <p className="text-white text-sm sm:text-lg md:text-xl font-bold">
+
+          {/* My Invitations with Closer Badge */}
+          <div className="relative flex flex-col items-center">
+            <Link href={"#"} className="group">
+              <div className="relative">
+                <EnvelopeSimple
+                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
+                  weight="duotone"
+                  color="#ad9007"
+                />
+                {invitationCount > 0 && (
+                  <span className="absolute -top-1 right-10 md:right-16  bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 flex items-center justify-center">
+                    {invitationCount}
+                  </span>
+                )}
+              </div>
+              <p className="text-white text-sm sm:text-lg md:text-xl font-bold transition-colors duration-300 group-hover:text-yellow-400">
                 My Invitations
               </p>
             </Link>
           </div>
+
+          {/* My Gaming History */}
           <div className="flex flex-col items-center">
-            <Link href={"#"}>
+            <Link href={"#"} className="group">
               <Trophy
-                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14"
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
                 weight="duotone"
                 color="#ad9007"
               />
-              <p className="text-white text-sm sm:text-lg md:text-xl font-bold">
+              <p className="text-white text-sm sm:text-lg md:text-xl font-bold transition-colors duration-300 group-hover:text-yellow-400">
                 My Gaming History
               </p>
             </Link>
           </div>
         </div>
       </div>
-
       {/* Swiper Container */}
       <Swiper
         modules={[Pagination, Autoplay, EffectFade]}
