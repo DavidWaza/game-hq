@@ -162,16 +162,7 @@ const GameCard = ({ game }: { game: Game }) => {
         <JoinWager />
       </div>
 
-      {/* Player count */}
-      {/* <div className="flex items-center space-x-3">
-        <div className="relative w-4 h-4 flex items-center justify-center">
-          <div className="absolute inset-0 w-full h-full rounded-full bg-red-500 animate-ping opacity-75"></div>
-          <div className="w-3 h-3 bg-red-600 rounded-full"></div>
-        </div>
-        <p className="text-gray-500 font-medium text-sm">
-          {game.players} Players found
-        </p>
-      </div> */}
+      
     </div>
   );
 };

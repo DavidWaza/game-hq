@@ -1,6 +1,6 @@
 import React from "react";
 import CustomCarousel from "./CustomCarousel";
-import FinancialStatements from "./FinancialStatements";
+// import FinancialStatements from "./FinancialStatements";
 import Banner from "../Banner";
 import GameCategories from "./GameCategories";
 import CreatePublicWager from "./CreatePublicWager";
@@ -15,7 +15,7 @@ const MainComponent = () => {
         <div className="">
           <div className="lg:flex justify-between items-center order-1">
             <CreatePublicWager />
-            <FinancialStatements />
+            {/* <FinancialStatements /> */}
           </div>
           <PublicWagerDisplayBoard />
           <GameCategories />

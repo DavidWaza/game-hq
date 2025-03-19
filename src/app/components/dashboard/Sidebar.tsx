@@ -70,10 +70,17 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarActionProps) => {
   }, []);
 
   const toggleCategory = (category: string) => {
-    setOpenCategories((prev) => ({
-      ...prev,
-      [category]: !prev[category],
-    }));
+    setOpenCategories((prev) => {
+      // Create a new object with all categories set to false
+      const newState = Object.keys(prev).reduce((acc, key) => {
+        acc[key] = false;
+        return acc;
+      }, {} as { [key: string]: boolean });
+
+      // Only set the clicked category to true if it wasn't already open
+      newState[category] = !prev[category];
+      return newState;
+    });
   };
 
   // Mobile bottom navigation
@@ -134,7 +141,7 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarActionProps) => {
           {isOpen ? (
             <div className="flex-1 my-3">
               <Image
-                src={'/assets/icons/logo-2.png'}
+                src={"/assets/icons/logo-2.png"}
                 alt="logo"
                 width={0}
                 height={0}
