@@ -22,7 +22,7 @@ const Carousel = () => {
     <div className="relative w-full h-screen">
       {/* Permanent Description */}
      
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-center z-10 w-full px-4">
+      <div className="absolute bottom-28 lg:bottom-10 left-1/2 transform -translate-x-1/2 text-center z-10 w-full px-4">
         <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 lg:gap-20">
           {/* Create Wagers */}
           <div className="flex flex-col items-center">
