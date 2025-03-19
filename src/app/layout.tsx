@@ -24,28 +24,15 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isDashboard = pathname.includes("dashboard");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <html lang="en">
-      <QueryClientProvider client={queryClient}>
-        <body className={`${inter.className} antialiased`}>
+      <head>{/* Add metadata, title, and links here */}</head>
+      <body className={`${inter.className} antialiased`}>
+        <QueryClientProvider client={queryClient}>
           {isDashboard ? (
-            <div className="flex flex-col h-screen">
-              <div className="flex flex-1 bg-[#EEEEFE]">
-                <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-                <div
-                  className={`transition-all duration-300 p-0 ${
-                    isSidebarOpen
-                      ? "md:ml-[250px] md:w-[calc(100%-250px)]"
-                      : "md:ml-[80px] md:w-[calc(100%-80px)]"
-                  }`}
-                >
-                  <DashboardNavbar />
-                  {children}
-                </div>
-              </div>
-            </div>
+            <>{children}</>
           ) : (
             <>
               <Navbar />
@@ -53,9 +40,10 @@ export default function RootLayout({
               <Footer />
             </>
           )}
+
           <Toaster richColors position="top-right" />
-        </body>
-      </QueryClientProvider>
+        </QueryClientProvider>
+      </body>
     </html>
   );
 }
