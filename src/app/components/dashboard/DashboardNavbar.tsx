@@ -9,7 +9,6 @@ import {
 import { BellSimple, Headset, CaretDown } from "@phosphor-icons/react";
 // import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Image from "next/image";
 
 const DashboardNavbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -19,7 +18,7 @@ const DashboardNavbar = () => {
       <nav className="flex justify-between items-center gap-5">
         {/* Search Bar */}
         <div>
-          <Image
+          {/* <Image
             src={
               "https://res.cloudinary.com/dgbl43ljm/image/upload/v1742387812/logo-short-white_vzer05.png"
             }
@@ -28,7 +27,8 @@ const DashboardNavbar = () => {
             height={0}
             sizes="100vw"
             className="w-20 h-auto object-cover object-center"
-          />
+          /> */}
+          <p className="text-white text-2xl font-medium">GameHQ</p>
         </div>
 
         {/* Right Side: Wallet & Dropdown */}

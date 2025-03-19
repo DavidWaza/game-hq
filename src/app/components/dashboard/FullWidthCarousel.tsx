@@ -23,12 +23,12 @@ const Carousel = () => {
       {/* Permanent Description */}
      
       <div className="absolute bottom-28 lg:bottom-10 left-1/2 transform -translate-x-1/2 text-center z-10 w-full px-4">
-        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 lg:gap-20">
+        <div className="flex  md:justify-center items-center gap-8 md:gap-16 lg:gap-20">
           {/* Create Wagers */}
           <div className="flex flex-col items-center">
-            <Link href={"#"} className="group">
+            <Link href={"/dashboard/create-wager"} className="group">
               <GameController
-                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto md:mx-0 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
                 weight="duotone"
                 color="#ad9007"
               />
@@ -43,7 +43,7 @@ const Carousel = () => {
             <Link href={"#"} className="group">
               <div className="relative">
                 <EnvelopeSimple
-                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
+                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto md:mx-0 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
                   weight="duotone"
                   color="#ad9007"
                 />
@@ -63,7 +63,7 @@ const Carousel = () => {
           <div className="flex flex-col items-center">
             <Link href={"#"} className="group">
               <Trophy
-                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto md:mx-0 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
                 weight="duotone"
                 color="#ad9007"
               />
