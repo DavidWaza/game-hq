@@ -17,84 +17,85 @@ const slides = [
 ];
 
 const Carousel = () => {
-  const invitationCount = 3;
   return (
-    <div className="relative w-full h-screen">
+    <div className="relative w-full min-h-screen">
       {/* Permanent Description */}
-     
-      <div className="absolute bottom-28 lg:bottom-10 left-1/2 transform -translate-x-1/2 text-center z-10 w-full px-4">
-        <div className="flex  md:justify-center items-center gap-8 md:gap-16 lg:gap-20">
-          {/* Create Wagers */}
-          <div className="flex flex-col items-center">
-            <Link href={"/dashboard/create-wager"} className="group">
-              <GameController
-                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto md:mx-0 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
-                weight="duotone"
-                color="#ad9007"
-              />
-              <p className="text-white text-sm sm:text-lg md:text-xl font-bold transition-colors duration-300 group-hover:text-yellow-400">
-                Create Wagers
-              </p>
-            </Link>
-          </div>
+      <div className="absolute z-20 bottom-0 w-full bg-cover bg-center">
+        <div className="grid grid-cols-1 md:grid-cols-1 px-5 lg:w-[40%] mx-auto gap-10">
+          {/* Crafting Excellence */}
 
-          {/* My Invitations with Closer Badge */}
-          <div className="relative flex flex-col items-center">
-            <Link href={"#"} className="group">
-              <div className="relative">
-                <EnvelopeSimple
-                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto md:mx-0 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
-                  weight="duotone"
-                  color="#ad9007"
+          <Link href="" className="w-full">
+            <div className="bg-[#233d4d] text-[#fcf8db] p-4 sm:p-6 text-center flex flex-col items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out card-one bg-opacity-50">
+              <div className="text-3xl font-bold mb-2 sm:mb-4">
+                <GameController
+                  size={64} 
+                  className="text-[#f37f2d] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
                 />
-                {invitationCount > 0 && (
-                  <span className="absolute -top-1 right-10 md:right-16  bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 flex items-center justify-center">
-                    {invitationCount}
-                  </span>
-                )}
               </div>
-              <p className="text-white text-sm sm:text-lg md:text-xl font-bold transition-colors duration-300 group-hover:text-yellow-400">
+              <p className="text-[#f37f2d] text-xl sm:text-3xl font-bold mb-2 sm:mb-6 group-hover:text-[#233d4d] transition-all duration-300 ease-in-out uppercase">
+                Create Wager
+              </p>
+            </div>
+          </Link>
+
+          {/* Game Development Portfolio */}
+          <Link href="" className="w-full">
+            <div className="bg-[#fcf8db] text-center p-4 sm:p-6 flex flex-col items-center group border-2 card-one border-[#233d4d] bg-opacity-50 hover:bg-opacity-100">
+              <div className="text-3xl font-bold mb-2 sm:mb-4 relative">
+                <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-[#f37f2d] absolute -right-3 -top-2 group-hover:animate-bounce items-center justify-center">3</div>
+                <EnvelopeSimple
+                  size={64}
+                  className=" text-[#233d4d] transition-all duration-300 ease-in-out"
+                />
+              </div>
+              <p className=" text-xl sm:text-3xl font-bold mb-2 sm:mb-6 text-[#233d4d] transition-all duration-300 ease-in-out uppercase">
                 My Invitations
               </p>
-            </Link>
-          </div>
+            </div>
+          </Link>
 
-          {/* My Gaming History */}
-          <div className="flex flex-col items-center">
-            <Link href={"#"} className="group">
-              <Trophy
-                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto md:mx-0 transition-transform duration-300 group-hover:scale-110 group-hover:text-yellow-400"
-                weight="duotone"
-                color="#ad9007"
-              />
-              <p className="text-white text-sm sm:text-lg md:text-xl font-bold transition-colors duration-300 group-hover:text-yellow-400">
-                My Gaming History
+          {/* Create Your Dream Game */}
+          <Link href="" className="w-full">
+            <div className="bg-[#f37f2d] text-center p-4 sm:p-6 flex flex-col items-center group border-2 card-one border-[#233d4d] border-x-0 bg-opacity-50 hover:bg-opacity-100">
+              <div className="text-3xl font-bold mb-2 sm:mb-4">
+                <Trophy
+                  size={64}
+                  className="group-hover:text-[#fcf8db] text-[#233d4d] transition-all duration-300 ease-in-out"
+                />
+              </div>
+              <p className="group-hover:text-[#fcf8db] text-xl sm:text-3xl font-bold mb-2 sm:mb-6 text-[#233d4d] transition-all duration-300 ease-in-out uppercase group-hover:animate-bounce">
+                My History
               </p>
-            </Link>
-          </div>
+            </div>
+          </Link>
         </div>
       </div>
+
       {/* Swiper Container */}
       <Swiper
         modules={[Pagination, Autoplay, EffectFade]}
         spaceBetween={0}
         slidesPerView={1}
-        pagination={{ clickable: true }}
+        pagination={{ 
+          clickable: true,
+          bulletClass: 'swiper-pagination-bullet',
+          bulletActiveClass: 'swiper-pagination-bullet-active'
+        }}
         autoplay={{ delay: 5000, disableOnInteraction: false }}
         effect="fade"
-        className="w-full h-screen"
+        className="w-full h-screen sm:h-screen"
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index}>
-            <div className="relative w-full h-full">
+            <div className="relative w-full h-screen sm:h-screen">
               {/* Background Image */}
               <Image
                 src={slide.image}
-                width={1920}
-                height={1080}
+                fill
                 alt={slide.name}
                 className="w-full h-full object-cover object-center"
                 priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
               />
 
               {/* Overlay with Animations */}
@@ -106,26 +107,10 @@ const Carousel = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 100 }}
                   transition={{ duration: 1 }}
-                  className="text-white text-3xl md:text-5xl font-bold mb-4"
+                  className="text-[#fcf8db] text-2xl sm:text-4xl md:text-6xl mb-4 font-bold uppercase"
                 >
-                  Wager on {slide.name}
+                  {/* Wager on {slide.name} */}
                 </motion.h2>
-
-                {/* Animated Button */}
-                <motion.div
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -50 }}
-                  transition={{ duration: 1, delay: 0.3 }}
-                  className="my-4"
-                >
-                  <Link
-                    href={slide.link}
-                    className="text-white text-lg md:text-xl font-bold bg-red-600 px-6 py-3 rounded-lg shadow-lg hover:bg-red-700 transition"
-                  >
-                    Bet Now
-                  </Link>
-                </motion.div>
               </div>
             </div>
           </SwiperSlide>

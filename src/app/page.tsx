@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-
+import Homebanner from "./components/Homepage/Homebanner";
+import Navbar from "./components/Navbar";
+// import MainComponent from "./components/dashboard/MainComponent";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -9,7 +11,8 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <div className="h-[calc(100vh-28px)]">
-      
+      <Navbar variant="primary" />
+      <Homebanner />
     </div>
   );
 }

@@ -22,15 +22,15 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   // Define variant styles
   const variantClasses = {
-    primary: "bg-[#1A5EFF] hover:bg-[#1a0a52] text-white",
+    primary: "fine-button-primary",
     secondary:
-      "text-black bg-transparent border border-[#CBD5E1] hover:bg-[#1A5EFF] hover:text-white",
+      "fine-button-secondary",
   };
 
   // Define size styles
   const sizeClasses = {
-    sm: "px-6 py-2.5 text-sm",
-    md: "px-6 py-3 text-base",
+    sm: "px-6 py-4 text-sm",
+    md: "px-6 py-4 text-base",
     lg: "px-8 py-4 text-lg",
   };
 
@@ -43,7 +43,7 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       type="submit"
-      className={`flex items-center text-nowrap whitespace-nowrap justify-center gap-2 rounded-lg transition-all duration-500 ease-in-out tracking-wider ${variantClasses[variant]} ${sizeClasses[size]} ${widthClasses[width]}`}
+      className={`flex items-center  text-nowrap whitespace-nowrap justify-center gap-2 rounded-lg transition-all duration-500 ease-in-out tracking-wider ${variantClasses[variant]} ${sizeClasses[size]} ${widthClasses[width]}`}
     >
       {icon && <span>{icon}</span>}
       {children}

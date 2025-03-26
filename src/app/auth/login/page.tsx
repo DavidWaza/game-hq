@@ -10,12 +10,10 @@ import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
 
 const Login = () => {
   const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
-  const router = useRouter();
 
   const { register, handleSubmit } = useForm<{
     // email: string;
@@ -55,19 +53,16 @@ const Login = () => {
   };
 
   return (
-    <div className="rounded-t-0 rounded-lg bg-white py-5 px-2 md:p-20 max-w-[650px] md:w-2/3 lg:w-1/2 m-auto">
-      <div className="bg-[#222254] py-4 rounded-t-lg">
-        <h1 className="text-white text-center text-lg">Login</h1>
-      </div>
-      <div className="px-5 space-y-5 pb-5 border rounded-lg !rounded-t-none">
+    <div className="">
+      <div className="">
         <div className="text-center flex flex-col space-y-2 py-4">
           <span className="font-bold text-lg text-[#334155]">
-            Welcome back!
+            Pick off from where you left.
           </span>
           <form onSubmit={handleSubmit(onSubmit)} className="my-2 space-y-4 ">
             <div className="grid w-full items-center gap-1.5 mt-4 !text-left">
               <div>
-                <Label className="text-[#64748B]">Email address</Label>
+                <Label className="text-[#233d4d]">Email address</Label>
                 <Input
                   type="email"
                   id="email"
@@ -79,7 +74,7 @@ const Login = () => {
 
             {/* password */}
             <div className="grid w-full items-center gap-1.5 !text-left">
-              <Label htmlFor="password" className="text-[#64748B]">
+              <Label htmlFor="password" className="text-[#233d4d]">
                 Password
               </Label>
               <div className="relative">
@@ -103,8 +98,11 @@ const Login = () => {
                   )}
                 </button>
               </div>
-              <p className="text-[#94A3B8] text-sm">
-                <Link href="/forgot-password" className="hover:text-[#1A5EFF]">
+              <p className="text-[#233d4d] text-sm">
+                <Link
+                  href="/forgot-password"
+                  className="hover:text-[#f37f2d] hover:font-bold transition-all ease-linear duration-300"
+                >
                   Forgot password?
                 </Link>
               </p>
@@ -136,10 +134,10 @@ const Login = () => {
         </div>
         <p className="text-[#64748B] text-center">
           Do not have an account?{" "}
-          <span className="text-[#1A5EFF] font-medium">
+          <span className="text-[#f37f2d] hover:font-black font-medium p-1 transition-all ease-in-out duration-300">
             <Link
               href={"/auth/register"}
-              onClick={() => router.push("/auth/register")}
+              onClick={() => window.location.href = '/auth/register'}
             >
               Register
             </Link>

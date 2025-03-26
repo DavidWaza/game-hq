@@ -12,34 +12,37 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import RegistrationForm from "./RegistrationForm";
-import { useRouter } from "next/navigation";
+import Login from "../auth/login/page";
 
-const Navbar = () => {
-  const router = useRouter();
+interface LogoVariant {
+  variant: 'primary' | 'secondary'
+  textColor?:string
+}
+
+const Navbar:React.FC<LogoVariant> = ({variant, textColor}) => {
   const [openCreateAccount, setOpenCreateAccount] = useState(false);
   const [registrationType, setRegistrationType] = useState<"email" | "phone">(
     "email"
   );
   const [openDialog, setOpenDialog] = useState(false);
-  const [openAgeConfirmation, setOpenAgeConfirmation] = useState(false);
 
   const switchRegistrationType = () => {
     setRegistrationType(registrationType === "email" ? "phone" : "email");
   };
 
+  if(variant === 'primary'){
+    textColor = 'text-[#fcf8db]'
+  } else if(variant === 'secondary') {
+    textColor = 'text-[#233d4d] md:text-[#fcf8db] lg:text-[#233d4d]'
+  }
   return (
-    <div className="bg-[#222254] py-7 px-10 ">
+    <div className="bg-transparent fixed w-full z-20 py-7 px-10 ">
       <nav className="flex justify-between items-center gap-3">
         <div className="hidden md:block">
           <Link href={"/"}>
-            <Image
-              src={"/assets/icons/logo.png"}
-              alt=""
-              width={150}
-              height={150}
-              sizes="100vw"
-              // className="w-0 h-0 object-contain object-center"
-            />
+            <h1 className={`text-[3rem] font-black ${textColor}`}>
+              GAMEHQ
+            </h1>
           </Link>
         </div>
         <div className="block md:hidden">
@@ -58,38 +61,6 @@ const Navbar = () => {
         </div>
         <div className="flex items-center gap-3">
           {/* First Modal (Age Confirmation) */}
-          <Dialog
-            open={openAgeConfirmation}
-            onOpenChange={setOpenAgeConfirmation}
-          >
-            <DialogTrigger className="bg-transparent border border-[#1A5EFF] hover:bg-[#1A5EFF] px-6 py-2 text-base rounded-lg text-white transition-all duration-500 ease-in-out">
-              Register
-            </DialogTrigger>
-            <DialogContent className="pt-0 px-0">
-              <DialogHeader>
-                <DialogTitle className="text-center bg-[#222254] py-3 !text-white text-lg">
-                  Age Confirmation
-                </DialogTitle>
-              </DialogHeader>
-              <div className="px-10 space-y-5">
-                <DialogDescription className="text-center py-4">
-                  By continuing, you confirm that you are at least{" "}
-                  <span className="font-bold">18 years</span> old and legally
-                  eligible to proceed.
-                </DialogDescription>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    setOpenCreateAccount(true);
-                    setOpenAgeConfirmation(false);
-                  }}
-                >
-                  Create Account
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
 
           {/* Second Modal (Create Account) */}
           <Dialog open={openCreateAccount} onOpenChange={setOpenCreateAccount}>
@@ -191,14 +162,25 @@ const Navbar = () => {
               switchRegistrationType={switchRegistrationType}
             />
           )}
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => router.push("/auth/login")}
-          >
-            Login
-          </Button>
+          <Dialog>
+            <DialogTrigger>
+              <Button
+                variant="primary"
+                size="sm"
+                // onClick={() => router.push("/auth/login")}
+              >
+                Login
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="">LOGIN</DialogTitle>
+                <DialogDescription>
+                </DialogDescription>
+              </DialogHeader>
+              <Login />
+            </DialogContent>
+          </Dialog>
         </div>
       </nav>
     </div>
