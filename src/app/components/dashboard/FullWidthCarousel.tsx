@@ -20,12 +20,12 @@ const Carousel = () => {
   return (
     <div className="relative w-full min-h-screen">
       {/* Permanent Description */}
-      <div className="absolute z-20 bottom-0 w-full bg-cover bg-center">
-        <div className="grid grid-cols-1 md:grid-cols-1 px-5 lg:w-[40%] mx-auto gap-10">
+      <div className="absolute z-20 bottom-10 md:bottom-0 w-full bg-cover bg-center">
+        <div className="grid grid-cols-1 md:grid-cols-1 px-5 lg:w-[40%] mx-auto gap-5 md:gap-10">
           {/* Crafting Excellence */}
 
           <Link href="" className="w-full">
-            <div className="bg-[#233d4d] text-[#fcf8db] p-4 sm:p-6 text-center flex flex-col items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out card-one bg-opacity-50">
+            <div className="bg-[#233d4d] text-[#fcf8db] p-4 sm:p-6 text-center flex flex-col items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out card-one bg-opacity-90 md:bg-opacity-50">
               <div className="text-3xl font-bold mb-2 sm:mb-4">
                 <GameController
                   size={64} 
@@ -40,7 +40,7 @@ const Carousel = () => {
 
           {/* Game Development Portfolio */}
           <Link href="" className="w-full">
-            <div className="bg-[#fcf8db] text-center p-4 sm:p-6 flex flex-col items-center group border-2 card-one border-[#233d4d] bg-opacity-50 hover:bg-opacity-100">
+            <div className="bg-[#fcf8db] text-center p-4 sm:p-6 flex flex-col items-center group border-2 card-one border-[#233d4d] bg-opacity-90 md:bg-opacity-50 hover:bg-opacity-100">
               <div className="text-3xl font-bold mb-2 sm:mb-4 relative">
                 <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-[#f37f2d] absolute -right-3 -top-2 group-hover:animate-bounce items-center justify-center">3</div>
                 <EnvelopeSimple
@@ -56,7 +56,7 @@ const Carousel = () => {
 
           {/* Create Your Dream Game */}
           <Link href="" className="w-full">
-            <div className="bg-[#f37f2d] text-center p-4 sm:p-6 flex flex-col items-center group border-2 card-one border-[#233d4d] border-x-0 bg-opacity-50 hover:bg-opacity-100">
+            <div className="bg-[#f37f2d] text-center p-4 sm:p-6 flex flex-col items-center group border-2 card-one border-[#233d4d] border-x-0 bg-opacity-90 md:bg-opacity-50 hover:bg-opacity-100">
               <div className="text-3xl font-bold mb-2 sm:mb-4">
                 <Trophy
                   size={64}

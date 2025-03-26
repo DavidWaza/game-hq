@@ -39,6 +39,7 @@ const RegisterUser: React.FC = () => {
     setError,
     clearErrors,
     reset,
+    watch,
     formState: { errors },
   } = useForm<{
     email: string;
@@ -47,24 +48,27 @@ const RegisterUser: React.FC = () => {
     confirm_password: string;
   }>();
 
+  const password = watch("password", "");
+  const confirmPassword = watch("confirm_password", "");
+
   const [isVisible, setIsVisible] = useState(false);
   const [confirmIsVisible, setConfirmIsVisible] = useState(false);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isVisible_mobile, setIsVisible_mobile] = useState(false);
+  const [confirmIsVisible_mobile, setConfirmIsVisible_mobile] = useState(false);
+
+  const [password_mobile, setPassword_mobile] = useState("");
+  const [confirmPassword_mobile, setConfirmPassword_mobile] = useState("");
   const [strength, setStrength] = useState(0);
 
   const switchRegistrationType = () => {
     setRegistrationType(registrationType === "email" ? "phone" : "email");
     reset();
-    setPassword("");
-    setConfirmPassword("");
     setStrength(0);
   };
 
   // Handle Password Change
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
-    setPassword(newPassword);
     setStrength(evaluateStrength(newPassword));
 
     // Clear confirm password error if passwords start matching
@@ -78,10 +82,38 @@ const RegisterUser: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const newConfirmPassword = e.target.value;
-    setConfirmPassword(newConfirmPassword);
 
     // Validate if passwords match
     if (newConfirmPassword !== password) {
+      setError("confirm_password", { message: "Passwords do not match" });
+    } else {
+      clearErrors("confirm_password");
+    }
+  };
+
+  // MOBILE PASSWORD CHANGE
+  const handlePasswordChangeMobile = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newPassword = e.target.value;
+    setPassword_mobile(newPassword);
+    setStrength(evaluateStrength(newPassword));
+
+    // Clear confirm password error if passwords start matching
+    if (confirmPassword_mobile === newPassword) {
+      clearErrors("confirm_password");
+    }
+  };
+
+  // Handle Confirm Password Change
+  const handleConfirmPasswordChangeMobile = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newConfirmPassword = e.target.value;
+    setConfirmPassword_mobile(newConfirmPassword);
+
+    // Validate if passwords match
+    if (newConfirmPassword !== password_mobile) {
       setError("confirm_password", { message: "Passwords do not match" });
     } else {
       clearErrors("confirm_password");
@@ -132,7 +164,7 @@ const RegisterUser: React.FC = () => {
     <div>
       <Navbar variant="secondary" />
       <div className="lg:p-24 h-screen  relative md:block hidden">
-        <div className="card-two bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center md:h-full lg:h-[40rem]">
+        <div className="card-two max-w-[1300px] bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center md:h-full lg:h-[40rem]">
           <div className="grid lg:grid-cols-3">
             <div className="col-span-1">
               <h1 className="text-[#fcf8db] text-6xl py-32 px-2">
@@ -152,7 +184,7 @@ const RegisterUser: React.FC = () => {
                           <>
                             <div className="grid w-full items-center gap-1.5 !text-left">
                               <Label htmlFor="email" className="text-[#fcf8db]">
-                                Email
+                                Username
                               </Label>
                               <Input
                                 type="email"
@@ -318,7 +350,7 @@ const RegisterUser: React.FC = () => {
                     <p className="text-[#FD8038] text-center">
                       Already have an account?{" "}
                       <span className="text-[#fcf8db]">
-                        <Link href={"/auth/login"}>Log In</Link>
+                        <Link href={"/auth/login-main"}>Log In</Link>
                       </span>
                     </p>
                   </div>
@@ -336,7 +368,6 @@ const RegisterUser: React.FC = () => {
           </div>
         </div>
       </div>
-
 
       {/* MOBILE VIEW */}
       <div className="relative block md:hidden">
@@ -395,8 +426,8 @@ const RegisterUser: React.FC = () => {
                           </Label>
                           <div className="relative">
                             <Input
-                              value={password}
-                              type={isVisible ? "text" : "password"}
+                              value={password_mobile}
+                              type={isVisible_mobile ? "text" : "password"}
                               id="password"
                               placeholder="******"
                               {...register("password", {
@@ -407,15 +438,17 @@ const RegisterUser: React.FC = () => {
                                     "Password must be at least 8 characters",
                                 },
                               })}
-                              onChange={handlePasswordChange}
+                              onChange={handlePasswordChangeMobile}
                             />
 
                             <button
                               type="button"
                               className="absolute top-1/2 -translate-y-1/2 right-2"
-                              onClick={() => setIsVisible(!isVisible)}
+                              onClick={() =>
+                                setIsVisible_mobile(!isVisible_mobile)
+                              }
                             >
-                              {isVisible ? (
+                              {isVisible_mobile ? (
                                 <Eye size={20} color="#000" />
                               ) : (
                                 <EyeClosed size={20} color="#000" />
@@ -446,22 +479,26 @@ const RegisterUser: React.FC = () => {
                           </Label>
                           <div className="relative">
                             <Input
-                              value={confirmPassword}
-                              type={confirmIsVisible ? "text" : "password"}
+                              value={confirmPassword_mobile}
+                              type={
+                                confirmIsVisible_mobile ? "text" : "password"
+                              }
                               id="confirm_password"
                               {...register("confirm_password", {
                                 required: "Confirm Password is required",
                               })}
-                              onChange={handleConfirmPasswordChange}
+                              onChange={handleConfirmPasswordChangeMobile}
                             />
                             <button
                               type="button"
                               className="absolute top-1/2 -translate-y-1/2 right-2"
                               onClick={() =>
-                                setConfirmIsVisible(!confirmIsVisible)
+                                setConfirmIsVisible_mobile(
+                                  !confirmIsVisible_mobile
+                                )
                               }
                             >
-                              {confirmIsVisible ? (
+                              {confirmIsVisible_mobile ? (
                                 <Eye size={20} color="#000" />
                               ) : (
                                 <EyeClosed size={20} color="#000" />
@@ -526,7 +563,7 @@ const RegisterUser: React.FC = () => {
                     <p className="text-[#FD8038] text-center">
                       Already have an account?{" "}
                       <span className="text-[#fcf8db]">
-                        <Link href={"/auth/login"}>Log In</Link>
+                        <Link href={"/auth/login-main"}>Log In</Link>
                       </span>
                     </p>
                   </div>
