@@ -43,7 +43,7 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       type="submit"
-      className={`flex items-center  text-nowrap whitespace-nowrap justify-center gap-2 rounded-lg transition-all duration-500 ease-in-out tracking-wider ${variantClasses[variant]} ${sizeClasses[size]} ${widthClasses[width]}`}
+      className={`flex items-center text-nowrap whitespace-nowrap justify-center gap-2 rounded-lg transition-all duration-500 ease-in-out tracking-wider ${variantClasses[variant]} ${sizeClasses[size]} ${widthClasses[width]}`}
     >
       {icon && <span>{icon}</span>}
       {children}

@@ -26,17 +26,8 @@ const DashboardNavbar: React.FC<Navbar> = ({ bgColor,color }) => {
       <nav className="flex justify-between items-center gap-5">
         {/* Search Bar */}
         <div>
-          {/* <Image
-            src={
-              "https://res.cloudinary.com/dgbl43ljm/image/upload/v1742387812/logo-short-white_vzer05.png"
-            }
-            alt="logo"
-            width={0}
-            height={0}
-            sizes="100vw"
-            className="w-20 h-auto object-cover object-center"
-          /> */}
-          <p className={`text-2xl font-medium ${color}`}>GameHQ</p>
+       
+          <p className={`text-4xl font-medium ${color}`}>GameHQ</p>
         </div>
 
         {/* Right Side: Wallet & Dropdown */}

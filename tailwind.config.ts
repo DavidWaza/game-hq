@@ -9,6 +9,9 @@ export default {
     ],
     theme: {
         extend: {
+            backgroundImage: {
+                'spiral-gradient': "radial-gradient(circle at center, #FCF8DB, #233D4D 80%)",
+              },
             screens: {
                 tablet: "500px",
                 large: "959px",

@@ -8,12 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
+import Button from "./Button";
 import { toast } from "sonner";
-import Button from "../../components/Button";
-import Navbar from "@/app/components/Navbar";
-import MobileLogin from "@/app/components/MobileLogin";
 
-const Login: React.FC = () => {
+const MobileLogin = () => {
   const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
 
@@ -56,9 +54,8 @@ const Login: React.FC = () => {
 
   return (
     <div>
-      <Navbar variant="secondary" />
-      <div className="lg:p-24 h-screen  relative md:block hidden">
-        <div className="card-two max-w-[1300px] bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center md:h-full lg:h-[40rem]">
+      <div className="relative block md:hidden">
+        <div className="bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center h-full">
           <div className="grid lg:grid-cols-3">
             <div className="col-span-1">
               <h1 className="text-[#fcf8db] text-6xl py-32 px-2">
@@ -66,9 +63,9 @@ const Login: React.FC = () => {
               </h1>
             </div>
             <div className="col-span-2">
-              <div className="absolute">
+              <div className="relative z-20">
                 <div className="pt-0 px-0">
-                  <div className="px-10 space-y-5 border rounded-lg rounded-t-none py-3 glass">
+                  <div className="px-10 space-y-5 border rounded-lg rounded-t-none py-3 glass-mobile">
                     <div className="text-center flex flex-col space-y-2 py-4">
                       <form
                         onSubmit={handleSubmit(onSubmit)}
@@ -76,7 +73,7 @@ const Login: React.FC = () => {
                       >
                         <div className="grid w-full items-center gap-1.5 !text-left">
                           <Label htmlFor="email" className="text-[#fcf8db]">
-                            Username
+                            Email
                           </Label>
                           <Input
                             type="email"
@@ -133,8 +130,10 @@ const Login: React.FC = () => {
                           </p>
                         </div>
 
-                        <Button variant="primary" size="sm" width="full">
-                          {loginMutation.isPending ? "Loading..." : "Login"}
+                        <Button variant="primary">
+                          {loginMutation.isPending
+                            ? "Loading profile"
+                            : "Login"}
                         </Button>
                       </form>
                       <div className="divider py-4">
@@ -155,7 +154,7 @@ const Login: React.FC = () => {
                           />
                         }
                       >
-                        Login with Google
+                        login with Google
                       </Button>
                     </div>
                     <p className="text-[#FD8038] text-center">
@@ -173,17 +172,14 @@ const Login: React.FC = () => {
                 width={0}
                 height={0}
                 sizes="100vw"
-                className="md:w-full lg:w-2/3 mr-0 ml-auto h-auto object-contain object-center"
+                className="w-2/3 mr-0 ml-auto h-auto object-contain object-center absolute top-60 right-0"
               />
             </div>
           </div>
         </div>
       </div>
-
-      {/* MOBILE VIEW */}
-     <MobileLogin />
     </div>
   );
 };
 
-export default Login;
+export default MobileLogin;

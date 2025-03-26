@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 const Dashboard = () => {
   return (
-    <div>
+    <div className="!bg-[#0B0E13]">
       <MainComponent />
     </div>
   );

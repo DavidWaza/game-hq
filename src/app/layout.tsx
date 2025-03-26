@@ -8,6 +8,8 @@ import { queryClient } from "@/lib/QueryClient";
 import { Toaster } from "sonner";
 import FullScreenLoader from "./components/dashboard/FullScreenLoader";
 
+
+
 const inter = Russo_One({
   variable: "--Russo_One",
   display: "swap",
@@ -43,8 +45,7 @@ export default function RootLayout({
           <FullScreenLoader isLoading={isLoading} />
 
           {isDashboard ? (
-            <div className="">
-             
+            <div className="bg-[#0B0E13]">
               <div>{children}</div>
             </div>
           ) : (
