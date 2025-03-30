@@ -7,27 +7,26 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { BellSimple, Headset, CaretDown } from "@phosphor-icons/react";
-// import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
 
 interface Navbar {
   bgColor?: string;
-  color?: string
+  color?: string;
 }
 
-const DashboardNavbar: React.FC<Navbar> = ({ bgColor,color }) => {
+const DashboardNavbar: React.FC<Navbar> = ({ bgColor, color }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  // const [useBgColor, setUseBgColor] = useState(false)
 
   return (
     <div
       className={`bg-transparent border-[#CBD5E1] py-5 px-5 w-full fixed top-0 z-50 ${bgColor}`}
     >
       <nav className="flex justify-between items-center gap-5">
-        {/* Search Bar */}
         <div>
-       
-          <p className={`text-4xl font-medium ${color}`}>GameHQ</p>
+          <Link href="/dashboard">
+            <p className={`text-4xl font-medium ${color}`}>GameHQ</p>
+          </Link>
         </div>
 
         {/* Right Side: Wallet & Dropdown */}
@@ -52,7 +51,6 @@ const DashboardNavbar: React.FC<Navbar> = ({ bgColor,color }) => {
             <CaretDown size={20} className="text-gray-500 block md:hidden" />
           </button>
 
-          {/* Dropdown Menu (Only Visible on Mobile) */}
           {isDropdownOpen && (
             <div className="absolute right-0 top-12 mt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 p-2 md:hidden">
               <TooltipProvider>
@@ -101,8 +99,6 @@ const DashboardNavbar: React.FC<Navbar> = ({ bgColor,color }) => {
             </TooltipProvider>
           </div>
         </div>
-
-        {/* Desktop View: Show Notifications & Support */}
       </nav>
     </div>
   );

@@ -1,0 +1,70 @@
+import Button from "../Button";
+import { motion } from "framer-motion";
+import { X } from "@phosphor-icons/react";
+import { Cinzel_Decorative } from "next/font/google";
+
+const cinzel = Cinzel_Decorative({
+  variable: "--Cinzel_Decorative",
+  display: "swap",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+interface ModalProps {
+  isOpen: boolean;
+  setIsOpen: (value: boolean) => void;
+  header: string;
+  sub?: string;
+  content?: string;
+  firstButtonText: string;
+  secondButtonText: string;
+  onClick?: () => void;
+  onTab?: () => void;
+}
+
+const Modal = ({
+  isOpen,
+  setIsOpen,
+  header,
+  sub,
+  content,
+  firstButtonText,
+  secondButtonText,
+  onClick,
+  onTab,
+}: ModalProps) => {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      onClick={() => setIsOpen(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        className="relative bg-gray-800 text-white p-6 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-[400px] grid grid-cols-1 gap-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={() => setIsOpen(false)}
+          className="absolute top-3 right-3 text-white"
+        >
+          <X size={24} />
+        </button>
+        <h2 className="text-xl font-bold text-center">{header}</h2>
+        <p className="text-sm text-gray-300 text-center">{sub}</p>
+        {content && <p className={`text-sm ${cinzel.className}`}>{content}</p>}
+        <div className="flex flex-col space-y-4">
+          <Button onClick={onClick}>{firstButtonText}</Button>
+          <Button variant="secondary" onClick={onTab}>
+            {secondButtonText}
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default Modal;

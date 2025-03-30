@@ -40,9 +40,9 @@ const Navbar:React.FC<LogoVariant> = ({variant, textColor}) => {
       <nav className="flex justify-between items-center gap-3">
         <div className="hidden md:block">
           <Link href={"/"}>
-            <h1 className={`text-[3rem] font-black ${textColor}`}>
-              GAMEHQ
-            </h1>
+          <div>
+          <p className={`text-4xl font-medium ${textColor}`}>GameHQ</p>
+        </div>
           </Link>
         </div>
         <div className="block md:hidden">

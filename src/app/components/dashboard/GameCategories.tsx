@@ -1,15 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import PlaceWager from "./PlaceWager";
-import JoinWager from "./JoinWager";
+import StatusCard from "./SetGamesCard";
 
 // Sample games data with categories
 const gamesData = [
   {
     id: 1,
     title: "Call of Duty",
-    img: "/assets/cod-1-poster.svg",
+    img: "/assets/1-3-3.png",
     nameSrc: "Call of Duty",
     nameAlt: "Call of Duty",
     category: "Action Games",
@@ -19,7 +18,7 @@ const gamesData = [
   {
     id: 2,
     title: "FIFA 25",
-    img: "/assets/sport.jpg",
+    img: "/assets/1-2-3.png",
     nameSrc: "Fifa 25",
     nameAlt: "FIFA",
     category: "Sports Games",
@@ -29,7 +28,7 @@ const gamesData = [
   {
     id: 3,
     title: "Chess Master",
-    img: "/assets/board.jpg",
+    img: "/assets/1-4-3.png",
     nameSrc: "Chess Master",
     nameAlt: "Chess Master",
     category: "Board Games",
@@ -39,7 +38,7 @@ const gamesData = [
   {
     id: 4,
     title: "Monopoly",
-    img: "/assets/board.jpg",
+    img: "/assets/1-4-3.png",
     nameSrc: "Monopoly",
     nameAlt: "Monopoly",
     category: "Board Games",
@@ -49,7 +48,7 @@ const gamesData = [
   {
     id: 5,
     title: "Yahtzee",
-    img: "/assets/dice-banner.jpg",
+    img: "/assets/1-2-3.png",
     nameSrc: "Yahtzee",
     nameAlt: "Yahtzee",
     category: "Dice Games",
@@ -59,7 +58,7 @@ const gamesData = [
   {
     id: 6,
     title: "Poker",
-    img: "/assets/card.jpg",
+    img: "/assets/1-4-3.png",
     nameSrc: "Poker",
     nameAlt: "Poker",
     category: "Card Games",
@@ -69,7 +68,7 @@ const gamesData = [
   {
     id: 7,
     title: "Battlefield",
-    img: "/assets/cod-1-poster.svg",
+    img: "/assets/1-3-3.png",
     nameSrc: "Battlefield",
     nameAlt: "Battlefield",
     category: "Action Games",
@@ -79,7 +78,7 @@ const gamesData = [
   {
     id: 8,
     title: "NBA 2K25",
-    img: "/assets/sport.jpg",
+    img: "/assets/1-2-3.png",
     nameSrc: "NBA 2K25",
     nameAlt: "NBA 2K25",
     category: "Sports Games",
@@ -90,82 +89,26 @@ const gamesData = [
 
 const gameCategories = [
   {
-    img: "/assets/cod-1-poster.svg",
+    img: "/assets/cod-cat.png",
     link: "Action Games",
     label: "Action Games",
   },
   {
-    img: "/assets/sport.jpg",
+    img: "/assets/soccer-cat.png",
     link: "Sports Games",
     label: "Sports Games",
   },
   {
-    img: "/assets/board.jpg",
+    img: "/assets/board-cat.png",
     link: "Board Games",
     label: "Board Games",
   },
   {
-    img: "/assets/dice-banner.jpg",
-    link: "Dice Games",
-    label: "Dice Games",
-  },
-  {
-    img: "/assets/card.jpg",
+    img: "/assets/card-cat.png",
     link: "Card Games",
     label: "Card Games",
   },
 ];
-
-// Individual Game Card Component
-interface Game {
-  id: number;
-  title: string;
-  img: string;
-  nameSrc: string;
-  nameAlt: string;
-  category: string;
-  players: number;
-  isNameImage: boolean;
-}
-
-const GameCard = ({ game }: { game: Game }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  return (
-    <div className="space-y-3">
-      <div
-        className="relative cursor-pointer aspect-[16/9] w-full h-48"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="w-full h-full relative rounded-lg overflow-hidden">
-          <Image
-            src={game.img}
-            alt={game.nameAlt}
-            fill
-            className="object-cover"
-          />
-        </div>
-
-        {/* Overlay that appears on hover */}
-        {isHovered && (
-          <div className="absolute inset-0 bg-black rounded-lg bg-opacity-70 flex items-center justify-center transition-opacity duration-300">
-            <h3 className="text-white text-xl font-bold text-center px-4">
-              {game.nameSrc}
-            </h3>
-          </div>
-        )}
-      </div>
-
-      {/* Wager buttons */}
-      <div className="grid md:grid-cols-2 gap-3">
-        <PlaceWager />
-        <JoinWager />
-      </div>
-
-      
-    </div>
-  );
-};
 
 // Main Component
 const GameCategories = () => {
@@ -178,47 +121,46 @@ const GameCategories = () => {
       : gamesData.filter((game) => game.category === selectedCategory);
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className=" py-20">
       {/* Categories Section */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Game Categories</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 px-4">
+      <div className="max-w-[600px]">
+        <h2 className="text-2xl font-bold mb-4 text-[#FCF8DB]">
+          Select Tournament
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Add "All" category */}
+
           <div
-            className={`h-56 w-full whitespace-nowrap border rounded-lg p-3 relative overflow-hidden cursor-pointer transition-transform duration-300 hover:scale-105 ${
-              selectedCategory === "All" ? "ring-2 ring-blue-500" : ""
-            }`}
-            style={{
-              backgroundImage: `url("/assets/all-games.jpg")`,
-              backgroundPosition: "center center",
-              backgroundSize: "cover",
-            }}
             onClick={() => setSelectedCategory("All")}
+            className="flex items-center gap-2 hover:bg-[#353736] rounded-full p-2 text-[#FCF8DB]"
           >
-            <div className="absolute inset-0 bg-black bg-opacity-50 hover:bg-opacity-40 transition-all duration-300"></div>
-            <p className="absolute z-10 text-white font-bold bottom-6 left-6 capitalize text-lg">
-              All Games
-            </p>
+            <Image
+              src={"/assets/stadium-cat.png"}
+              alt=""
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="w-6 object-contain object-center"
+            />
+            All Games
           </div>
 
           {/* List of categories */}
           {gameCategories.map((cat, index) => (
             <div
               key={index}
-              className={`h-56 w-full whitespace-nowrap border rounded-lg p-3 relative overflow-hidden cursor-pointer transition-transform duration-300 hover:scale-105 ${
-                selectedCategory === cat.link ? "ring-2 ring-blue-500" : ""
-              }`}
-              style={{
-                backgroundImage: `url(${cat.img})`,
-                backgroundPosition: "center center",
-                backgroundSize: "cover",
-              }}
               onClick={() => setSelectedCategory(cat.link)}
+              className="flex items-center gap-2 hover:bg-[#353736] rounded-full p-2 text-[#FCF8DB]"
             >
-              <div className="absolute inset-0 bg-black bg-opacity-50 hover:bg-opacity-40 transition-all duration-300"></div>
-              <p className="absolute z-10 text-white font-bold bottom-6 left-6 capitalize text-lg">
-                {cat.label}
-              </p>
+              <Image
+                src={cat.img}
+                alt=""
+                width={0}
+                height={0}
+                sizes="100vw"
+                className="w-5 object-contain object-center text-white"
+              />
+              {cat.label}
             </div>
           ))}
         </div>
@@ -226,12 +168,32 @@ const GameCategories = () => {
 
       {/* Games Section */}
       <div>
-        <h2 className="text-2xl font-bold mb-4">
+        <h2 className="text-2xl font-bold mb-4 text-[#FCF8DB] my-10">
           {selectedCategory === "All" ? "All Games" : selectedCategory}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4">
+        <div className="grid grid-cols-1 gap-4 px-4">
           {filteredGames.map((game) => (
-            <GameCard key={game.id} game={game} />
+            <StatusCard
+              key={game.id}
+              logo={game.img}
+              name={game.title}
+              status={game.category}
+              prize={5000}
+              time="3pm"
+              borderColor={`${
+                game.category === "Sports Games"
+                  ? "bg-[#FCF8DB]"
+                  : game.category === "Action Games"
+                  ? "bg-[#f37f2d]"
+                  : game.category === "Board Games"
+                  ? "bg-white"
+                  : game.category === "Dice Games"
+                  ? "bg-[#922b21]"
+                  : game.category === "Card Games"
+                  ? "bg-[#f1c40f]"
+                  : ""
+              }`}
+            />
           ))}
         </div>
 

@@ -25,6 +25,7 @@ const Button: React.FC<ButtonProps> = ({
     primary: "fine-button-primary",
     secondary:
       "fine-button-secondary",
+      
   };
 
   // Define size styles

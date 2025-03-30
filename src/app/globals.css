@@ -2,11 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 @layer base {
   :root {
-
     --background: 0 0% 100%;
 
     --foreground: 0 0% 3.9%;
@@ -55,10 +52,9 @@
 
     --chart-5: 27 87% 67%;
 
-    --radius: 0.5rem
+    --radius: 0.5rem;
   }
   .dark {
-
     --background: 0 0% 3.9%;
 
     --foreground: 0 0% 98%;
@@ -105,11 +101,9 @@
 
     --chart-4: 280 65% 60%;
 
-    --chart-5: 340 75% 55%
+    --chart-5: 340 75% 55%;
   }
 }
-
-
 
 @layer base {
   * {
@@ -136,7 +130,7 @@
 
 .divider::before,
 .divider::after {
-  content: '';
+  content: "";
   flex-grow: 1;
   border-top: 1px solid #ccc; /* You can adjust the color of the divider */
 }
@@ -144,7 +138,7 @@
 .divider span {
   padding: 0 20px; /* Space between the OR text and the divider lines */
   font-weight: 500;
-  color: #64748B; /* Adjust text color */
+  color: #64748b; /* Adjust text color */
 }
 
 .react-time-picker__wrapper {
@@ -154,18 +148,16 @@
 }
 
 .react-time-picker__inputGroup__input {
-  color: '#64748B' !important;
+  color: "#64748B" !important;
   font-size: 16px !important;
 }
 .bg-game {
-  background-image: url('/assets/game-bg.jpg');
+  background-image: url("/assets/game-bg.jpg");
   height: 100vh;
   background-size: cover;
   mix-blend-mode: multiply;
   background-position: center;
 }
-
-
 
 /* CSS */
 .fine-button-primary {
@@ -179,7 +171,7 @@
   text-transform: uppercase;
   cursor: pointer;
   display: flex;
-  font-family: Inter,sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 16px;
   height: 48px;
   justify-content: center;
@@ -205,7 +197,7 @@
   position: absolute;
   top: -2px;
   transform: translate(8px, 8px);
-  transition: transform .2s ease-out;
+  transition: transform 0.2s ease-out;
   z-index: -1;
 }
 
@@ -237,7 +229,7 @@
   color: #fede9b;
   cursor: pointer;
   display: flex;
-  font-family: Inter,sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 16px;
   height: 48px;
   justify-content: center;
@@ -263,7 +255,7 @@
   position: absolute;
   top: -2px;
   transform: translate(8px, 8px);
-  transition: transform .2s ease-out;
+  transition: transform 0.2s ease-out;
   z-index: -1;
 }
 
@@ -286,7 +278,7 @@
   }
 }
 .register-bg {
-  background-image: url('/assets/register-bg.png');
+  background-image: url("/assets/register-bg.png");
   background-position: center;
   height: 100vh;
   background-size: cover;
@@ -294,7 +286,8 @@
 
 /* CARD */
 
-.card-one, .card-two {
+.card-one,
+.card-two {
   font-weight: bold;
   font-size: 14px;
   border: none;
@@ -309,8 +302,15 @@
   outline-color: rgba(255, 255, 255, 0.5);
   outline-offset: 0px;
   text-shadow: none;
-  transition: all 1500ms cubic-bezier(0.25, 1, 0.30, 1);
-  -webkit-clip-path: polygon(0% 0%, 90% 0, 100% 30%, 100% 100%, 10% 100%, 0% 70%);
+  transition: all 1500ms cubic-bezier(0.25, 1, 0.3, 1);
+  -webkit-clip-path: polygon(
+    0% 0%,
+    90% 0,
+    100% 30%,
+    100% 100%,
+    10% 100%,
+    0% 70%
+  );
   clip-path: polygon(0 0, 90% 0, 100% 30%, 100% 100%, 10% 100%, 0 70%);
 }
 
@@ -320,7 +320,7 @@
   border: 1px solid;
   outline-color: rgba(255, 255, 255, 0);
   outline-offset: 15px;
-  transition: all 1500ms cubic-bezier(0.25, 1, 0.30, 1);
+  transition: all 1500ms cubic-bezier(0.25, 1, 0.3, 1);
 }
 
 .card-one:after {
@@ -332,39 +332,126 @@
   position: absolute;
   top: -50px;
   transform: rotate(35deg);
-  transition: all 900ms cubic-bezier(0.25, 1, 0.30, 1);
+  transition: all 900ms cubic-bezier(0.25, 1, 0.3, 1);
   width: 50px;
   z-index: -10;
 }
 
 .card-one:hover:after {
   left: 120%;
-  transition: all 900ms cubic-bezier(0.25, 1, 0.30, 1);
+  transition: all 900ms cubic-bezier(0.25, 1, 0.3, 1);
 }
 
 .glass {
-background: rgba(247, 247, 247, 0.33);
-border-radius: 16px;
-box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-backdrop-filter: blur(5px);
--webkit-backdrop-filter: blur(5px);
-border: 1px solid rgba(247, 247, 247, 0.3);
+  background: rgba(247, 247, 247, 0.33);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(247, 247, 247, 0.3);
 }
 .glass-mobile {
   background: rgba(247, 247, 247, 0.33);
-border-radius: 16px;
-box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-backdrop-filter: blur(14.9px);
--webkit-backdrop-filter: blur(5px);
-border: 1px solid rgba(247, 247, 247, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(14.9px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(247, 247, 247, 0.3);
 }
 
 /* DASHBOARD */
 .time-banner {
-  background-image: url('/assets/countdown-sec1-bg.png');
-  height:70vh;
+  background-image: url("/assets/countdown-sec1-bg.png");
+  height: 100vh;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   overflow: hidden;
+}
+
+/* HOMEPAGE BUTTON */
+.button {
+  --offset: 10px;
+  --border-size: 2px;
+  display: block;
+  position: relative;
+  /* padding: 1.5em 3em; */
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  border: 0;
+  background: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  outline: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 1500ms cubic-bezier(0.25, 1, 0.3, 1);
+  border-radius: 0;
+  /* box-shadow: inset 0 0 0 var(--border-size) currentcolor; */
+  transition: background 0.8s ease;
+}
+.button:hover {
+  background: rgba(100, 0, 0, 0.03);
+}
+.button__horizontal, .button__vertical {
+  position: absolute;
+  top: var(--horizontal-offset, 0);
+  right: var(--vertical-offset, 0);
+  bottom: var(--horizontal-offset, 0);
+  left: var(--vertical-offset, 0);
+  transition: transform 0.8s ease;
+  will-change: transform;
+}
+.button__horizontal::before, .button__vertical::before {
+  content: "";
+  position: absolute;
+  border: inherit;
+}
+.button__horizontal {
+  --vertical-offset: calc(var(--offset) * -1);
+  border-top: var(--border-size) solid currentcolor;
+  border-bottom: var(--border-size) solid currentcolor;
+}
+.button__horizontal::before {
+  top: calc(var(--vertical-offset) - var(--border-size));
+  bottom: calc(var(--vertical-offset) - var(--border-size));
+  left: calc(var(--vertical-offset) * -1);
+  right: calc(var(--vertical-offset) * -1);
+}
+.button:hover .button__horizontal {
+  transform: scaleX(0);
+}
+.button__vertical {
+  --horizontal-offset: calc(var(--offset) * -1);
+  border-left: var(--border-size) solid currentcolor;
+  border-right: var(--border-size) solid currentcolor;
+}
+.button__vertical::before {
+  top: calc(var(--horizontal-offset) * -1);
+  bottom: calc(var(--horizontal-offset) * -1);
+  left: calc(var(--horizontal-offset) - var(--border-size));
+  right: calc(var(--horizontal-offset) - var(--border-size));
+}
+.button:hover .button__vertical {
+  transform: scaleY(0);
+}
+
+/* .button:after {
+  background: #fff;
+  content: "";
+  height: 155px;
+  left: -75px;
+  opacity: 0.2;
+  position: absolute;
+  top: -50px;
+  transform: rotate(35deg);
+  transition: all 900ms cubic-bezier(0.25, 1, 0.3, 1);
+  width: 50px;
+  z-index: -10;
+} */
+
+.button:hover:after {
+  left: 120%;
+  transition: all 900ms cubic-bezier(0.25, 1, 0.3, 1);
 }

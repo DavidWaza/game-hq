@@ -8,6 +8,7 @@ interface StatusCardProps {
   status: string;
   prize: number;
   time: string;
+  borderColor: string;
 }
 
 const StatusCard: React.FC<StatusCardProps> = ({
@@ -16,6 +17,7 @@ const StatusCard: React.FC<StatusCardProps> = ({
   status,
   prize,
   time,
+  borderColor,
 }) => {
   return (
     <div className="bg-[#0F1218] p-5 rounded-xl flex flex-col md:flex-row items-center gap-5 w-full max-w-3xl relative shadow-lg">
@@ -26,13 +28,15 @@ const StatusCard: React.FC<StatusCardProps> = ({
           alt={name}
           width={60}
           height={60}
-          className="w-16 h-16"
+          className="w-10 h-10"
         />
-        <span className="text-lg font-semibold text-center">{name}</span>
+        <span className="text-sm font-semibold text-center">{name}</span>
       </div>
 
       {/* Status Indicator */}
-      <div className="absolute top-0 left-0 bg-[#FCF8DB] h-2 w-20 rounded-tl-xl"></div>
+      <div
+        className={`absolute top-0 left-0  h-2 w-20 rounded-tl-xl ${borderColor}`}
+      ></div>
 
       {/* Middle Section with Info */}
       <div className="flex-1 flex flex-col md:flex-row justify-between items-center text-white border-l border-gray-700 md:pl-5 w-full space-y-3 md:space-y-0">
@@ -56,7 +60,7 @@ const StatusCard: React.FC<StatusCardProps> = ({
 
       {/* Live Now Button */}
       <button className="bg-black px-4 py-2 rounded-md text-white text-xs font-bold flex items-center gap-1 mt-3 md:mt-0">
-        LIVE NOW ➜
+        JOIN NOW ➜
       </button>
     </div>
   );
