@@ -1,5 +1,5 @@
 "use client";
-import CreateWagerBanner from "@/app/components/dashboard/Create-wager-banner";
+import CreateWagerBanner from "@/app/components/dashboard/join-wager-banner";
 import DashboardNavbar from "@/app/components/dashboard/DashboardNavbar";
 import TimeBanner from "@/app/components/dashboard/TimeBanner";
 import React from "react";

@@ -32,7 +32,7 @@ const CreateWagerBanner = () => {
         {/* Left Side Content */}
         <div>
           <h1 className="text-[#FCF8DB] uppercase text-6xl py-10 lg:py-20">
-            Create a public or private wager
+            let the tournament begin...
           </h1>
 
           {/* Create Wager */}
