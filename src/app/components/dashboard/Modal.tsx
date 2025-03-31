@@ -2,6 +2,7 @@ import Button from "../Button";
 import { motion } from "framer-motion";
 import { X } from "@phosphor-icons/react";
 import { Cinzel_Decorative } from "next/font/google";
+import  ReactMarkdown  from 'react-markdown';
 
 const cinzel = Cinzel_Decorative({
   variable: "--Cinzel_Decorative",
@@ -15,7 +16,8 @@ interface ModalProps {
   setIsOpen: (value: boolean) => void;
   header: string;
   sub?: string;
-  content?: string;
+  contentTitle?: string;
+  contentItems?: string[];
   firstButtonText: string;
   secondButtonText: string;
   onClick?: () => void;
@@ -27,7 +29,8 @@ const Modal = ({
   setIsOpen,
   header,
   sub,
-  content,
+  contentTitle,
+  contentItems,
   firstButtonText,
   secondButtonText,
   onClick,
@@ -35,9 +38,21 @@ const Modal = ({
 }: ModalProps) => {
   if (!isOpen) return null;
 
+  // Dynamically generate the markdown content from the items
+  const generateMarkdownContent = () => {
+    if (!contentTitle || !contentItems || contentItems.length === 0) return '';
+    
+    let markdown = `### ${contentTitle}  \n`;
+    contentItems.forEach((item, index) => {
+      markdown += `${index + 1}. **${item.split(' – ')[0]}** – ${item.split(' – ')[1]}  \n`;
+    });
+    
+    return markdown;
+  };
+
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
       onClick={() => setIsOpen(false)}
     >
       <motion.div
@@ -54,8 +69,12 @@ const Modal = ({
           <X size={24} />
         </button>
         <h2 className="text-xl font-bold text-center">{header}</h2>
-        <p className="text-sm text-gray-300 text-center">{sub}</p>
-        {content && <p className={`text-sm ${cinzel.className}`}>{content}</p>}
+        {sub && <p className="text-sm text-gray-300 text-center pb-5">{sub}</p>}
+        {contentItems && (
+          <div className={`text-sm ${cinzel.className}`}>
+            <ReactMarkdown>{generateMarkdownContent()}</ReactMarkdown>
+          </div>
+        )}
         <div className="flex flex-col space-y-4">
           <Button onClick={onClick}>{firstButtonText}</Button>
           <Button variant="secondary" onClick={onTab}>

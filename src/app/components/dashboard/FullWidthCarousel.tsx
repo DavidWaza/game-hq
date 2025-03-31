@@ -55,6 +55,7 @@ const Carousel = () => {
             sub="Choose how you want to play"
             firstButtonText="Create Tournament"
             secondButtonText="Create One-on-One"
+            onClick={() => window.location.href='/dashboard/create-tournament'}
           />
 
           {/* My Invitations */}
@@ -85,7 +86,7 @@ const Carousel = () => {
             sub="You have been selected"
             firstButtonText="Join Tournament"
             secondButtonText="Join One-on-One"
-            onClick={() => (window.location.href = "/dashboard/create-wager")}
+            onClick={() => (window.location.href = "/dashboard/join-tournament")}
           />
 
           {/* My History */}

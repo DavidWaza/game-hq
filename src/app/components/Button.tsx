@@ -6,7 +6,7 @@ interface ButtonProps {
   size?: "sm" | "md" | "lg";
   width?: "full" | "half";
   icon?: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
   disabled?: boolean;
 }

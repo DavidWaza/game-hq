@@ -58,7 +58,14 @@ const TimeBanner = () => {
           isOpen={isOpenTournament}
           setIsOpen={setIsOpenTournament}
           header="GAME RULES"
-          content=""
+          contentTitle="Call of Duty Tournament Rules"
+          contentItems={[
+            "Game Mode & Map Selection – Matches will be played in **Search & Destroy** mode. Maps will be pre-selected by the tournament organizers.",
+            "Team Size & Loadouts – Each team consists of **5 players**. Custom loadouts are allowed, but no restricted perks, weapons, or attachments.",
+            "Match Duration & Format – Best-of-3 rounds; first team to win **2 matches** advances. Each match consists of **6 rounds per game** (or as per tournament settings).",
+            "No Exploits or Cheating – Any use of glitches, hacks, or third-party software results in **immediate disqualification**.",
+            "Sportsmanship & Conduct – **No toxic behavior, harassment, or excessive trash talk**. Violations may result in penalties or disqualification.",
+          ]}
           firstButtonText="Accept"
           secondButtonText="Reject"
           onClick={() => (window.location.href = "/dashboard/create-wager")}
