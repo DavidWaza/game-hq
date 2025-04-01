@@ -57,7 +57,7 @@ const BetSwitchTab = () => {
   };
 
   return (
-    <div className="relative bg-black text-white p-6 bg-opacity-90 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-full lg:w-[500px] grid grid-cols-1 gap-4 top-24">
+    <div className="relative bg-black text-white p-6 bg-opacity-90 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-full lg:w-[500px] grid grid-cols-1 gap-4">
       {/* Switch Button: Public/Private Bet */}
       <div className="flex justify-center items-center space-x-4">
         <button

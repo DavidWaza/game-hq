@@ -63,6 +63,7 @@ const Carousel = () => {
             onClick={() =>
               (window.location.href = "/dashboard/create-tournament")
             }
+            onTab={() => (window.location.href = "/dashboard/create-one-v-one")}
           />
 
           {/* My Invitations */}

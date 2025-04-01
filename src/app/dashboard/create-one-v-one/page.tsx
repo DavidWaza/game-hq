@@ -69,7 +69,7 @@ const CreateOneVOne = () => {
       <DashboardNavbar color="text-[#fcf8db]" />
 
       {/* Content Centered in the Middle */}
-      <div className="relative z-10 flex flex-1 items-center justify-center text-white p-10">
+      <div className="relative z-10 flex flex-1 items-center justify-center text-white">
         <BetSwitchTab />
       </div>
     </div>
