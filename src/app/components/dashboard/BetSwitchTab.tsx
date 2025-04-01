@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import Button from "../Button";
-import { CaretDoubleLeft } from "@phosphor-icons/react";
+import { CaretDoubleLeft, Money } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const BetSwitchTab = () => {
   const [isPrivate, setIsPrivate] = useState(false); // Toggle between public and private
@@ -110,19 +112,29 @@ const BetSwitchTab = () => {
             onChange={(e) => handleInputChange(e, "description")}
           />
         </div>
-        <div className="mb-4">
-          <label htmlFor="amount" className="block text-sm text-gray-300">
-            Bet Amount
-          </label>
-          <input
-            id="amount"
-            type="number"
-            className="w-full mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md"
-            placeholder="Enter bet amount"
-            value={betDetails.amount}
-            onChange={(e) => handleInputChange(e, "amount")}
-          />
-        </div>
+        <div className="space-y-1 mb-4">
+                <Label htmlFor="amount" className="text-right">
+                  Wager Amount
+                </Label>
+                <div className="relative w-32">
+                  <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
+                    <Money size={20} weight="duotone" />
+                  </div>
+                  <Input
+                    id="amount"
+                    type="text"
+                    placeholder="0.00"
+                    className="pl-9 w-full mt-2 bg-gray-700 text-white rounded-lg shadow-md"
+                    onChange={(e) => {
+                      // Only allow numbers and decimal point
+                      const value = e.target.value;
+                      if (/^(\d*\.?\d{0,2})?$/.test(value)) {
+                        e.target.value = value;
+                      }
+                    }}
+                  />
+                </div>
+              </div>
         
 
         {/* Private Bet Fields */}

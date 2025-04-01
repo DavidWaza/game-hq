@@ -11,7 +11,7 @@ interface Video {
 const videoTrailers: Video[] = [
   { id: 1, src: "/assets/fc25-trailer.mp4" },
   { id: 2, src: "/assets/mk-trailer-1.mp4" },
-  { id: 3, src: "/assets/cod-trailer.mp4" },
+  { id: 3, src: "/assets/cod-trailer-1.mp4" },
 ];
 
 const CreateTournament = () => {
