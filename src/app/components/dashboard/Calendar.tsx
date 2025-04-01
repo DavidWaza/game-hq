@@ -50,7 +50,7 @@ export function CalendarForm() {
           name="dob"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel className="!text-left">Schedule a Date</FormLabel>
+              <FormLabel className="!text-left">Pick your day</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>

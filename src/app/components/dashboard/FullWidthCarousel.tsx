@@ -26,13 +26,13 @@ const Carousel = () => {
   const [isOpenInvite, setIsOpenInvite] = useState(false);
 
   return (
-    <div className="relative w-full min-h-screen">
-      <div className="absolute z-20 bottom-10 md:bottom-20 w-full bg-cover bg-center">
-        <div className="grid grid-cols-1 gap-2 md:gap-4 px-5 lg:w-[25%] ml-auto mr-40 space-y-5">
+    <div className="relative min-h-screen">
+      <div className="absolute z-20 bottom-10 md:bottom-20 bg-cover bg-center w-full">
+        <div className="flex flex-col mr-20 ml-auto items-center md:items-end gap-2 md:gap-4 px-5 space-y-5">
           {/* Create Wager */}
           <button
             onClick={() => (setIsOpenInvite(false), setIsOpen(true))}
-            className="button bg-[#233d4d] text-[#fcf8db] p-3 text-center items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
+            className="button min-w-80 bg-[#233d4d] text-[#fcf8db] p-3 text-center items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center gap-2">
               <GameController
@@ -56,12 +56,13 @@ const Carousel = () => {
             firstButtonText="Create Tournament"
             secondButtonText="Create One-on-One"
             onClick={() => window.location.href='/dashboard/create-tournament'}
+            onTab={() => window.location.href='/dashboard/create-one-v-one'}
           />
 
           {/* My Invitations */}
           <div
             onClick={() => (setIsOpenInvite(true), setIsOpen(false))}
-            className="button bg-[#233d4d] text-[#f37f2d] p-3 text-center items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
+            className="button bg-[#233d4d] min-w-80 text-[#f37f2d] p-3 text-center items-center group hover:bg-[#f37f2d]  transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center gap-2">
               {/* <div className="h-3 w-3 md:h-4 md:w-4 rounded-full bg-[#f37f2d] absolute -right-2 -top-1 group-hover:animate-bounce">
@@ -90,7 +91,7 @@ const Carousel = () => {
           />
 
           {/* My History */}
-          <Link href="" className="w-full">
+          <Link href="" className="min-w-80">
             <div className="button bg-[#233d4d] text-[#fcf8db] text-center items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg">
               <div className=" text-center p-3 items-center group border-[#233d4d] rounded-lg hover:bg-opacity-100 transition-all duration-300 ease-in-out">
                 <div className="flex justify-center gap-2">

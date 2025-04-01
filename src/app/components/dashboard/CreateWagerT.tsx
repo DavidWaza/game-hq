@@ -1,26 +1,18 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Money } from "@phosphor-icons/react";
+import { CaretDoubleLeft, Money } from "@phosphor-icons/react";
 import { CalendarForm } from "@/app/components/dashboard/Calendar";
 import Button from "@/app/components/Button";
 import Time from "@/app/components/dashboard/TimePicker";
+import { useRouter } from "next/navigation";
 
 const CreateTournament = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isMounted, setIsMounted] = useState(false);
-
+  const router = useRouter();
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -41,31 +33,9 @@ const CreateTournament = () => {
 
   return (
     <div className="">
-      <div className="glass relative bg-gray-800 text-white p-6 bg-opacity-50 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-full lg:w-[500px] grid grid-cols-1 gap-4 top-24">
-        {/* <div className="bg-[#222254] py-4 rounded-t-lg">
-          <h1 className="text-white text-center text-lg">Create Tournament</h1>
-        </div> */}
+      <div className=" relative bg-black text-white p-6 bg-opacity-90 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-full lg:w-[500px] grid grid-cols-1 gap-4 top-24">
         <div className="flex justify-between items-center p-5 border-none">
-          <div>
-            <Select>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Select Category</SelectLabel>
-                  <SelectItem value="apple">iMessage Games</SelectItem>
-                  <SelectItem value="banana">PlayStation Games</SelectItem>
-                  <SelectItem value="blueberry">Sport Betting</SelectItem>
-                  <SelectItem value="grapes">Entertainment</SelectItem>
-                  <SelectItem value="pineapple">
-                    Fantasy Premier League (FPL)
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
+          <div className="justify-end">
             <p className="text-[#fcf8db] font-bold opacity-20">
               {currentStep === 1 ? "1/2" : currentStep === 2 ? "2/2" : ""}
             </p>
@@ -76,16 +46,27 @@ const CreateTournament = () => {
             <>
               <div className="space-y-1 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
-                  Wager Title
+                  Bet on
                 </Label>
-                <Input type="text" placeholder="ex. Fifa challenge" />
+                <Input
+                  type="text"
+                  placeholder="ex. Fifa"
+                  className="!text-white"
+                />
+              </div>
+
+              <div className="space-y-1 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Category
+                </Label>
+                <Input readOnly type="text" className="!text-white" />
               </div>
               <div className="space-y-1 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
-                  Wager Description or Terms
+                  Bet Description or Terms
                 </Label>
                 <Textarea
-                  placeholder="Enter the terms and necessary information of this wager"
+                  placeholder="Enter the terms and necessary information of this bet"
                   className="h-20"
                 />
               </div>
@@ -131,7 +112,7 @@ const CreateTournament = () => {
           {currentStep === 2 ? (
             <div className="my-5 flex justify-between items-center gap-10 mt-5">
               <button
-                className="p-3 border border-[] w-full rounded-xl hover:bg-[#f4f6f7] transition-all ease-in-out duration-500"
+                className="p-3 border border-[] w-full rounded-xl hover:bg-[#f4f6f7] hover:text-[#202216] transition-all ease-in-out duration-500"
                 onClick={handlePrevStep}
               >
                 Prev
@@ -143,7 +124,7 @@ const CreateTournament = () => {
           ) : (
             <div className="flex justify-between items-center gap-10 mt-5">
               <button
-                className="p-3 border border-[] w-full rounded-xl hover:bg-[#f4f6f7] transition-all ease-in-out duration-500"
+                className="p-3 border border-[] w-full rounded-xl hover:bg-[#f4f6f7] hover:text-[#202216] transition-all ease-in-out duration-500"
                 onClick={handlePrevStep}
               >
                 Prev
@@ -153,6 +134,13 @@ const CreateTournament = () => {
               </Button>
             </div>
           )}
+          <div
+            onClick={() => router.back()}
+            className="text-white text-center pt-5 flex items-center justify-center gap-3 hover:animate-bounce cursor-pointer"
+          >
+            <CaretDoubleLeft size={25} />
+            Return Back
+          </div>
         </form>
       </div>
     </div>

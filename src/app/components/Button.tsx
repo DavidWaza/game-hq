@@ -24,7 +24,7 @@ const Button: React.FC<ButtonProps> = ({
   const variantClasses = {
     primary: "fine-button-primary",
     secondary:
-      "fine-button-secondary",
+      "fine-button-secondary uppercase",
       
   };
 
