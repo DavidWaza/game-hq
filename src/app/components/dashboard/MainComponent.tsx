@@ -1,11 +1,11 @@
 import React from "react";
 import FullWidthCarousel from "./FullWidthCarousel";
-import DashboardNavbar from "./DashboardNavbar";
+import Navbar from "@/components/Navbar";
 
 const MainComponent = () => {
   return (
     <>
-      <DashboardNavbar color="text-white" />
+      <Navbar variant="primary" />
       <FullWidthCarousel />
     </>
   );

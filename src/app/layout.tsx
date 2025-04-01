@@ -7,14 +7,13 @@ import "./globals.css";
 import { queryClient } from "@/lib/QueryClient";
 import { Toaster } from "sonner";
 import FullScreenLoader from "./components/dashboard/FullScreenLoader";
-
-
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const inter = Russo_One({
   variable: "--Russo_One",
   display: "swap",
   subsets: ["latin"],
-  weight: "400"
+  weight: "400",
 });
 
 export default function RootLayout({
@@ -42,19 +41,19 @@ export default function RootLayout({
       <head>{/* Add metadata, title, and links here */}</head>
       <body className={`${inter.className} antialiased `}>
         <QueryClientProvider client={queryClient}>
-          <FullScreenLoader isLoading={isLoading} />
+          <AuthProvider>
+            <FullScreenLoader isLoading={isLoading} />
 
-          {isDashboard ? (
-            <div className="bg-[#0B0E13]">
-              <div>{children}</div>
-            </div>
-          ) : (
-            <div className="bg-[#fcf8db]">
-              {children}
-            </div>
-          )}
+            {isDashboard ? (
+              <div className="bg-[#0B0E13]">
+                <div>{children}</div>
+              </div>
+            ) : (
+              <div className="bg-[#fcf8db]">{children}</div>
+            )}
 
-          <Toaster richColors position="top-right" />
+            <Toaster richColors position="top-right" />
+          </AuthProvider>
         </QueryClientProvider>
       </body>
     </html>

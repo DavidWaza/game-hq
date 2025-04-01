@@ -10,7 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import Button from "../../components/Button";
-import Navbar from "@/app/components/Navbar";
+import Navbar from "@/components/Navbar";
 import MobileRegister from "@/app/components/MobileRegister";
 
 const evaluateStrength = (password: string) => {
@@ -97,7 +97,7 @@ const RegisterUser: React.FC = () => {
     onSuccess: (data) => {
       toast.success("Registration successful", data);
       setTimeout(() => {
-        window.location.href = "/auth/login-main";
+        window.location.href = "/auth/login";
       }, 3000);
     },
     onError: (error) => {
@@ -316,7 +316,7 @@ const RegisterUser: React.FC = () => {
                     <p className="text-[#FD8038] text-center">
                       Already have an account?{" "}
                       <span className="text-[#fcf8db]">
-                        <Link href={"/auth/login-main"}>Log In</Link>
+                        <Link href={"/auth/login"}>Log In</Link>
                       </span>
                     </p>
                   </div>
