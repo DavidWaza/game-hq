@@ -15,11 +15,11 @@ import RegistrationForm from "./RegistrationForm";
 import Login from "../auth/login/page";
 
 interface LogoVariant {
-  variant: 'primary' | 'secondary'
-  textColor?:string
+  variant: "primary" | "secondary";
+  textColor?: string;
 }
 
-const Navbar:React.FC<LogoVariant> = ({variant, textColor}) => {
+const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   const [openCreateAccount, setOpenCreateAccount] = useState(false);
   const [registrationType, setRegistrationType] = useState<"email" | "phone">(
     "email"
@@ -30,19 +30,19 @@ const Navbar:React.FC<LogoVariant> = ({variant, textColor}) => {
     setRegistrationType(registrationType === "email" ? "phone" : "email");
   };
 
-  if(variant === 'primary'){
-    textColor = 'text-[#fcf8db]'
-  } else if(variant === 'secondary') {
-    textColor = 'text-[#233d4d] md:text-[#fcf8db] lg:text-[#233d4d]'
+  if (variant === "primary") {
+    textColor = "text-[#fcf8db]";
+  } else if (variant === "secondary") {
+    textColor = "text-[#233d4d] md:text-[#fcf8db] lg:text-[#233d4d]";
   }
   return (
     <div className="bg-transparent fixed w-full z-20 py-7 px-10 ">
       <nav className="flex justify-between items-center gap-3">
         <div className="hidden md:block">
           <Link href={"/"}>
-          <div>
-          <p className={`text-4xl font-medium ${textColor}`}>GameHQ</p>
-        </div>
+            <div>
+              <p className={`text-4xl font-medium ${textColor}`}>GameHQ</p>
+            </div>
           </Link>
         </div>
         <div className="block md:hidden">
@@ -163,7 +163,7 @@ const Navbar:React.FC<LogoVariant> = ({variant, textColor}) => {
             />
           )}
           <Dialog>
-            <DialogTrigger>
+            <DialogTrigger asChild>
               <Button
                 variant="primary"
                 size="sm"
@@ -175,8 +175,7 @@ const Navbar:React.FC<LogoVariant> = ({variant, textColor}) => {
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle className="">LOGIN</DialogTitle>
-                <DialogDescription>
-                </DialogDescription>
+                <DialogDescription></DialogDescription>
               </DialogHeader>
               <Login />
             </DialogContent>
