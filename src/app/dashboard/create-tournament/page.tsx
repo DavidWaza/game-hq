@@ -9,16 +9,23 @@ interface Video {
 }
 
 const videoTrailers: Video[] = [
-  { id: 1, src: "/assets/fc25-trailer.mp4" },
-  { id: 2, src: "/assets/mk-trailer-1.mp4" },
-  { id: 3, src: "/assets/cod-trailer-1.mp4" },
+  {
+    id: 1,
+    src: "https://res.cloudinary.com/dgbl43ljm/video/upload/v1743527339/fc25-trailer_eicr53.mp4",
+  },
+  {
+    id: 2,
+    src: "https://res.cloudinary.com/dgbl43ljm/video/upload/v1743527423/mk-trailer-1_zutqhs.mp4",
+  },
+  {
+    id: 3,
+    src: "https://res.cloudinary.com/dgbl43ljm/video/upload/v1743527437/cod-trailer-1_jfempg.mp4",
+  },
 ];
 
 const CreateTournament = () => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-
 
   // Handle switching videos when one ends
   const handleVideoEnd = () => {

@@ -13,7 +13,7 @@ const BetSwitchTab = () => {
     gameTitle: "",
     invitees: [""],
   });
-  const router = useRouter()
+  const router = useRouter();
 
   // Handle tab toggle (public/private)
   const handleTabToggle = () => {
@@ -73,9 +73,7 @@ const BetSwitchTab = () => {
         <button
           onClick={handleTabToggle}
           className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 ${
-            isPrivate
-              ? "bg-[#202216] text-[#F0DE9B]"
-              : "bg-gray-600 text-white"
+            isPrivate ? "bg-[#202216] text-[#F0DE9B]" : "bg-gray-600 text-white"
           }`}
         >
           Private Bet
@@ -113,29 +111,28 @@ const BetSwitchTab = () => {
           />
         </div>
         <div className="space-y-1 mb-4">
-                <Label htmlFor="amount" className="text-right">
-                  Wager Amount
-                </Label>
-                <div className="relative w-32">
-                  <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
-                    <Money size={20} weight="duotone" />
-                  </div>
-                  <Input
-                    id="amount"
-                    type="text"
-                    placeholder="0.00"
-                    className="pl-9 w-full mt-2 bg-gray-700 text-white rounded-lg shadow-md"
-                    onChange={(e) => {
-                      // Only allow numbers and decimal point
-                      const value = e.target.value;
-                      if (/^(\d*\.?\d{0,2})?$/.test(value)) {
-                        e.target.value = value;
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-        
+          <Label htmlFor="amount" className="text-right">
+            Wager Amount
+          </Label>
+          <div className="relative w-32">
+            <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
+              <Money size={20} weight="duotone" />
+            </div>
+            <Input
+              id="amount"
+              type="text"
+              placeholder="0.00"
+              className="pl-9 w-full mt-2 bg-gray-700 text-white rounded-lg shadow-md"
+              onChange={(e) => {
+                // Only allow numbers and decimal point
+                const value = e.target.value;
+                if (/^(\d*\.?\d{0,2})?$/.test(value)) {
+                  e.target.value = value;
+                }
+              }}
+            />
+          </div>
+        </div>
 
         {/* Private Bet Fields */}
         {isPrivate && (
@@ -157,7 +154,7 @@ const BetSwitchTab = () => {
                     type="button"
                     onClick={() => deleteInvitee(index)}
                     className="mt-2 text-red-500 hover:text-red-700 transition-colors"
-                    disabled={betDetails.invitees.length === 1} 
+                    disabled={betDetails.invitees.length === 1}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -193,12 +190,12 @@ const BetSwitchTab = () => {
         <Button>Create Bet</Button>
       </div>
       <div
-            onClick={() => router.back()}
-            className="text-white text-center pt-5 flex items-center justify-center gap-3 hover:animate-bounce cursor-pointer"
-          >
-            <CaretDoubleLeft size={25} />
-            Return Back
-          </div>
+        onClick={() => router.back()}
+        className="text-white text-center pt-5 flex items-center justify-center gap-3 hover:animate-bounce cursor-pointer"
+      >
+        <CaretDoubleLeft size={25} />
+        Return Back
+      </div>
     </div>
   );
 };
