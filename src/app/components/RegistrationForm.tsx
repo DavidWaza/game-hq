@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -143,9 +144,7 @@ const RegistrationForm: React.FC<{
         </DialogHeader>
         <div className="px-10 space-y-5">
           <div className="text-center flex flex-col space-y-2 py-4">
-            <span className="text-sm text-[#64748B]">
-            
-            </span>
+            <span className="text-sm text-[#64748B]"></span>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               {registrationType === "email" ? (
                 <>
@@ -265,9 +264,11 @@ const RegistrationForm: React.FC<{
                   </span>
                 </label>
               </div> */}
-              <Button variant="primary" size="sm">
-                {registerMutation.isPending ? "Loading..." : "Create Account"}
-              </Button>
+              <DialogTrigger asChild>
+                <Button variant="primary" size="sm">
+                  {registerMutation.isPending ? "Loading..." : "Create Account"}
+                </Button>
+              </DialogTrigger>
             </form>
             <div className="divider py-4">
               <span>Or</span>
@@ -312,7 +313,9 @@ const RegistrationForm: React.FC<{
           <p className="text-[#64748B] text-center">
             Already have an account?{" "}
             <span className="text-[#1A5EFF]">
-            <Link href={"/auth/login"} onClick={() => onDialogChange(false)}>Log In</Link>
+              <Link href={"/auth/login"} onClick={() => onDialogChange(false)}>
+                Log In
+              </Link>
             </span>
           </p>
         </div>
