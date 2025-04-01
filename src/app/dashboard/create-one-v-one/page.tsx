@@ -9,9 +9,9 @@ interface Video {
 }
 
 const videoTrailers: Video[] = [
-  { id: 1, src: "/assets/chess-trailer.mp4" },
-  { id: 2, src: "/assets/ludo-trailer.mp4" },
-  { id: 3, src: "/assets/whot-trailer.mp4" },
+  { id: 1, src: "https://res.cloudinary.com/dgbl43ljm/video/upload/v1743523772/chess-trailer_kpbtbe.mp4" },
+  { id: 2, src: "https://res.cloudinary.com/dgbl43ljm/video/upload/v1743523771/ludo-trailer_seabb0.mp4" },
+  { id: 3, src: "https://res.cloudinary.com/dgbl43ljm/video/upload/v1743523774/whot-trailer_qykuo4.mp4" },
 ];
 
 const CreateOneVOne = () => {
