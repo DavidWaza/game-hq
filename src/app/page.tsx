@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Homebanner from "./components/Homepage/Homebanner";
-import Navbar from "./components/Navbar";
+import Navbar from "@/components/Navbar";
 // import MainComponent from "./components/dashboard/MainComponent";
 
 export const metadata: Metadata = {

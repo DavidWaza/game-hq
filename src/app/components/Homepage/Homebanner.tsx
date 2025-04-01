@@ -2,11 +2,7 @@ import React from "react";
 import FullWidthCarousel from "../dashboard/FullWidthCarousel";
 
 const Homebanner = () => {
-  return (
-    <div>
-      <FullWidthCarousel />
-    </div>
-  );
+  return <FullWidthCarousel />;
 };
 
 export default Homebanner;
