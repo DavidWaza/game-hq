@@ -57,14 +57,13 @@ const CreateTournament = () => {
         onEnded={handleVideoEnd}
       ></video>
 
-      {/* Overlay */}
       <div className="absolute inset-0 bg-white bg-opacity-0"></div>
 
       {/* Navbar */}
       <DashboardNavbar color="text-[#fcf8db]" />
 
       {/* Content Goes Here */}
-      <div className="relative z-10 flex justify-center text-white p-10">
+      <div className="relative z-10 flex flex-1 items-center justify-center text-white p-10">
         <CreateWagerT />
       </div>
     </div>

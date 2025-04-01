@@ -28,13 +28,13 @@ const Carousel = () => {
   return (
     <div className="relative min-h-screen">
       <div className="absolute z-20 bottom-10 md:bottom-20 bg-cover bg-center w-full">
-        <div className="flex flex-col mr-20 ml-auto items-center md:items-end gap-2 md:gap-4 px-5 space-y-5">
+        <div className="flex flex-col items-center md:items-end gap-2 md:gap-4 px-5 space-y-5 md:ml-auto md:mr-20">
           {/* Create Wager */}
           <button
             onClick={() => (setIsOpenInvite(false), setIsOpen(true))}
             className="button min-w-80 bg-[#233d4d] text-[#fcf8db] p-3 text-center items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center items-center gap-2">
               <GameController
                 size={32}
                 className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
