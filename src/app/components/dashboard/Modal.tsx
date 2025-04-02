@@ -14,7 +14,7 @@ const cinzel = Cinzel_Decorative({
 interface ModalProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
-  header: string;
+  header?: string;
   sub?: string;
   contentTitle?: string;
   contentItems?: string[];

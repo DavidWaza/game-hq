@@ -15,12 +15,12 @@ const slides = [
   { image: "/assets/board.jpg", name: "Roll the dice", link: "/page1" },
   {
     image: "/assets/card.jpg",
-    name: "Ace, 2 Kings, 3 Queens, 4 Jacks, 5 Tens. Royal Flush!",
+    name: "One Ace, Two Kings, Three Queens, Four Jacks, Five Tens. Royal flush!",
     link: "/page2",
   },
   {
     image: "/assets/cod-3.jpg",
-    name: "No warning shots fired.",
+    name: "We won't be firing any warning shots",
     link: "/page3",
   },
 ];
@@ -43,7 +43,7 @@ const Carousel = () => {
             <div className="flex justify-center items-center gap-2">
               <GameController
                 size={24}
-                className=" text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
+                className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
               />
               <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
                 Create Wager
@@ -54,8 +54,6 @@ const Carousel = () => {
           <Modal
             isOpen={isOpen}
             setIsOpen={setIsOpen}
-            header="Select Game Mode"
-            sub="Choose how you want to play"
             firstButtonText="Create Tournament"
             secondButtonText="Create One-on-One"
             onClick={() => (window.location.href = "/dashboard/create-tournament")}
@@ -81,8 +79,6 @@ const Carousel = () => {
           <Modal
             isOpen={isOpenInvite}
             setIsOpen={setIsOpenInvite}
-            header="Join Game Mode"
-            sub="You have been selected"
             firstButtonText="Join Tournament"
             secondButtonText="Join One-on-One"
             onClick={() => (window.location.href = "/dashboard/join-tournament")}

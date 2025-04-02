@@ -34,10 +34,14 @@ const CreateTournament = () => {
     );
   };
 
+
   useEffect(() => {
     const videoElement = videoRef.current;
 
     if (videoElement) {
+      videoElement
+        .play()
+        .catch((err) => console.warn("Auto-play blocked:", err));
       videoElement
         .play()
         .catch((err) => console.warn("Auto-play blocked:", err));

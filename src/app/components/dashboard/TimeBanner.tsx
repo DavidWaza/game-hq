@@ -46,7 +46,7 @@ const TimeBanner = () => {
           />
           <p className="text-[#FCF8DB] text-lg">20,000</p>
         </div>
-        <CountdownTimer />
+        <CountdownTimer targetDate={new Date("2025-06-02T12:00:00")} />
         <div className="w-56 my-10">
           <Button onClick={() => setIsOpenTournament(true)}>
             Join tournament

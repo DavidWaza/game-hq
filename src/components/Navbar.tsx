@@ -51,8 +51,7 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
             <>
               <Button
                 variant="secondary"
-                size="sm"
-                width="half"
+                size="lg"
                 onClick={() => router.push("/auth/register")}
                 icon={
                   <Image

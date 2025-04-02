@@ -1,5 +1,6 @@
 "use client";
 import axios from "axios";
+import { toast } from "sonner";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_SERVICE_BASE_URL;
 
@@ -41,30 +42,61 @@ export const getFn = async (url: string) => {
   try {
     const response = await api.get(url);
     return response.data;
-  } catch (err) {
-    console.error("GET Error:", err);
-    if (axios.isAxiosError(err)) {
-      throw new Error(err.message || "Invalid Credentials");
-    }
-    throw new Error("An unexpected error occurred");
+  } catch (error) {
+    toast.error(processErrorResponse(error), {
+      position: "top-right",
+      className: "p-4",
+    });
   }
+};
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+      title?: string;
+      [key: string]: string | undefined;
+    };
+    message?: string;
+  };
+  message?: string;
+  status?: number;
+}
+
+const processErrorResponse = (error: unknown): string => {
+  const apiError = error as ApiError;
+  let message = "";
+  if (apiError?.response?.data?.message) {
+    message = apiError.response.data.message;
+  } else if (apiError?.response?.data?.title) {
+    message = apiError.response.data.title;
+  } else if (apiError?.response?.message) {
+    message = apiError.response.message;
+  } else if (apiError?.response?.data) {
+    message = JSON.stringify(apiError.response.data);
+  } else if (apiError?.message) {
+    message = apiError.message;
+  } else message = "An error occurred";
+  if (apiError.status === 401) {
+    message = "Unauthenticated!";
+  }
+  return message;
 };
 
 // Post Function
 export const postFn = async (url: string, data: Record<string, unknown>) => {
   try {
     const response = await api.post(url, data);
-    const token = response.data.token;
+    const token = response?.data?.token;
     if (token) {
       await storeToken(token);
     }
-    return response.data;
-  } catch (err) {
-    console.error("POST Error:", err);
-    if (axios.isAxiosError(err)) {
-      throw new Error(err.message || "Invalid Credentials");
-    }
-    throw new Error("An unexpected error occurred");
+    return response?.data;
+  } catch (error) {
+    toast.error(processErrorResponse(error), {
+      position: "top-right",
+      className: "p-4",
+    });
   }
 };
 
@@ -90,7 +122,6 @@ export const storeToken = async (token: string) => {
     console.error("Failed to store token:", error);
     // Clean up localStorage if cookie storage fails
     localStorage.removeItem("token");
-    throw error;
   }
 };
 
@@ -113,6 +144,9 @@ export const logout = async () => {
     window.location.href = "/auth/login";
   } catch (error) {
     console.error("Failed to logout:", error);
-    throw error;
+    toast.error(processErrorResponse(error), {
+      position: "top-right",
+      className: "p-4",
+    });
   }
 };

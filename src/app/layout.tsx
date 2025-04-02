@@ -3,12 +3,12 @@ import { useState, useEffect, useTransition } from "react";
 import { Russo_One } from "next/font/google";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
+import "./globals.scss";
 import "./globals.css";
 import { queryClient } from "@/lib/QueryClient";
 import { Toaster } from "sonner";
 import FullScreenLoader from "./components/dashboard/FullScreenLoader";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { UserProvider } from "@auth0/nextjs-auth0/client";
 
 const inter = Russo_One({
   variable: "--Russo_One",
@@ -40,25 +40,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>{/* Add metadata, title, and links here */}</head>
-      <UserProvider>
-        <body className={`${inter.className} antialiased `}>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <FullScreenLoader isLoading={isLoading} />
+      <body className={`${inter.className} antialiased `}>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <FullScreenLoader isLoading={isLoading} />
 
-              {isDashboard ? (
-                <div className="bg-[#0B0E13]">
-                  <div>{children}</div>
-                </div>
-              ) : (
-                <div className="bg-[#fcf8db]">{children}</div>
-              )}
+            {isDashboard ? (
+              <div className="bg-[#0B0E13]">
+                <div>{children}</div>
+              </div>
+            ) : (
+              <div className="bg-[#fcf8db]">{children}</div>
+            )}
 
-              <Toaster richColors position="top-right" />
-            </AuthProvider>
-          </QueryClientProvider>
-        </body>
-      </UserProvider>
+            <Toaster richColors position="top-right" />
+          </AuthProvider>
+        </QueryClientProvider>
+      </body>
     </html>
   );
 }

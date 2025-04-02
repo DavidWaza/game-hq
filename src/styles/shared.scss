@@ -1,0 +1,28 @@
+@forward "variables";
+@forward "mixins";
+
+// Variables
+$primary-color: #233d4d;
+$secondary-color: #f37f2d;
+$text-light: #fcf8db;
+$text-dark: #1a1a1a;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin hover-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+// Utility Classes
+.flex-center {
+  @include flex-center;
+}
+
+.hover-transition {
+  @include hover-transition;
+}

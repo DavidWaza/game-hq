@@ -49,7 +49,6 @@ const SettingsMenu = () => {
       category: "System",
       items: [
         { label: "Notifications", href: "/system/notifications", icon: "🔔" },
-        { label: "Language", href: "/system/language", icon: "🌐" },
         { label: "Help & Support", href: "/support", icon: "❓" },
         { label: "Logout", href: `#`, icon: "🚪" },
       ],
