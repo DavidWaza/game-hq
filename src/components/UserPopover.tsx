@@ -15,6 +15,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CaretDown } from "@phosphor-icons/react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -29,6 +30,8 @@ interface UserPopoverProps {
 const UserPopover = ({ gamerName, email, avatarUrl }: UserPopoverProps) => {
   const { logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
   const links = [
     { url: "/dashboard/join-tournament", text: "Tournaments", icon: Trophy },
     { url: "/dashboard/one-on-one", text: "One-on-One", icon: Gamepad2 },
@@ -36,6 +39,10 @@ const UserPopover = ({ gamerName, email, avatarUrl }: UserPopoverProps) => {
     { url: "/dashboard/wallet", text: "Wallet", icon: Wallet },
     { url: "/dashboard/settings", text: "Settings", icon: Settings },
   ];
+
+  const isLinkActive = (url: string) => {
+    return pathname.includes(url);
+  };
 
   return (
     <>
@@ -80,11 +87,14 @@ const UserPopover = ({ gamerName, email, avatarUrl }: UserPopoverProps) => {
           <div className={styles.userPopover__links}>
             {links.map((link, index) => {
               const Icon = link.icon;
+              const isActive = isLinkActive(link.url);
               return (
                 <Link
                   key={index}
                   href={link.url}
-                  className={styles.userPopover__link}
+                  className={`${styles.userPopover__link} ${
+                    isActive ? styles.userPopover__link_active : ""
+                  }`}
                 >
                   <Icon className="h-4 w-4" />
                   {link.text}
