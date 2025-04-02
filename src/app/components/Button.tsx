@@ -1,16 +1,17 @@
 "use client";
 import React from "react";
-import { Slot } from "@radix-ui/react-slot";
+// import { Slot } from "@radix-ui/react-slot";
 
 interface ButtonProps {
   variant?: "primary" | "secondary";
   size?: "sm" | "md" | "lg";
   width?: "full" | "half";
   icon?: React.ReactNode;
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement | HTMLElement>) => void;
   children: React.ReactNode;
   disabled?: boolean;
   asChild?: boolean;
+  className?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -21,6 +22,7 @@ const Button: React.FC<ButtonProps> = ({
   onClick,
   children,
   disabled,
+  className,
   asChild = false,
 }) => {
   // Define variant styles
@@ -41,18 +43,18 @@ const Button: React.FC<ButtonProps> = ({
     half: "w-1/2 m-auto",
   };
 
-  const className = `flex items-center text-nowrap whitespace-nowrap justify-center gap-2 rounded-lg transition-all duration-500 ease-in-out tracking-wider ${variantClasses[variant]} ${sizeClasses[size]} ${widthClasses[width]}`;
+  const classes = `flex items-center text-nowrap whitespace-nowrap justify-center gap-2 rounded-lg transition-all duration-500 ease-in-out tracking-wider ${variantClasses[variant]} ${sizeClasses[size]} ${widthClasses[width]} ${className}`;
 
-  const Comp = asChild ? Slot : "button";
+  const Comp = asChild ? "div" : "button";
 
   return (
     <Comp
       onClick={onClick}
       disabled={disabled}
       type={asChild ? undefined : "submit"}
-      className={className}
+      className={classes}
     >
-      {icon && <span>{icon}</span>}
+      {icon && <span className="min-w-max">{icon}</span>}
       {children}
     </Comp>
   );

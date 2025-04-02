@@ -35,8 +35,10 @@ const Login = () => {
       username: string;
     }) => postFn("api/auth/login", userData),
     onSuccess: async (data) => {
-      toast.success("Login Successful");
-      await login(data.token);
+      if (data?.token) {
+        toast.success("Login Successful");
+        await login(data?.token);
+      }
     },
     onError: (error) => {
       toast.error(`Login Failed ${error.message}`);
