@@ -54,7 +54,7 @@ const Button: React.FC<ButtonProps> = ({
       type={asChild ? undefined : "submit"}
       className={classes}
     >
-      {icon && <span>{icon}</span>}
+      {icon && <span className="min-w-max">{icon}</span>}
       {children}
     </Comp>
   );

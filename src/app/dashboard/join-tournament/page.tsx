@@ -1,16 +1,16 @@
 "use client";
 import CreateWagerBanner from "@/app/components/dashboard/join-wager-banner";
-import DashboardNavbar from "@/app/components/dashboard/DashboardNavbar";
+import Navbar from "@/components/Navbar";
 import TimeBanner from "@/app/components/dashboard/TimeBanner";
 import React from "react";
 
 const CreateWager = () => {
   return (
-    <div className="bg-[#0B0E13]">
-      <DashboardNavbar bgColor={"bg-[#f2f3f4]"} color="text-[#FCF8DB]" />
+    <>
+      <Navbar variant="primary" />
       <TimeBanner />
       <CreateWagerBanner />
-    </div>
+    </>
   );
 };
 

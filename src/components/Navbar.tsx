@@ -41,7 +41,7 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   }
 
   return (
-    <div className="bg-transparent fixed w-full z-20 py-7">
+    <div className="bg-transparent fixed w-full z-[999999] py-7">
       <nav className="container mx-auto px-4 flex justify-between items-center gap-3">
         <div className="hidden md:block">
           <Link href={"/"}>
@@ -69,8 +69,7 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
             <>
               <Button
                 variant="secondary"
-                size="sm"
-                width="half"
+                size="lg"
                 onClick={() => router.push("/auth/register")}
                 icon={
                   <Image
