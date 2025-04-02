@@ -37,19 +37,17 @@ const Carousel = () => {
           {/* Create Wager */}
           <button
             onClick={() => (setIsOpenInvite(false), setIsOpen(true))}
-            className="button min-w-80 bg-[#233d4d] text-[#fcf8db] p-3 text-center items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
+            className="button bg-[#233d4d] text-[#fcf8db] py-4 text-center items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center items-center gap-2">
               <GameController
                 size={32}
                 className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
               />
-              <p className="text-sm md:text-lg font-bold mt-1 uppercase group-hover:text-[#233d4d]">
+              <p className="mas text-sm md:text-lg font-bold mt-1 uppercase group-hover:text-[#233d4d]">
                 Create Wager
               </p>
             </div>
-            <div className="button__horizontal"></div>
-            <div className="button__vertical"></div>
           </button>
 
           {/* Open create wager modal */}
@@ -69,7 +67,7 @@ const Carousel = () => {
           {/* My Invitations */}
           <div
             onClick={() => (setIsOpenInvite(true), setIsOpen(false))}
-            className="button bg-[#233d4d] min-w-80 text-[#f37f2d] p-3 text-center items-center group hover:bg-[#f37f2d]  transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
+            className="button bg-[#233d4d] text-[#f37f2d] py-4 text-center items-center group hover:bg-[#f37f2d]  transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center gap-2">
               <EnvelopeSimple
@@ -80,8 +78,6 @@ const Carousel = () => {
                 My Invitations
               </p>
             </div>
-            <div className="button__horizontal"></div>
-            <div className="button__vertical"></div>
           </div>
 
           <Modal
@@ -99,7 +95,7 @@ const Carousel = () => {
           {/* My History */}
           <Link href="" className="min-w-80">
             <div className="button bg-[#233d4d] text-[#fcf8db] text-center items-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg">
-              <div className=" text-center p-3 items-center group border-[#233d4d] rounded-lg hover:bg-opacity-100 transition-all duration-300 ease-in-out">
+              <div className=" text-center py-4 items-center group border-[#233d4d] rounded-lg hover:bg-opacity-100 transition-all duration-300 ease-in-out">
                 <div className="flex justify-center gap-2">
                   <Trophy
                     size={32}
@@ -110,8 +106,6 @@ const Carousel = () => {
                   </p>
                 </div>
               </div>
-              <div className="button__horizontal"></div>
-              <div className="button__vertical"></div>
             </div>
           </Link>
         </div>
@@ -162,7 +156,7 @@ const Carousel = () => {
               </motion.div>
 
               {/* Overlay with Animations */}
-              <div className="absolute inset-0 flex h-full w-full items-center justify-center bg-black/50 px-4 text-center">
+              <div className="absolute inset-0 flex h-full w-full items-center justify-center bg-black/50 px-4 text-center ">
                 {/* Code-like Text Animation */}
                 <AnimatePresence mode="popLayout">
                   <motion.div
@@ -178,7 +172,7 @@ const Carousel = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="max-w-[1400px] text-[#fcf8db] text-2xl sm:text-4xl md:text-6xl mb-4 font-bold uppercase font-mono flex flex-wrap justify-center gap-1"
+                      className="max-w-[1400px] text-[#fcf8db] text-2xl sm:text-4xl md:text-5xl mb-4 font-bold uppercase flex flex-wrap justify-center gap-1"
                     >
                       {slide.name.split("").map((char, i) => (
                         <motion.span
