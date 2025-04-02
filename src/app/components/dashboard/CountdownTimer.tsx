@@ -10,7 +10,7 @@ interface TimeLeft {
 }
 
 interface CountdownTimerProps {
-  targetDate?: string;
+  targetDate?: Date | string;
 }
 
 const CountdownTimer = ({ targetDate }: CountdownTimerProps) => {
