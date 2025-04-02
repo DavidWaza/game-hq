@@ -1,6 +1,6 @@
 "use client";
 import BetSwitchTab from "@/app/components/dashboard/BetSwitchTab";
-import DashboardNavbar from "@/app/components/dashboard/DashboardNavbar";
+import Navbar from "@/components/Navbar";
 import React, { useState, useEffect, useRef } from "react";
 
 interface Video {
@@ -66,7 +66,7 @@ const CreateOneVOne = () => {
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
 
       {/* Navbar */}
-      <DashboardNavbar color="text-[#fcf8db]" />
+      <Navbar variant="primary" />
 
       {/* Content Centered in the Middle */}
       <div className="relative z-10 flex flex-1 items-center justify-center text-white">

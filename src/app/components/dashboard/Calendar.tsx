@@ -30,7 +30,8 @@ const FormSchema = z.object({
   }),
 });
 
-export function CalendarForm() {
+export function CalendarForm({onDateChange}: {onDateChange: (date: Date) => void}) {
+  console.log(onDateChange)
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });

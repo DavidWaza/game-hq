@@ -28,9 +28,7 @@ const Button: React.FC<ButtonProps> = ({
   // Define variant styles
   const variantClasses = {
     primary: "fine-button-primary",
-    secondary:
-      "fine-button-secondary uppercase",
-      
+    secondary: "fine-button-secondary uppercase",
   };
 
   // Define size styles

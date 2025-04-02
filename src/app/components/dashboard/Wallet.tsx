@@ -1,4 +1,4 @@
-import { CaretDown, CaretUp } from "@phosphor-icons/react";
+
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 
@@ -7,7 +7,6 @@ const Wallet = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [transactionType, setTransactionType] = useState("deposit");
   const [amount, setAmount] = useState("");
-  const [isToggle, setIsToggle] = useState(false);
   const modalRef = useRef(null);
 
   // Close modal when clicking outside
@@ -72,33 +71,7 @@ const Wallet = () => {
                 {balance} CP
               </p>
             </div>
-            <div className="hidden sm:flex justify-center items-center transition-all duration-300 ease-in-out">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsToggle(!isToggle);
-                }}
-                className={`transition-all duration-300 ease-in-out ${
-                  isToggle ? "scale-110" : "scale-100"
-                } hover:scale-125`}
-              >
-                {isToggle ? (
-                  <CaretUp
-                    size={20}
-                    weight="bold"
-                    color="#fcf8db"
-                    className="transition-all duration-300 ease-in-out rotate-0"
-                  />
-                ) : (
-                  <CaretDown
-                    size={20}
-                    weight="bold"
-                    color="#fcf8db"
-                    className="transition-all duration-300 ease-in-out"
-                  />
-                )}
-              </button>
-            </div>
+           
           </div>
         </div>
       </div>

@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Image from "next/image";
 import Link from "next/link";
 import { SignOut } from "@phosphor-icons/react";
 import { useRouter, usePathname } from "next/navigation";
@@ -36,16 +35,18 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   }
 
   return (
-    <div className="bg-transparent fixed w-full z-20 py-7 md:px-10 px-3">
+    <div className="bg-transparent fixed w-full z-50 py-7 md:px-10 px-3">
       <nav className="flex justify-between items-center gap-3">
         <div className="">
           <Link href={"/"}>
             <div>
-              <p className={`text-2xl md:text-4xl font-medium ${textColor}`}>GameHQ</p>
+              <p className={`text-2xl md:text-4xl font-medium ${textColor}`}>
+                GameHQ
+              </p>
             </div>
           </Link>
         </div>
-      
+
         <div className="flex items-center gap-5 relative">
           {!isAuthenticated && !isAuthRoute ? (
             <>
@@ -53,16 +54,6 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
                 variant="secondary"
                 size="lg"
                 onClick={() => router.push("/auth/register")}
-                icon={
-                  <Image
-                    src={"/assets/icons/mail.svg"}
-                    alt=""
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    className="w-5 h-5 object-contain object-center"
-                  />
-                }
               >
                 Create Account
               </Button>

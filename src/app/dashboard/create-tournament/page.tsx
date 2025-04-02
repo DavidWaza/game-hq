@@ -1,7 +1,7 @@
 "use client";
-import DashboardNavbar from "@/app/components/dashboard/DashboardNavbar";
 import React, { useState, useEffect, useRef } from "react";
 import CreateWagerT from "../../components/dashboard/CreateWagerT";
+import Navbar from "@/components/Navbar";
 
 interface Video {
   id: number;
@@ -33,7 +33,6 @@ const CreateTournament = () => {
       prevIndex + 1 < videoTrailers.length ? prevIndex + 1 : 0
     );
   };
-
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -71,10 +70,9 @@ const CreateTournament = () => {
       <div className="absolute inset-0 bg-white bg-opacity-0"></div>
 
       {/* Navbar */}
-      <DashboardNavbar color="text-[#fcf8db]" />
-
+      <Navbar variant="primary" />
       {/* Content Goes Here */}
-      <div className="relative z-10 flex flex-1 items-center justify-center text-white p-10">
+      <div className="relative z-10 flex items-center justify-center text-white">
         <CreateWagerT />
       </div>
     </div>
