@@ -2,12 +2,6 @@
 import React from "react";
 import Button from "../app/components/Button";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -16,11 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { BellSimple, Headset, SignOut } from "@phosphor-icons/react";
+import { SignOut } from "@phosphor-icons/react";
 import { useRouter, usePathname } from "next/navigation";
 import Login from "@/components/Login";
 import { useAuth } from "@/contexts/AuthContext";
 import Wallet from "@/app/components/dashboard/Wallet";
+import SettingsMenu from "@/app/components/dashboard/SettingsMenu";
 
 interface LogoVariant {
   variant: "primary" | "secondary";
@@ -31,7 +26,6 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, logout } = useAuth();
-  // const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const isAuthRoute = pathname?.startsWith("/auth");
 
@@ -42,29 +36,16 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   }
 
   return (
-    <div className="bg-transparent fixed w-full z-20 py-7 px-10 ">
+    <div className="bg-transparent fixed w-full z-20 py-7 md:px-10 px-3">
       <nav className="flex justify-between items-center gap-3">
-        <div className="hidden md:block">
+        <div className="">
           <Link href={"/"}>
             <div>
-              <p className={`text-4xl font-medium ${textColor}`}>GameHQ</p>
+              <p className={`text-2xl md:text-4xl font-medium ${textColor}`}>GameHQ</p>
             </div>
           </Link>
         </div>
-        <div className="block md:hidden">
-          <Link href={"/"}>
-            <Image
-              src={
-                "https://res.cloudinary.com/dgbl43ljm/image/upload/v1742387812/logo-short-white_vzer05.png"
-              }
-              alt=""
-              width={0}
-              height={0}
-              sizes="100vw"
-              className="w-20 h-10 object-contain object-center"
-            />
-          </Link>
-        </div>
+      
         <div className="flex items-center gap-5 relative">
           {!isAuthenticated && !isAuthRoute ? (
             <>
@@ -109,60 +90,12 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
               <>
                 {/* Wallet & Avatar Button */}
                 <Wallet />
-{/* 
-                {isDropdownOpen && (
-                  <div className="absolute right-0 top-12 mt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 p-2 md:hidden">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-md">
-                          <BellSimple size={22} className="text-gray-400" />
-                          <span className="text-gray-700">Notifications</span>
-                        </TooltipTrigger>
-                        <TooltipContent>Notification</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-md">
-                          <Headset size={22} className="text-gray-400" />
-                          <span className="text-gray-700">Support</span>
-                        </TooltipTrigger>
-                        <TooltipContent>Support</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                )} */}
-                <div className="hidden md:flex items-center gap-4">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="w-10 h-10 flex items-center justify-center">
-                        <BellSimple
-                          size={22}
-                          className="text-gray-400 hover:text-blue-700"
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>Notification</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="w-10 h-10 flex items-center justify-center">
-                        <Headset
-                          size={22}
-                          className="text-gray-400 hover:text-blue-700"
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>Support</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                <SettingsMenu />
+                <div className="hidden md:block">
+                  <button className="fine-button-primary" onClick={logout}>
+                    <SignOut size={25} />
+                  </button>
                 </div>
-                <button
-                  className="button-radius-full"
-                  onClick={logout}
-                >
-                  <SignOut size={25} />
-                </button>
               </>
             )
           )}

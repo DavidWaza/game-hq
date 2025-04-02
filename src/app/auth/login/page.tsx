@@ -12,10 +12,12 @@ import { toast } from "sonner";
 import Button from "../../components/Button";
 import Navbar from "@/components/Navbar";
 import MobileLogin from "@/app/components/MobileLogin";
+import { useRouter } from "next/navigation";
 
 const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+  const router = useRouter();
 
   const { register, handleSubmit } = useForm<{
     // email: string;
@@ -54,6 +56,10 @@ const Login: React.FC = () => {
     loginMutation.mutate(formData);
   };
 
+  // Google auth
+  const handleGoogleLogin = () => {
+    router.push('/api/auth/login?connection=google-oauth2');
+  };
   return (
     <div>
       <Navbar variant="secondary" />
@@ -144,6 +150,7 @@ const Login: React.FC = () => {
                         variant="secondary"
                         size="md"
                         width="full"
+                        onClick={handleGoogleLogin}
                         icon={
                           <Image
                             src={"/assets/icons/google-icons.svg"}
@@ -168,7 +175,7 @@ const Login: React.FC = () => {
                 </div>
               </div>
               <Image
-                src={"/assets/horseman.png"}
+                src={"/assets/mk-login.png"}
                 alt=""
                 width={0}
                 height={0}
