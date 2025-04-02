@@ -83,6 +83,7 @@
     border: 2px solid transparent;
     overflow: hidden;
     position: relative;
+    isolation: isolate;
 
     &:after {
       background: #fff;

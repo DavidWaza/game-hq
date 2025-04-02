@@ -31,13 +31,13 @@ export default function SettingsPage() {
   return (
     <>
       <Navbar variant="primary" />
-      <div className="py-40 addTransition">
+      <div className="py-40">
         <div className="container mx-auto p-4 space-y-6 relative">
           <h1 className="text-2xl font-bold text-white mb-6">
             Account Settings
           </h1>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Section */}
             <div className="relative col-span-1">
               <Card className="bg-[#1a1f2e] border-none transInLonger">
@@ -51,7 +51,7 @@ export default function SettingsPage() {
                       <Button
                         size="icon"
                         variant="outline"
-                        className="absolute bottom-0 right-0 rounded-full bg-[#233d4d] hover:bg-[#f37f2d] border-none"
+                        className="sheen absolute bottom-0 right-0 rounded-full bg-[#233d4d] hover:bg-[#f37f2d] border-none"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -67,13 +67,13 @@ export default function SettingsPage() {
                     <div className="w-full gap-2 align_auto">
                       <Button
                         variant="outline"
-                        className="w-full bg-[#233d4d] hover:bg-[#f37f2d] border-none"
+                        className="sheen w-full bg-[#233d4d] hover:bg-[#f37f2d] border-none"
                       >
                         <Lock className="mr-2 h-4 w-4" /> Reset Password
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full bg-[#233d4d] hover:bg-[#f37f2d] border-none"
+                        className="sheen w-full bg-[#233d4d] hover:bg-[#f37f2d] border-none"
                       >
                         <Pencil className="mr-2 h-4 w-4" /> Change Gamertag
                       </Button>
