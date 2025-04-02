@@ -1,0 +1,9 @@
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin hover-transition {
+  transition: all 0.3s ease-in-out;
+}

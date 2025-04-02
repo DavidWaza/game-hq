@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import Button from "../app/components/Button";
+import React from "react";
+import Button from "@/app/components/Button";
 import {
   Tooltip,
   TooltipContent,
@@ -16,11 +16,11 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { BellSimple, Headset, CaretDown } from "@phosphor-icons/react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BellSimple, Headset } from "@phosphor-icons/react";
 import { useRouter, usePathname } from "next/navigation";
 import Login from "@/components/Login";
 import { useAuth } from "@/contexts/AuthContext";
+import UserPopover from "@/components/UserPopover";
 
 interface LogoVariant {
   variant: "primary" | "secondary";
@@ -30,8 +30,7 @@ interface LogoVariant {
 const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, logout } = useAuth();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const isAuthRoute = pathname?.startsWith("/auth");
 
@@ -42,8 +41,8 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   }
 
   return (
-    <div className="bg-transparent fixed w-full z-20 py-7 px-10 ">
-      <nav className="flex justify-between items-center gap-3">
+    <div className="bg-transparent fixed w-full z-20 py-7">
+      <nav className="container mx-auto px-4 flex justify-between items-center gap-3">
         <div className="hidden md:block">
           <Link href={"/"}>
             <div>
@@ -108,51 +107,46 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
             !isAuthRoute && (
               <>
                 {/* Wallet & Avatar Button */}
-                <button
+                {/* <button
                   className="flex items-center gap-3 bg-[#f4f6f7] px-4 py-2 rounded-xl border border-gray-300 shadow-md hover:shadow-lg transition-all"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  {/* Wallet Balance */}
                   <div className="rounded-lg bg-white border border-gray-200 px-4 py-2 text-lg font-semibold text-gray-700 min-w-[100px] text-center">
                     ₦20,000
                   </div>
 
-                  {/* Avatar */}
                   <Avatar className="w-10 h-10">
                     <AvatarImage src="/assets/default-av.jpg" />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
 
-                  {/* Dropdown Arrow (Only on Mobile) */}
                   <CaretDown
                     size={20}
                     className="text-gray-500 block md:hidden"
                   />
-                </button>
+                </button> */}
 
-                {isDropdownOpen && (
-                  <div className="absolute right-0 top-12 mt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 p-2 md:hidden">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-md">
-                          <BellSimple size={22} className="text-gray-400" />
-                          <span className="text-gray-700">Notifications</span>
-                        </TooltipTrigger>
-                        <TooltipContent>Notification</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                <div className="absolute right-0 top-12 mt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 p-2 md:hidden">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-md">
+                        <BellSimple size={22} className="text-gray-400" />
+                        <span className="text-gray-700">Notifications</span>
+                      </TooltipTrigger>
+                      <TooltipContent>Notification</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-md">
-                          <Headset size={22} className="text-gray-400" />
-                          <span className="text-gray-700">Support</span>
-                        </TooltipTrigger>
-                        <TooltipContent>Support</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                )}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 rounded-md">
+                        <Headset size={22} className="text-gray-400" />
+                        <span className="text-gray-700">Support</span>
+                      </TooltipTrigger>
+                      <TooltipContent>Support</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <div className="hidden md:flex items-center gap-4">
                   <TooltipProvider>
                     <Tooltip>
@@ -177,14 +171,10 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <Button
-                  variant="primary"
-                  size="md"
-                  width="full"
-                  onClick={logout}
-                >
-                  Logout
-                </Button>
+                <UserPopover
+                  gamerName="Nefario"
+                  email="thenerfsenpai@gmail.com"
+                />
               </>
             )
           )}
