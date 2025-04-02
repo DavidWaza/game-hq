@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -47,12 +47,12 @@ const CustomCarousel = () => {
   };
 
   // Function to go to the next slide
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     if (isAnimating) return;
     setIsAnimating(true);
     setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides);
     setTimeout(() => setIsAnimating(false), 600);
-  };
+  }, [isAnimating, totalSlides]);
 
   // Auto-slide timer
   useEffect(() => {
@@ -64,7 +64,7 @@ const CustomCarousel = () => {
         clearInterval(autoplayRef.current);
       }
     };
-  }, [currentIndex, isAnimating]);
+  }, [nextSlide]);
 
   // Pause autoplay when user interacts
   const pauseAutoplay = () => {

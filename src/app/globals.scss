@@ -1,0 +1,323 @@
+@use "../styles/variables" as *;
+@use "sass:color";
+
+// Variables
+$primary-color: #233d4d;
+$secondary-color: #f37f2d;
+$text-light: #fcf8db;
+$text-dark: #1a1a1a;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin hover-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+// Reset & Base Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.sheen {
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  &:after {
+    background: #fff;
+    content: "";
+    height: 300%;
+    left: -75px;
+    opacity: 0.2;
+    position: absolute;
+    transform: rotate(35deg);
+    transition: all 1500ms cubic-bezier(0.25, 1, 0.3, 1);
+    width: 50px;
+    z-index: -10;
+  }
+
+  &:is(:hover, _active) {
+    background-color: $secondary-color;
+    transform: translateY(-2px);
+    color: #fff !important;
+    box-shadow: 0 2px 4px -1px #0000000f, 0 4px 6px -1px #0000001a;
+    &:after {
+      left: 109%;
+    }
+  }
+}
+
+// Utility Classes
+.card-one {
+  @include hover-transition;
+  background-color: $primary-color;
+  color: $text-light;
+  border: 2px solid $secondary-color;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+
+  &:hover {
+    background-color: $secondary-color;
+    transform: translateY(-2px);
+  }
+}
+
+.flex-center {
+  @include flex-center;
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+// Responsive Breakpoints
+$breakpoints: (
+  "sm": 640px,
+  "md": 768px,
+  "lg": 1024px,
+  "xl": 1280px,
+  "2xl": 1536px,
+);
+
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (min-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  }
+}
+
+body {
+  *:not(i, svg, img) {
+    // white-space: normal !important;
+    box-sizing: border-box;
+    word-wrap: break-word;
+  }
+  .addTransition {
+    &,
+    * {
+      transition: all 0.3s ease-in-out;
+    }
+  }
+  .gridBox-cards {
+    display: grid;
+    grid-gap: 0;
+    width: 100%;
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(calc(292px - 0px), 1fr)
+    ); // 0px for half the gap
+    & > * {
+      min-height: 145px;
+    }
+    &.largeCard {
+      grid-template-columns: repeat(auto-fit, minmax(calc(368px - 0px), 1fr));
+      & > .cardWrapper {
+        animation: none !important;
+        padding: 45px 71px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        & > div {
+          width: 100%;
+        }
+        .imageWrapper {
+          margin-bottom: 40px;
+        }
+        .numberItem {
+          font-size: 54px;
+        }
+        // &:nth-child(1),
+        // &:nth-child(2) {
+        // border-bottom: none;
+        // }
+      }
+    }
+  }
+  .scrollColorShowOnHover {
+    &::-webkit-scrollbar-thumb {
+      background: transparent;
+    }
+    &:hover {
+      &::-webkit-scrollbar-thumb {
+        background: #08a969;
+      }
+    }
+  }
+  .mainWrapperContainer {
+    background: white;
+    height: calc(100dvh - 20px);
+    width: calc(100% - 10px) !important;
+    padding-bottom: 20px;
+    border: 1px solid #e3e8ef;
+    margin: 10px 10px;
+    margin-left: 0;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .nowrapText {
+    white-space: nowrap !important;
+  }
+  .elipsis {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+  }
+  .flex_center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .align_auto {
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    & > * {
+      width: 100%;
+      flex: auto !important;
+    }
+  }
+  .justify_auto {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    & > *:not(button.absolute) {
+      height: 100%;
+      flex: auto !important;
+    }
+  }
+  .flex_between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .flex-auto {
+    flex: auto;
+  }
+  .cardShadow {
+    box-shadow: 0 2px 4px -1px #0000000f, 0 4px 6px -1px #0000001a;
+  }
+  .comboBoxShadow {
+    box-shadow: 0 1px 2px 0px #0000000d;
+  }
+  // key frames and styles
+  .transIn {
+    animation: transIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  .transInLonger {
+    animation: transIn 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  .transLeft {
+    animation: transLeft 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  .transLeftLonger {
+    animation: transLeft 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  .transRight {
+    animation: transRight 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  .transRightLonger {
+    animation: transRight 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  .transZoom {
+    animation: transZoom 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  //   animation frames
+  @keyframes transIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes transLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes transRight {
+    from {
+      opacity: 0;
+      transform: translateX(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes transZoom {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+body,
+html {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
+  color: $text-dark;
+  // Custom Scrollbar
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: $secondary-color;
+    border-radius: 4px;
+
+    &:hover {
+      background: color.adjust($secondary-color, $lightness: -10%);
+    }
+  }
+}
