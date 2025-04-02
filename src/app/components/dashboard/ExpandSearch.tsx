@@ -1,4 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+"use client";
+
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Search, X } from "lucide-react";
 
 interface ExpandableSearchProps {
@@ -32,15 +34,18 @@ const ExpandableSearch: React.FC<ExpandableSearchProps> = ({
     }
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      expanded &&
-      searchContainerRef.current &&
-      !searchContainerRef.current.contains(event.target as Node)
-    ) {
-      setExpanded(false);
-    }
-  };
+  const handleClickOutside = useCallback(
+    (event: MouseEvent) => {
+      if (
+        expanded &&
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setExpanded(false);
+      }
+    },
+    [expanded]
+  );
 
   useEffect(() => {
     if (expanded) {
@@ -52,7 +57,7 @@ const ExpandableSearch: React.FC<ExpandableSearchProps> = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [expanded]);
+  }, [handleClickOutside, expanded]);
 
   return (
     <div
