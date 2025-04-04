@@ -171,7 +171,6 @@
   text-transform: uppercase;
   cursor: pointer;
   display: flex;
-  font-family: Inter, sans-serif;
   font-size: 16px;
   height: 48px;
   justify-content: center;
@@ -224,6 +223,60 @@
   }
 }
 
+.button-radius-full {
+  align-items: center;
+  background-color: #202216;
+  border: 2px solid #111;
+  border-radius: 100%;
+  box-sizing: border-box;
+  color: #fede9b;
+  cursor: pointer;
+  display: flex;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  width: 48px;
+  height: 48px;
+  justify-content: center;
+  line-height: 24px;
+  max-width: 100%;
+  padding: 0, 35px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-radius-full:after {
+  background-color: #fff;
+  border-radius: 100%;
+  content: "";
+  display: block;
+  height: 48px;
+  width: 48px;
+  left: 0;
+  width: 100%;
+  position: absolute;
+  top: -2px;
+  transform: translate(8px, 1px);
+  transition: transform 0.2s ease-out;
+  z-index: -1;
+}
+
+.button-radius-full:hover:after {
+  transform: translate(0, 0);
+}
+
+.button-radius-full:active {
+  background-color: #ffdeda;
+  outline: 0;
+}
+
+.button-radius-full:hover {
+  outline: 0;
+}
+
 .fine-button-secondary {
   align-items: center;
   background-color: #202216;
@@ -233,7 +286,6 @@
   color: #fede9b;
   cursor: pointer;
   display: flex;
-  font-family: Inter, sans-serif;
   font-size: 16px;
   height: 48px;
   justify-content: center;

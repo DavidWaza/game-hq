@@ -30,7 +30,11 @@ const FormSchema = z.object({
   }),
 });
 
-export function CalendarForm() {
+interface CalendarFormProps {
+  onDateChange?: (date: Date) => void;  
+}
+export function CalendarForm({onDateChange}:CalendarFormProps) {
+  console.log(onDateChange)
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -50,7 +54,7 @@ export function CalendarForm() {
           name="dob"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel className="!text-left">Schedule a Date</FormLabel>
+              <FormLabel className="!text-left">Pick your day</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>

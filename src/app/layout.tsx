@@ -44,15 +44,19 @@ export default function RootLayout({
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <FullScreenLoader isLoading={isLoading} />
+          <AuthProvider>
+            <FullScreenLoader isLoading={isLoading} />
 
             {isDashboard ? (
-              <div className="">
+              <div className="bg-[#0B0E13]">
                 <div>{children}</div>
               </div>
             ) : (
               <div className="bg-[#fcf8db]">{children}</div>
             )}
 
+            <Toaster richColors position="top-right" />
+          </AuthProvider>
             <Toaster richColors position="top-right" />
           </AuthProvider>
         </QueryClientProvider>

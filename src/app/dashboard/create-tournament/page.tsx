@@ -1,7 +1,7 @@
 "use client";
-import Navbar from "@/components/Navbar";
 import React, { useState, useEffect, useRef } from "react";
 import CreateWagerT from "../../components/dashboard/CreateWagerT";
+import Navbar from "@/components/Navbar";
 
 interface Video {
   id: number;
@@ -9,9 +9,18 @@ interface Video {
 }
 
 const videoTrailers: Video[] = [
-  { id: 1, src: "/assets/fc25-vids.mp4" },
-  { id: 2, src: "/assets/mk-trailer.mp4" },
-  { id: 3, src: "/assets/cod-trailer.mp4" },
+  {
+    id: 1,
+    src: "https://res.cloudinary.com/dgbl43ljm/video/upload/v1743527339/fc25-trailer_eicr53.mp4",
+  },
+  {
+    id: 2,
+    src: "https://res.cloudinary.com/dgbl43ljm/video/upload/v1743527423/mk-trailer-1_zutqhs.mp4",
+  },
+  {
+    id: 3,
+    src: "https://res.cloudinary.com/dgbl43ljm/video/upload/v1743527437/cod-trailer-1_jfempg.mp4",
+  },
 ];
 
 const CreateTournament = () => {
@@ -25,6 +34,7 @@ const CreateTournament = () => {
     );
   };
 
+
   useEffect(() => {
     const videoElement = videoRef.current;
 
@@ -32,6 +42,7 @@ const CreateTournament = () => {
       videoElement
         .play()
         .catch((err) => console.warn("Auto-play blocked:", err));
+     
     }
 
     return () => {
@@ -42,31 +53,30 @@ const CreateTournament = () => {
   }, [currentVideoIndex]);
 
   return (
-    <>
+    <div className="create-wager-banner relative">
+      {/* Video Background (Plays One After Another) */}
+      <video
+        ref={videoRef}
+        key={videoTrailers[currentVideoIndex].id}
+        className="absolute inset-0 w-full h-full object-cover"
+        src={videoTrailers[currentVideoIndex].src}
+        autoPlay
+        muted
+        playsInline
+        onEnded={handleVideoEnd}
+      ></video>
+
+      <div className="absolute inset-0 bg-white bg-opacity-0"></div>
+
+      {/* Navbar */}
       <Navbar variant="primary" />
-      <div className="create-wager-banner relative">
-        {/* Video Background (Plays One After Another) */}
-        <video
-          ref={videoRef}
-          key={videoTrailers[currentVideoIndex].id}
-          className="absolute inset-0 w-full h-full object-cover"
-          src={videoTrailers[currentVideoIndex].src}
-          autoPlay
-          muted
-          playsInline
-          onEnded={handleVideoEnd}
-        ></video>
-
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-80"></div>
-
-        {/* Content Goes Here */}
-        <div className="relative z-10 flex justify-center text-white p-10">
-          <CreateWagerT />
-        </div>
+      {/* Content Goes Here */}
+      <div className="relative z-10 flex items-center justify-center text-white">
+        <CreateWagerT />
       </div>
-    </>
+    </div>
   );
 };
+
 
 export default CreateTournament;
