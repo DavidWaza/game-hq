@@ -56,7 +56,9 @@ const Carousel = () => {
             setIsOpen={setIsOpen}
             firstButtonText="Create Tournament"
             secondButtonText="Create One-on-One"
-            onClick={() => (window.location.href = "/dashboard/create-tournament")}
+            onClick={() =>
+              (window.location.href = "/dashboard/create-tournament")
+            }
             onTab={() => (window.location.href = "/dashboard/create-one-v-one")}
           />
 
@@ -81,7 +83,9 @@ const Carousel = () => {
             setIsOpen={setIsOpenInvite}
             firstButtonText="Join Tournament"
             secondButtonText="Join One-on-One"
-            onClick={() => (window.location.href = "/dashboard/join-tournament")}
+            onClick={() =>
+              (window.location.href = "/dashboard/join-tournament")
+            }
           />
 
           {/* My History */}
