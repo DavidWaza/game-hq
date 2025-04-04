@@ -40,8 +40,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>{/* Add metadata, title, and links here */}</head>
-      <body className={`${inter.className} antialiased `}>
+      <body className={`${inter.className} antialiased bg-[#0B0E13]`}>
         <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <FullScreenLoader isLoading={isLoading} />
           <AuthProvider>
             <FullScreenLoader isLoading={isLoading} />
 
@@ -53,6 +55,8 @@ export default function RootLayout({
               <div className="bg-[#fcf8db]">{children}</div>
             )}
 
+            <Toaster richColors position="top-right" />
+          </AuthProvider>
             <Toaster richColors position="top-right" />
           </AuthProvider>
         </QueryClientProvider>

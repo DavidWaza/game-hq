@@ -34,6 +34,7 @@ const CreateTournament = () => {
     );
   };
 
+
   useEffect(() => {
     const videoElement = videoRef.current;
 
@@ -41,9 +42,7 @@ const CreateTournament = () => {
       videoElement
         .play()
         .catch((err) => console.warn("Auto-play blocked:", err));
-      videoElement
-        .play()
-        .catch((err) => console.warn("Auto-play blocked:", err));
+     
     }
 
     return () => {
@@ -78,5 +77,6 @@ const CreateTournament = () => {
     </div>
   );
 };
+
 
 export default CreateTournament;

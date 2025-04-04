@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 // import { Slot } from "@radix-ui/react-slot";
+// import { Slot } from "@radix-ui/react-slot";
 
 interface ButtonProps {
   variant?: "primary" | "secondary";
@@ -12,6 +13,7 @@ interface ButtonProps {
   disabled?: boolean;
   asChild?: boolean;
   className?: string;
+
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -24,6 +26,7 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   className,
   asChild = false,
+  
 }) => {
   // Define variant styles
   const variantClasses = {
@@ -47,6 +50,8 @@ const Button: React.FC<ButtonProps> = ({
 
   const Comp = asChild ? "div" : "button";
 
+
+
   return (
     <Comp
       onClick={onClick}
@@ -54,6 +59,7 @@ const Button: React.FC<ButtonProps> = ({
       type={asChild ? undefined : "submit"}
       className={classes}
     >
+      {icon && <span className="min-w-max">{icon}</span>}
       {icon && <span className="min-w-max">{icon}</span>}
       {children}
     </Comp>
