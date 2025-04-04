@@ -70,7 +70,7 @@ const Login: React.FC = () => {
               </h1>
             </div>
             <div className="col-span-2 relative">
-              <div className="absolute top-0 left-0 w-full h-full">
+              <div className="absolute top-0 left-0 w-1/2 h-full">
                 <div className="px-10 space-y-5 border rounded-lg rounded-t-none py-3 glass">
                   <div className="text-center flex flex-col space-y-2 py-4">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
