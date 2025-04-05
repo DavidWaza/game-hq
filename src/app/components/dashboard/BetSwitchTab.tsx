@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 const BetSwitchTab = () => {
-  const [isPrivate, setIsPrivate] = useState(false); // Toggle between public and private
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [isPublic, setIsPublic] = useState(true);
   const [betDetails, setBetDetails] = useState({
     description: "",
     amount: "",
@@ -16,9 +17,6 @@ const BetSwitchTab = () => {
   const router = useRouter();
 
   // Handle tab toggle (public/private)
-  const handleTabToggle = () => {
-    setIsPrivate((prev) => !prev);
-  };
 
   // Handle input changes (bet details)
   const handleInputChange = (
@@ -61,7 +59,8 @@ const BetSwitchTab = () => {
       {/* Switch Button: Public/Private Bet */}
       <div className="flex justify-center items-center space-x-4">
         <button
-          onClick={handleTabToggle}
+          onClick={() => (setIsPublic(true), setIsPrivate(false))}
+          disabled={isPublic}
           className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 ${
             !isPrivate
               ? "bg-[#202216] text-[#F0DE9B]"
@@ -71,7 +70,8 @@ const BetSwitchTab = () => {
           Public Bet
         </button>
         <button
-          onClick={handleTabToggle}
+          onClick={() => (setIsPrivate(true), setIsPublic(false))}
+          disabled={isPrivate}
           className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 ${
             isPrivate ? "bg-[#202216] text-[#F0DE9B]" : "bg-gray-600 text-white"
           }`}
