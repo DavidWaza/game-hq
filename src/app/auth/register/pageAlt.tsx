@@ -11,7 +11,7 @@ import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import Button from "../../components/Button";
 import Navbar from "@/components/Navbar";
-import MobileRegister from "@/app/components/MobileRegister";
+import MobileRegister from "@/app/components/MobileRegisterAlt";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -52,10 +52,8 @@ const RegisterUser: React.FC = () => {
 
   const password = watch("password", "");
   const confirmPassword = watch("confirm_password", "");
-
   const [isVisible, setIsVisible] = useState(false);
   const [confirmIsVisible, setConfirmIsVisible] = useState(false);
-
   const [strength, setStrength] = useState(0);
 
   const switchRegistrationType = () => {
@@ -130,18 +128,16 @@ const RegisterUser: React.FC = () => {
   ];
 
   return (
-    <div>
-      <Navbar variant="secondary" />
-      <div className="lg:p-24 h-screen  relative md:block hidden">
-        <div className="card-two max-w-[1300px] bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center md:h-full lg:h-[40rem]">
-          <div className="grid lg:grid-cols-3">
-            <div className="col-span-1">
-              <h1 className="text-[#fcf8db] text-6xl py-32 px-2">
-                Start your Journey...
-              </h1>
+    <>
+      <div className="lg:p-24 h-screen relative md:flex hidden justify-center items-center">
+        <Navbar variant="secondary" />
+        <div className="card-two max-w-[1300px] bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center w-full overflow-hidden">
+          <div className="flex justify-center items-center">
+            <div className="transLeftLonger absolute left-4 top-32 max-w-[400px]">
+              <h1 className="text-[#fcf8db] text-6xl">Start your Journey...</h1>
             </div>
-            <div className="col-span-2">
-              <div className="absolute">
+            <div className="relative z-10">
+              <div className="max-w-max">
                 <div className="pt-0 px-0">
                   <div className="px-10 space-y-5 border rounded-lg rounded-t-none py-3 glass">
                     <div className="text-center flex flex-col space-y-2 py-4">
@@ -334,21 +330,20 @@ const RegisterUser: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <Image
-                src={"/assets/register-duty.png"}
-                alt=""
-                width={0}
-                height={0}
-                sizes="100vw"
-                className="md:w-full lg:w-2/3 mr-0 ml-auto h-auto object-contain object-center"
-              />
             </div>
+            <Image
+              src={"/assets/register-duty.png"}
+              alt=""
+              width={0}
+              height={0}
+              className="transRightLonger w-full max-w-[500px] absolute right-2 -bottom-6 h-full object-contain object-center"
+            />
           </div>
         </div>
       </div>
       {/* MOBILE VIEW */}
       <MobileRegister />
-    </div>
+    </>
   );
 };
 
