@@ -35,8 +35,7 @@ const Login: React.FC = () => {
       password: string;
       username: string;
     }) => postFn("api/auth/login", userData),
-    onSuccess: (data) => {
-      toast.success("Login Successful", data);
+    onSuccess: () => {
       setTimeout(() => {
         window.location.href = "/dashboard";
       }, 3000);

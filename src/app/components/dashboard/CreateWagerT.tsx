@@ -255,7 +255,7 @@ const CreateTournament: React.FC = () => {
             className="text-white text-center pt-5 flex items-center justify-center gap-3 hover:animate-bounce cursor-pointer"
           >
             <CaretDoubleLeft size={25} />
-            Return Back
+            Back
           </div>
         </form>
       </div>

@@ -45,6 +45,7 @@ const RegisterUser: React.FC = () => {
   } = useForm<{
     email: string;
     password: string;
+    username: string;
     phone: number;
     confirm_password: string;
   }>();
@@ -92,10 +93,10 @@ const RegisterUser: React.FC = () => {
     mutationFn: (userData: {
       email?: string;
       phone?: number;
+      username?: string;
       password: string;
     }) => postFn("api/auth/register", userData),
-    onSuccess: (data) => {
-      toast.success("Registration successful", data);
+    onSuccess: () => {
       setTimeout(() => {
         window.location.href = "/auth/login";
       }, 3000);
@@ -152,13 +153,24 @@ const RegisterUser: React.FC = () => {
                           <>
                             <div className="grid w-full items-center gap-1.5 !text-left">
                               <Label htmlFor="email" className="text-[#fcf8db]">
-                                Username
+                               Email Address
                               </Label>
                               <Input
                                 type="email"
                                 id="email"
                                 {...register("email")}
                                 placeholder="Ex. davidwaza@gmail.com"
+                              />
+                            </div>
+                            <div className="grid w-full items-center gap-1.5 !text-left">
+                              <Label htmlFor="email" className="text-[#fcf8db]">
+                               Username
+                              </Label>
+                              <Input
+                                type="text"
+                                id="username"
+                                {...register("username")}
+                                placeholder="david waza"
                               />
                             </div>
                           </>

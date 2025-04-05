@@ -64,7 +64,7 @@ const Wallet = () => {
           <div className="text-[#fcf8db] flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
             <div>
               <p className="text-xs sm:text-sm text-[#f37f2d] font-medium">
-                Coin Purse
+                David Waza
               </p>
               <p className="text-sm sm:text-base md:text-lg flex items-center gap-1">
                 <span className="text-[#f37f2d]">✧</span>

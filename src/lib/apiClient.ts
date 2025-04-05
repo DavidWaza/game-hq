@@ -13,7 +13,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -103,8 +103,8 @@ export const postFn = async (url: string, data: Record<string, unknown>) => {
 // Function to Store Token After Login
 export const storeToken = async (token: string) => {
   try {
-    // Store in localStorage
-    localStorage.setItem("token", token);
+    // Store in sessionStorage
+    sessionStorage.setItem("token", token);
 
     // Store in HTTP-only cookie
     const response = await fetch("/api/auth/set-token", {
@@ -120,16 +120,16 @@ export const storeToken = async (token: string) => {
     }
   } catch (error) {
     console.error("Failed to store token:", error);
-    // Clean up localStorage if cookie storage fails
-    localStorage.removeItem("token");
+    // Clean up sessionStorage if cookie storage fails
+    sessionStorage.removeItem("token");
   }
 };
 
 // Function to Remove Token on Logout
 export const logout = async () => {
   try {
-    // Remove from localStorage
-    localStorage.removeItem("token");
+    // Remove from sessionStorage
+    sessionStorage.removeItem("token");
 
     // Remove HTTP-only cookie
     const response = await fetch("/api/auth/remove-token", {
