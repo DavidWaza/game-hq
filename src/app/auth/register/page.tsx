@@ -98,7 +98,7 @@ const RegisterUser: React.FC = () => {
     }) => postFn("api/auth/register", userData),
     onSuccess: () => {
       setTimeout(() => {
-        window.location.href = "/auth/login";
+        window.location.href = "/dashboard/splash-avatar";
       }, 3000);
     },
     onError: (error) => {
@@ -170,7 +170,7 @@ const RegisterUser: React.FC = () => {
                                 type="text"
                                 id="username"
                                 {...register("username")}
-                                placeholder="david waza"
+                                placeholder="david"
                               />
                             </div>
                           </>

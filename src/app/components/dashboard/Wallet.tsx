@@ -54,7 +54,7 @@ const Wallet = () => {
             <Image
               width={0}
               height={0}
-              src="/assets/mk-av.png"
+              src="/assets/mk-av.svg"
               alt="Player Avatar"
               className="w-full h-full object-cover"
             />
