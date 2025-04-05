@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
-import { Gear } from "@phosphor-icons/react";
+import { CurrencyNgn, Gear, Power } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,7 +41,7 @@ const SettingsMenu = () => {
       items: [
         { label: "Profile Settings", href: "/account/profile", icon: "👤" },
         { label: "Privacy", href: "/account/privacy", icon: "🔒" },
-        { label: "Subscription", href: "/account/subscription", icon: "💰" },
+        { label: "Wallet", href: "/account/subscription", icon: "💰" },
       ],
     },
 
@@ -96,7 +96,19 @@ const SettingsMenu = () => {
                           className="group px-4 py-2 flex items-center hover:bg-[#f37f2d] transition-all duration-200 cursor-pointer"
                           onClick={item.label === "Logout" ? logout : undefined}
                         >
-                          <span className="mr-3 text-lg">{item.icon}</span>
+                          {item.label === "Wallet" ? (
+                            <CurrencyNgn
+                              size={25}
+                              weight="duotone"
+                              color="#f37f2d"
+                              className="mr-3"
+                            />
+                          ) : item.label === "Logout" ? (
+                            <Power size={25} className="mr-3" color="red" />
+                          ) : (
+                            <span className="mr-3 text-lg">{item.icon}</span>
+                          )}
+
                           <span className="text-[#fcf8db] group-hover:translate-x-1 transition-transform duration-200">
                             {item.label}
                           </span>

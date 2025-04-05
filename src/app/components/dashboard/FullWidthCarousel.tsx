@@ -7,7 +7,11 @@ import Image from "next/image";
 import Link from "next/link";
 import "swiper/css";
 import "swiper/css/effect-fade";
-import { EnvelopeSimple, GameController, Trophy } from "@phosphor-icons/react";
+import {
+  GameController,
+  Intersect,
+  Trophy,
+} from "@phosphor-icons/react";
 import { useState } from "react";
 import Modal from "./Modal";
 
@@ -50,7 +54,6 @@ const Carousel = () => {
               </p>
             </div>
           </button>
-
           <Modal
             isOpen={isOpen}
             setIsOpen={setIsOpen}
@@ -68,12 +71,14 @@ const Carousel = () => {
             className="w-full bg-[#233d4d] text-[#f37f2d] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center gap-2">
-              <EnvelopeSimple
+              <Intersect
                 size={24}
-                className="text-[#f37f2d] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out"
+                weight="duotone"
+                className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
               />
+
               <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                My Invitations
+                Join Wager
               </p>
             </div>
           </button>
