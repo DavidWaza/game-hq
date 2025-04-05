@@ -39,7 +39,7 @@ const SettingsMenu = () => {
     {
       category: "Account",
       items: [
-        { label: "Profile Settings", href: "/account/profile", icon: "👤" },
+        { label: "Profile Settings", href: "/dashboard/settings", icon: "👤" },
         { label: "Privacy", href: "/account/privacy", icon: "🔒" },
         { label: "Wallet", href: "/account/subscription", icon: "💰" },
       ],
@@ -84,10 +84,14 @@ const SettingsMenu = () => {
             className="absolute right-0 mt-2 w-64 rounded-md shadow-lg z-50"
           >
             <div className="bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] rounded-md border-2 border-[#fcf8db] overflow-hidden">
-              <div className="py-1">
+              <div className="pb-1">
                 {settingsCategories.map((category, catIndex) => (
                   <div key={catIndex} className="mb-2">
-                    <div className="px-4 py-2 bg-[#101820] text-[#f37f2d] font-bold border-t border-b border-[#fcf8db] text-sm uppercase tracking-wider">
+                    <div
+                      className={`px-4 py-2 bg-[#101820] text-[#f37f2d] font-bold border-t border-b border-[#fcf8db] text-sm uppercase tracking-wider ${
+                        !catIndex && "border-t-0"
+                      }`}
+                    >
                       {category.category}
                     </div>
                     {category.items.map((item, itemIndex) => (

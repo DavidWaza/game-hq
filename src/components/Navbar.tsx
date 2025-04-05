@@ -47,7 +47,9 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   return (
     <div
       className={`fixed w-full z-50 py-7 transition-all duration-300 ${
-        isScrolled ? "bg-[#0B0E13] shadow-md" : "bg-transparent"
+        isScrolled
+          ? "bg-[#0B0E13]/80 backdrop-blur-md shadow-md"
+          : "bg-transparent"
       }`}
     >
       <nav className="flex justify-between items-center gap-3 px-4 mx-auto container">

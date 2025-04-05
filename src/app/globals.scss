@@ -29,6 +29,7 @@ $text-dark: #1a1a1a;
   overflow: hidden;
   position: relative;
   isolation: isolate;
+  transition: all 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
   &:after {
     background: #fff;
     content: "";
@@ -42,13 +43,13 @@ $text-dark: #1a1a1a;
     z-index: -10;
   }
 
-  &:is(:hover, _active) {
+  &:is(:hover, .active) {
     background-color: $secondary-color;
     transform: translateY(-2px);
     color: #fff !important;
     box-shadow: 0 2px 4px -1px #0000000f, 0 4px 6px -1px #0000001a;
     &:after {
-      left: 109%;
+      left: 120%;
     }
   }
 }
@@ -299,7 +300,7 @@ html {
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background-color: #0b0e13;
   color: $text-dark;
   // Custom Scrollbar
   ::-webkit-scrollbar {
