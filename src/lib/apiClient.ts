@@ -2,7 +2,7 @@
 import axios from "axios";
 import { toast } from "sonner";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_SERVICE_BASE_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_SERVICE_BASE_URL 
 
 // Create Axios Instance
 const api = axios.create({
@@ -20,9 +20,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response Interceptor: Handle Token Expiration
@@ -47,9 +45,25 @@ export const getFn = async (url: string) => {
       position: "top-right",
       className: "p-4",
     });
+    throw error;
   }
 };
 
+// Post Function
+export const postFn = async <T>(url: string, data: T) => {
+  try {
+    const response = await api.post(url, data);
+    return response.data;
+  } catch (error) {
+    toast.error(processErrorResponse(error), {
+      position: "top-right",
+      className: "p-4",
+    });
+    throw error;
+  }
+};
+
+// Error Processing Function
 interface ApiError {
   response?: {
     data?: {
@@ -57,47 +71,30 @@ interface ApiError {
       title?: string;
       [key: string]: string | undefined;
     };
-    message?: string;
+    status?: number;
   };
   message?: string;
-  status?: number;
 }
 
 const processErrorResponse = (error: unknown): string => {
   const apiError = error as ApiError;
-  let message = "";
-  if (apiError?.response?.data?.message) {
+  let message = "An error occurred";
+  
+  if (apiError.response?.data?.message) {
     message = apiError.response.data.message;
-  } else if (apiError?.response?.data?.title) {
+  } else if (apiError.response?.data?.title) {
     message = apiError.response.data.title;
-  } else if (apiError?.response?.message) {
-    message = apiError.response.message;
-  } else if (apiError?.response?.data) {
+  } else if (apiError.response?.data) {
     message = JSON.stringify(apiError.response.data);
-  } else if (apiError?.message) {
+  } else if (apiError.message) {
     message = apiError.message;
-  } else message = "An error occurred";
-  if (apiError.status === 401) {
-    message = "Unauthenticated!";
   }
+  
+  if (apiError.response?.status === 401) {
+    message = "Unauthenticated! Please log in again.";
+  }
+  
   return message;
-};
-
-// Post Function
-export const postFn = async (url: string, data: Record<string, unknown>) => {
-  try {
-    const response = await api.post(url, data);
-    const token = response?.data?.token;
-    if (token) {
-      await storeToken(token);
-    }
-    return response?.data;
-  } catch (error) {
-    toast.error(processErrorResponse(error), {
-      position: "top-right",
-      className: "p-4",
-    });
-  }
 };
 
 // Function to Store Token After Login
@@ -106,7 +103,7 @@ export const storeToken = async (token: string) => {
     // Store in sessionStorage
     sessionStorage.setItem("token", token);
 
-    // Store in HTTP-only cookie
+    // Store in HTTP-only cookie (optional, requires backend endpoint)
     const response = await fetch("/api/auth/set-token", {
       method: "POST",
       headers: {
@@ -120,8 +117,8 @@ export const storeToken = async (token: string) => {
     }
   } catch (error) {
     console.error("Failed to store token:", error);
-    // Clean up sessionStorage if cookie storage fails
     sessionStorage.removeItem("token");
+    throw error;
   }
 };
 
@@ -131,7 +128,7 @@ export const logout = async () => {
     // Remove from sessionStorage
     sessionStorage.removeItem("token");
 
-    // Remove HTTP-only cookie
+    // Remove HTTP-only cookie (optional, requires backend endpoint)
     const response = await fetch("/api/auth/remove-token", {
       method: "POST",
     });
@@ -139,9 +136,6 @@ export const logout = async () => {
     if (!response.ok) {
       throw new Error("Failed to remove token cookie");
     }
-
-    // Redirect to login page
-    window.location.href = "/auth/login";
   } catch (error) {
     console.error("Failed to logout:", error);
     toast.error(processErrorResponse(error), {

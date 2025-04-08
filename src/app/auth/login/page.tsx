@@ -14,42 +14,45 @@ import Navbar from "@/components/Navbar";
 import MobileLogin from "@/app/components/MobileLogin";
 import { useRouter } from "next/navigation";
 
+interface LoginFormData {
+  username: string;
+  password: string;
+}
+
 const Login: React.FC = () => {
-  const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
 
-  const { register, handleSubmit } = useForm<{
-    // email: string;
-    password: string;
-    username: string;
-  }>();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  };
-
-  const loginMutation = useMutation({
-    mutationFn: (userData: {
-      // email: string;
-      password: string;
-      username: string;
-    }) => postFn("api/auth/login", userData),
-    onSuccess: () => {
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 3000);
-    },
-    onError: (error) => {
-      toast.error(`Login Failed ${error.message}`);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    mode: "onChange",
+    defaultValues: {
+      username: "",
+      password: "",
     },
   });
 
-  const onSubmit: SubmitHandler<{
-    // email: string;
-    password: string;
-    username: string;
-  }> = (formData) => {
+  const loginMutation = useMutation({
+    mutationFn: (userData: LoginFormData) => postFn("api/auth/login", userData),
+    onSuccess: () => {
+      toast.success("Login successful", {
+        position: "top-right",
+        className: "p-4",
+      });
+      router.push("/dashboard");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Login failed", {
+        position: "top-right",
+        className: "p-4",
+      });
+    },
+  });
+
+  const onSubmit: SubmitHandler<LoginFormData> = (formData) => {
     loginMutation.mutate(formData);
   };
 
@@ -74,15 +77,21 @@ const Login: React.FC = () => {
                   <div className="text-center flex flex-col space-y-2 py-4">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                       <div className="grid w-full items-center gap-1.5 !text-left">
-                        <Label htmlFor="email" className="text-[#fcf8db]">
+                        <Label htmlFor="username" className="text-[#fcf8db]">
                           Username
                         </Label>
                         <Input
-                          type="email"
-                          id="email"
-                          {...register("username")}
-                          placeholder="Ex. davidwaza@gmail.com"
+                          id="username"
+                          {...register("username", {
+                            required: "Username is required",
+                          })}
+                          placeholder="Ex. davidwaza"
                         />
+                        {errors.username && (
+                          <p className="text-red-500 text-sm">
+                            {errors.username.message}
+                          </p>
+                        )}
                       </div>
                       <div className="grid w-full items-center gap-1.5">
                         <Label htmlFor="password" className="text-[#fcf8db] !text-left">
@@ -90,7 +99,6 @@ const Login: React.FC = () => {
                         </Label>
                         <div className="relative">
                           <Input
-                            value={password}
                             type={isVisible ? "text" : "password"}
                             id="password"
                             placeholder="******"
@@ -101,7 +109,6 @@ const Login: React.FC = () => {
                                 message: "Password must be at least 8 characters",
                               },
                             })}
-                            onChange={handleChange}
                           />
                           <button
                             type="button"
@@ -115,6 +122,11 @@ const Login: React.FC = () => {
                             )}
                           </button>
                         </div>
+                        {errors.password && (
+                          <p className="text-red-500 text-sm">
+                            {errors.password.message}
+                          </p>
+                        )}
                         <p className="text-[#233d4d] text-sm !text-left">
                           <Link
                             href="/forgot-password"
@@ -124,7 +136,12 @@ const Login: React.FC = () => {
                           </Link>
                         </p>
                       </div>
-                      <Button variant="primary" size="sm" width="full">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        width="full"
+                        disabled={loginMutation.isPending}
+                      >
                         {loginMutation.isPending ? "Loading..." : "Login"}
                       </Button>
                     </form>
@@ -151,7 +168,7 @@ const Login: React.FC = () => {
                     </Button>
                   </div>
                   <p className="text-[#FD8038] text-center">
-                    don&apos;t have an account?{" "}
+                    Don’t have an account?{" "}
                     <span className="text-[#fcf8db]">
                       <Link href="/auth/register">Register</Link>
                     </span>

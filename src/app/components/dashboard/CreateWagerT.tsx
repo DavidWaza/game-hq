@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,180 +8,241 @@ import { CalendarForm } from "@/app/components/dashboard/Calendar";
 import Button from "@/app/components/Button";
 import Time from "@/app/components/dashboard/TimePicker";
 import { useRouter } from "next/navigation";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { getFn, postFn } from "@/lib/apiClient";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Define types for form data
+// Define types
 interface FormData {
-  betOn: string;
+  category_id: string;
+  bet_on: string;
   description: string;
-  wagerAmount: string;
-  participants: string;
-  date: Date | null;
-  time: string | null;
+  amount: string;
+  number_of_participants: number;
+  created_at: Date | null;
+  match_time: string;
+}
+
+interface GameCategory {
+  id: number;
+  name: string;
 }
 
 const CreateTournament: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [gameCategories, setGameCategories] = useState<GameCategory[]>([]);
   const router = useRouter();
 
-  // Form state with TypeScript type
-  const [formData, setFormData] = useState<FormData>({
-    betOn: "",
-    description: "",
-    wagerAmount: "",
-    participants: "",
-    date: null,
-    time: null,
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isLoading },
+    setValue,
+  } = useForm<FormData>({
+    mode: "onChange",
+    defaultValues: {
+      category_id: "",
+      bet_on: "",
+      description: "",
+      amount: "",
+      number_of_participants: 0,
+      created_at: null,
+      match_time: "",
+    },
   });
-
-  // Track if current step is valid
-  const [isCurrentStepValid, setIsCurrentStepValid] = useState<boolean>(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Validate current step whenever form data changes
   useEffect(() => {
-    if (currentStep === 1) {
-      setIsCurrentStepValid(
-        formData.betOn.trim() !== "" &&
-          formData.description.trim() !== "" &&
-          formData.wagerAmount.trim() !== ""
-      );
-    } else if (currentStep === 2) {
-      setIsCurrentStepValid(
-        formData.participants.trim() !== "" &&
-          formData.date !== null &&
-          formData.time !== null
-      );
+    const fetchGameCategories = async () => {
+      try {
+        const categories = await getFn("api/gamecategories");
+        console.log(categories, "categories");
+        if (Array.isArray(categories)) {
+          setGameCategories(categories);
+        } else if (categories?.records) {
+          setGameCategories(categories.records);
+        } else {
+          throw new Error("Invalid categories format");
+        }
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch game categories",
+          {
+            position: "top-right",
+            className: "p-4",
+          }
+        );
+      }
+    };
+
+    fetchGameCategories();
+  }, []);
+
+  const handleCategoryChange = (value: string) => {
+    setValue("category_id", value, { shouldValidate: true });
+  };
+
+  const handleDateChange = (created_at: Date): void => {
+    setValue("created_at", created_at, { shouldValidate: true });
+  };
+
+  const handleTimeChange = (match_time: string): void => {
+    setValue("match_time", match_time, { shouldValidate: true });
+  };
+
+  const handleNextStep = (): void => {
+    if (isValid && !isLoading) {
+      setCurrentStep((prevStep) => Math.min(prevStep + 1, 2));
     }
-  }, [formData, currentStep]);
+  };
+
+  const handlePrevStep = (): void => {
+    if (!isLoading) {
+      setCurrentStep((prevStep) => Math.max(prevStep - 1, 1));
+    }
+  };
+
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    try {
+      await postFn("api/tournamentstables/add", data);
+      toast.success("Tournament Created Successfully", {
+        position: "top-right",
+        className: "p-4",
+      });
+      router.push("/dashboard/join-tournament");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Please try again", {
+        position: "top-right",
+        className: "p-4",
+      });
+    }
+  };
 
   if (!isMounted) {
     return null;
   }
 
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ): void => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleDateChange = (date: Date): void => {
-    setFormData({
-      ...formData,
-      date,
-    });
-  };
-
-  const handleTimeChange = (time: string): void => {
-    setFormData({
-      ...formData,
-      time,
-    });
-  };
-
-  const handleNextStep = (e: FormEvent): void => {
-    e.preventDefault();
-    if (isCurrentStepValid) {
-      setCurrentStep((prevStep) => Math.min(prevStep + 1, 2));
-    }
-  };
-
-  const handlePrevStep = (e: FormEvent): void => {
-    e.preventDefault();
-    setCurrentStep((prevStep) => Math.max(prevStep - 1, 1));
-  };
-
-  const handleSubmit = (e: FormEvent): void => {
-    e.preventDefault();
-    // Process form submission
-    console.log("Form submitted:", formData);
-    // Add your submission logic here
-  };
-
   return (
-    <div className="">
-      <div className="relative bg-black text-white p-6 bg-opacity-90 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-full lg:w-[500px] grid grid-cols-1 gap-4 top-10">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="relative bg-black text-white p-6 bg-opacity-90 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-[500px] max-w-[500px] grid grid-cols-1 gap-4">
         <div className="flex justify-between items-center p-5 border-none">
           <div className="justify-end">
             <p className="text-[#fcf8db] font-bold opacity-20">
-              {currentStep === 1 ? "1/2" : currentStep === 2 ? "2/2" : ""}
+              {currentStep}/2
             </p>
           </div>
         </div>
-        <form className="grid gap-4 py-5 p-5 shadow-lg" onSubmit={handleSubmit}>
+        <form
+          className="grid gap-4 py-5 p-5 shadow-lg"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           {currentStep === 1 && (
             <>
-              <div className="space-y-1 items-center gap-4">
-                <Label htmlFor="betOn" className="text-right">
-                  Bet on
-                </Label>
-                <Input
-                  type="text"
-                  id="betOn"
-                  name="betOn"
-                  placeholder="ex. Fifa"
-                  className="!text-white"
-                  value={formData.betOn}
-                  onChange={handleInputChange}
-                />
+              <div className="space-y-1">
+                <Label>Game Category</Label>
+                <Select
+                  onValueChange={handleCategoryChange}
+                  {...register("category_id", {
+                    required: "Game category is required",
+                  })}
+                >
+                  <SelectTrigger className="w-full text-white">
+                    <SelectValue placeholder="Select game category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {gameCategories.map((category) => (
+                        <SelectItem
+                          key={category.id}
+                          value={category.id.toString()}
+                        >
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {errors.category_id && (
+                  <p className="text-red-500 text-sm">
+                    {errors.category_id.message}
+                  </p>
+                )}
               </div>
 
-              {/* Cat */}
-              <div className="space-y-1 items-center gap-4">
-                <Label htmlFor="betOn" className="text-right">
-                  Category
-                </Label>
+              <div className="space-y-1">
+                <Label htmlFor="bet_on">Bet On</Label>
                 <Input
-                  readOnly
-                  type="text"
-                  id="category"
-                  name="betOn"
+                  {...register("bet_on", {
+                    required: "Bet title is required",
+                  })}
+                  id="bet_on"
+                  placeholder="ex. Fifa 25"
                   className="!text-white"
+                  disabled={isValid}
                 />
+                {errors.bet_on && (
+                  <p className="text-red-500 text-sm">
+                    {errors.bet_on.message}
+                  </p>
+                )}
               </div>
+
               <div className="space-y-1 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Bet Description or Terms
-                </Label>
+                <Label htmlFor="description">Bet Description or Terms</Label>
                 <Textarea
+                  {...register("description", {
+                    required: "Description is required",
+                  })}
                   id="description"
-                  name="description"
                   placeholder="Enter the terms and necessary information of this bet"
                   className="h-20"
-                  value={formData.description}
-                  onChange={handleInputChange}
+                  disabled={isLoading}
                 />
+                {errors.description && (
+                  <p className="text-red-500 text-sm">
+                    {errors.description.message}
+                  </p>
+                )}
               </div>
+
               <div className="space-y-1">
-                <Label htmlFor="wagerAmount" className="text-right">
-                  Wager Amount
-                </Label>
+                <Label htmlFor="amount">Wager Amount</Label>
                 <div className="relative w-32">
                   <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
                     <Money size={20} weight="duotone" />
                   </div>
                   <Input
-                    id="wagerAmount"
-                    name="wagerAmount"
-                    type="text"
+                    {...register("amount", {
+                      required: "Amount is required",
+                      pattern: {
+                        value: /^\d*\.?\d{0,2}$/,
+                        message: "Invalid amount format",
+                      },
+                    })}
+                    id="amount"
                     placeholder="0.00"
                     className="pl-9 w-full text-white"
-                    value={formData.wagerAmount}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      // Only allow numbers and decimal point
-                      const value = e.target.value;
-                      if (/^(\d*\.?\d{0,2})?$/.test(value)) {
-                        handleInputChange(e);
-                      }
-                    }}
+                    disabled={isLoading}
                   />
+                  {errors.amount && (
+                    <p className="text-red-500 text-sm">
+                      {errors.amount.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </>
@@ -189,70 +250,91 @@ const CreateTournament: React.FC = () => {
           {currentStep === 2 && (
             <>
               <div>
-                <Label htmlFor="participants">Add Number of Participant</Label>
+                <Label htmlFor="number_of_participants">
+                  Number of Participants
+                </Label>
                 <Input
-                  type="text"
-                  id="participants"
-                  name="participants"
+                  {...register("number_of_participants", {
+                    required: "Number of participants is required",
+                    min: { value: 1, message: "Must be at least 1" },
+                  })}
+                  type="number"
+                  id="number_of_participants"
                   placeholder="ex. 20"
                   className="!text-white"
-                  value={formData.participants}
-                  onChange={handleInputChange}
+                  disabled={isLoading}
                 />
+                {errors.number_of_participants && (
+                  <p className="text-red-500 text-sm">
+                    {errors.number_of_participants.message}
+                  </p>
+                )}
               </div>
               <div>
-                <CalendarForm onDateChange={handleDateChange} />
+                <CalendarForm
+                  onDateChange={handleDateChange}
+                  {...register("created_at", {
+                    required: "Date is required",
+                  })}
+                />
+                {errors.created_at && (
+                  <p className="text-red-500 text-sm">
+                    {errors.created_at.message}
+                  </p>
+                )}
               </div>
               <div>
-                <Time onTimeChange={handleTimeChange} />
+                <Time
+                  onTimeChange={handleTimeChange}
+                  {...register("match_time", {
+                    required: "Match time is required",
+                  })}
+                />
+                {errors.match_time && (
+                  <p className="text-red-500 text-sm">
+                    {errors.match_time.message}
+                  </p>
+                )}
               </div>
             </>
           )}
-          {currentStep === 2 ? (
-            <div className="my-5 flex justify-between items-center gap-10 mt-5">
-              <button
-                className="p-3 border border-[] w-full rounded-xl hover:bg-[#f4f6f7] hover:text-[#202216] transition-all ease-in-out duration-500"
-                onClick={handlePrevStep}
-                type="button"
-              >
-                Prev
-              </button>
+          <div className="flex justify-between items-center gap-10 mt-5">
+            <button
+              type="button"
+              className="p-3 border w-full rounded-xl hover:bg-[#f4f6f7] hover:text-[#202216] transition-all ease-in-out duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handlePrevStep}
+              disabled={currentStep === 1 || isLoading}
+            >
+              Prev
+            </button>
+            {currentStep === 2 ? (
               <Button
                 variant="primary"
                 size="md"
-                disabled={!isCurrentStepValid}
-                className={
-                  !isCurrentStepValid ? "opacity-50 cursor-not-allowed" : ""
-                }
+                // disabled={!isValid || isLoading}
               >
-                Create Tournament
+                {isLoading ? "Creating..." : "Create Tournament"}
               </Button>
-            </div>
-          ) : (
-            <div className="flex justify-between items-center gap-10 mt-5">
-              <button
-                className="p-3 border border-[] w-full rounded-xl hover:bg-[#f4f6f7] hover:text-[#202216] transition-all ease-in-out duration-500"
-                onClick={handlePrevStep}
-                type="button"
-                disabled={currentStep === 1}
-              >
-                Prev
-              </button>
+            ) : (
               <Button
                 variant="secondary"
                 onClick={handleNextStep}
-                disabled={!isCurrentStepValid}
+                disabled={!isValid || isLoading}
                 className={
-                  !isCurrentStepValid ? "opacity-50 cursor-not-allowed" : ""
+                  !isValid || isLoading ? "opacity-50 cursor-not-allowed" : ""
                 }
               >
                 Next
               </Button>
-            </div>
-          )}
+            )}
+          </div>
           <div
-            onClick={() => router.back()}
-            className="text-white text-center pt-5 flex items-center justify-center gap-3 hover:animate-bounce cursor-pointer"
+            onClick={() => !isLoading && router.back()}
+            className={`text-white text-center pt-5 flex items-center justify-center gap-3 ${
+              isLoading
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:animate-bounce cursor-pointer"
+            }`}
           >
             <CaretDoubleLeft size={25} />
             Back

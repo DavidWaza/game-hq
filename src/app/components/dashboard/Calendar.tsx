@@ -26,21 +26,28 @@ import {
 
 const FormSchema = z.object({
   dob: z.date({
-    required_error: "A date of birth is required.",
+    required_error: "A date is required.",
   }),
 });
 
 interface CalendarFormProps {
-  onDateChange?: (date: Date) => void;  
+  onDateChange?: (date: Date) => void;
 }
-export function CalendarForm({onDateChange}:CalendarFormProps) {
-  console.log(onDateChange)
+
+export function CalendarForm({ onDateChange }: CalendarFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date && onDateChange) {
+      form.setValue("dob", date, { shouldValidate: true });
+      onDateChange(date);
+    }
+  };
+
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast.warning(`You picked ${data}`, {
+    toast.success(`Tournament scheduled for ${format(data.dob, "PPP")}`, {
       position: "top-right",
       className: "p-4",
     });
@@ -61,8 +68,8 @@ export function CalendarForm({onDateChange}:CalendarFormProps) {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-[240px] pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
+                        "w-[240px] pl-3 text-left font-normal bg-black text-white border-gray-600 hover:bg-gray-900 hover:text-white",
+                        !field.value && "text-gray-400"
                       )}
                     >
                       {field.value ? (
@@ -78,10 +85,10 @@ export function CalendarForm({onDateChange}:CalendarFormProps) {
                   <Calendar
                     mode="single"
                     selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
+                    onSelect={(date) => {
+                      field.onChange(date);
+                      handleDateSelect(date);
+                    }}
                     initialFocus
                   />
                 </PopoverContent>

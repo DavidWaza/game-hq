@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
-import { postFn } from "@/lib/apiClient";
+import { postFn, storeToken } from "@/lib/apiClient";
 import { toast } from "sonner";
 import Button from "../../components/Button";
 import Navbar from "@/components/Navbar";
+import { useRouter } from "next/navigation";
 import MobileRegister from "@/app/components/MobileRegister";
 
 const evaluateStrength = (password: string) => {
@@ -31,6 +32,7 @@ const evaluateStrength = (password: string) => {
 };
 
 const RegisterUser: React.FC = () => {
+  const router = useRouter();
   const [registrationType, setRegistrationType] = useState<"email" | "phone">(
     "email"
   );
@@ -96,9 +98,10 @@ const RegisterUser: React.FC = () => {
       username?: string;
       password: string;
     }) => postFn("api/auth/register", userData),
-    onSuccess: () => {
+    onSuccess: async (data) => {
+       await storeToken(data?.token);
       setTimeout(() => {
-        window.location.href = "/dashboard/splash-avatar";
+        router.push('/dashboard/splash-avatar');
       }, 3000);
     },
     onError: (error) => {
@@ -132,8 +135,8 @@ const RegisterUser: React.FC = () => {
   return (
     <div>
       <Navbar variant="secondary" />
-      <div className="lg:p-24 h-screen  relative md:block hidden">
-        <div className="card-two max-w-[1300px] bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center md:h-full lg:h-[40rem]">
+      <div className="lg:p-24 h-full py-10 relative md:block hidden">
+        <div className="card-two max-w-[1300px] bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center md:h-full lg:h-[45rem]">
           <div className="grid lg:grid-cols-3">
             <div className="col-span-1">
               <h1 className="text-[#fcf8db] text-6xl py-32 px-2">
@@ -225,11 +228,11 @@ const RegisterUser: React.FC = () => {
                               )}
                             </button>
                           </div>
-                          <div className="mt-2">
+                          <div className="mt-1">
                             <div
                               className={`h-2 w-full rounded ${strengthColors[strength]} transition-all duration-300`}
                             />
-                            <span className="block text-right text-sm text-gray-500 mt-1">
+                            <span className="block text-right text-sm text-gray-500">
                               {strengthLabels[strength]}
                             </span>
                           </div>
@@ -240,7 +243,7 @@ const RegisterUser: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="grid w-full items-center gap-1.5">
+                        <div className="text-left w-full items-center">
                           <Label
                             htmlFor="confirm_password"
                             className="text-[#fcf8db] !text-left"
