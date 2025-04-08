@@ -506,3 +506,11 @@
   min-height: 100vh;
   height: 100vh;
 }
+
+.profile-banner {
+  background-image: url("/assets/bg-2.jpg");
+  background-position: center;
+  background-size: cover;
+  min-height: 50vh;
+  height: 50vh;
+}

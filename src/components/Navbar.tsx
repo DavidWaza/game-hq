@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../app/components/Button";
 import {
   Dialog,
@@ -25,6 +25,16 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, logout } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const isAuthRoute = pathname?.startsWith("/auth");
 
@@ -35,8 +45,14 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   }
 
   return (
-    <div className="bg-transparent fixed w-full z-50 py-7 md:px-10 px-3">
-      <nav className="flex justify-between items-center gap-3">
+    <div
+      className={`fixed w-full z-50 py-7 transition-all duration-300 ${
+        isScrolled
+          ? "bg-[#0B0E13]/80 backdrop-blur-md shadow-md"
+          : "bg-transparent"
+      }`}
+    >
+      <nav className="flex justify-between items-center gap-3 px-4 mx-auto container">
         <div className="">
           <Link href={"/"}>
             <div>
@@ -47,47 +63,51 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
           </Link>
         </div>
 
-        <div className="flex items-center gap-5 relative">
-          {!isAuthenticated && !isAuthRoute ? (
+        <div>
+          {isAuthenticated !== undefined && (
             <>
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => router.push("/auth/register")}
-              >
-                Create Account
-              </Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="primary" size="sm">
-                    Login
+              {!isAuthenticated && !isAuthRoute ? (
+                <div className="flex items-center gap-5 relative transLeft">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => router.push("/auth/register")}
+                  >
+                    Create Account
                   </Button>
-                </DialogTrigger>
-                <DialogContent
-                  style={{ borderRadius: "24px" }}
-                  aria-describedby="login-dialog-description"
-                  className="sm:max-w-[425px]"
-                >
-                  <DialogHeader>
-                    <DialogTitle className="">LOGIN</DialogTitle>
-                  </DialogHeader>
-                  <Login />
-                </DialogContent>
-              </Dialog>
-            </>
-          ) : (
-            !isAuthRoute && (
-              <>
-                {/* Wallet & Avatar Button */}
-                <Wallet />
-                <SettingsMenu />
-                <div className="hidden md:block">
-                  <button className="fine-button-primary" onClick={logout}>
-                    <SignOut size={25} />
-                  </button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="primary" size="sm">
+                        Login
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent
+                      style={{ borderRadius: "24px" }}
+                      aria-describedby="login-dialog-description"
+                      className="sm:max-w-[425px]"
+                    >
+                      <DialogHeader>
+                        <DialogTitle className="">LOGIN</DialogTitle>
+                      </DialogHeader>
+                      <Login />
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              </>
-            )
+              ) : (
+                !isAuthRoute && (
+                  <div className="flex items-center gap-5 relative transLeft">
+                    {/* Wallet & Avatar Button */}
+                    <Wallet />
+                    <SettingsMenu />
+                    <div className="hidden md:block">
+                      <button className="fine-button-primary" onClick={logout}>
+                        <SignOut size={25} />
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
+            </>
           )}
         </div>
       </nav>

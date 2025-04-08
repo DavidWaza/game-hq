@@ -4,10 +4,9 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay, EffectFade } from "swiper/modules";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
 import "swiper/css";
 import "swiper/css/effect-fade";
-import { EnvelopeSimple, GameController, Trophy } from "@phosphor-icons/react";
+import { GameController, Intersect, Trophy } from "@phosphor-icons/react";
 import { useState } from "react";
 import Modal from "./Modal";
 
@@ -29,6 +28,7 @@ const Carousel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenInvite, setIsOpenInvite] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isOpenMyGames, setIsOpenMyGames] = useState(false);
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -50,7 +50,6 @@ const Carousel = () => {
               </p>
             </div>
           </button>
-
           <Modal
             isOpen={isOpen}
             setIsOpen={setIsOpen}
@@ -68,12 +67,14 @@ const Carousel = () => {
             className="w-full bg-[#233d4d] text-[#f37f2d] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center gap-2">
-              <EnvelopeSimple
+              <Intersect
                 size={24}
-                className="text-[#f37f2d] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out"
+                weight="duotone"
+                className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
               />
+
               <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                My Invitations
+                Join Wager
               </p>
             </div>
           </button>
@@ -89,21 +90,31 @@ const Carousel = () => {
           />
 
           {/* My History */}
-          <Link href="" className="w-full">
-            <div className="bg-[#233d4d] text-[#fcf8db] text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg">
-              <div className="py-3 sm:py-4 flex justify-center gap-2">
-                <Trophy
-                  size={24}
-                  className=" text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
-                />
-                <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                  My Games
-                </p>
-              </div>
+
+          <button
+            onClick={() => (
+              setIsOpenMyGames(true), setIsOpen(false), setIsOpenInvite(false)
+            )}
+            className="w-full bg-[#233d4d] text-[#fcf8db] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
+          >
+            <div className="flex justify-center gap-2">
+              <Trophy
+                size={24}
+                className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
+              />
+              <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
+                My Games
+              </p>
             </div>
-          </Link>
+          </button>
         </div>
       </div>
+      <Modal
+        isOpen={isOpenMyGames}
+        setIsOpen={setIsOpenMyGames}
+        firstButtonText="My Profile"
+        onClick={() => (window.location.href = "/dashboard/profile")}
+      />
 
       {/* Swiper Container */}
       <Swiper
