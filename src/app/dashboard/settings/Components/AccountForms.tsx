@@ -39,7 +39,7 @@ const AccountForms = () => {
   };
 
   return (
-    <div className="">
+    <div className="w-full lg:w-[70%] bg-[#1a1f2e] rounded-lg p-7">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Username */}
         <div className="grid w-full items-center gap-1.5 !text-left">
