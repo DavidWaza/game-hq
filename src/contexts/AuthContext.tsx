@@ -1,17 +1,13 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { storeToken, logout as logoutFn } from "@/lib/apiClient";
+import { storeUserData, logout as logoutFn } from "@/lib/apiClient";
 import { useRouter } from "next/navigation";
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+import { DataFromLogin, User } from "../../types/global";
 
 interface AuthContextType {
   isAuthenticated: boolean | undefined;
   user: User | null;
-  login: (token: string) => Promise<void>;
+  login: (data: DataFromLogin) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -27,6 +23,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check if user is authenticated on mount
     const token = sessionStorage.getItem("token");
+
+    const sessionUser = sessionStorage.getItem("user");
+    if (sessionUser) {
+      setUser(JSON.parse(sessionUser));
+      // You can also fetch user details here if needed
+    }
     if (token) {
       return setIsAuthenticated(true);
       // You can also fetch user details here if needed
@@ -34,10 +36,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
   }, []);
 
-  const login = async (token: string) => {
-    await storeToken(token);
+  const login = async (data: DataFromLogin) => {
+    await storeUserData(data);
     setIsAuthenticated(true);
-    router.push("/dashboard");
+    setUser(data.user);
   };
 
   const logout = async () => {

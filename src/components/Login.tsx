@@ -10,10 +10,13 @@ import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { DataFromLogin } from "../../types/global";
 
 const Login = () => {
   const { login } = useAuth();
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
 
@@ -34,10 +37,11 @@ const Login = () => {
       password: string;
       username: string;
     }) => postFn("api/auth/login", userData),
-    onSuccess: async (data) => {
+    onSuccess: async (data: DataFromLogin) => {
       if (data?.token) {
         toast.success("Login Successful");
-        await login(data?.token);
+        await login(data);
+        router.push("/dashboard");
       }
     },
     onError: (error) => {
