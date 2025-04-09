@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -22,6 +22,7 @@ interface LoginFormData {
 const Login: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
+  const usernameRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -60,6 +61,10 @@ const Login: React.FC = () => {
     router.push("/api/auth/login?connection=google-oauth2");
   };
 
+  useEffect(() => {
+    usernameRef.current?.focus();
+  }, []);
+
   return (
     <div>
       <Navbar variant="secondary" />
@@ -75,7 +80,10 @@ const Login: React.FC = () => {
               <div className="absolute top-0 left-0 w-1/2 h-full">
                 <div className="px-10 space-y-5 border rounded-lg rounded-t-none py-3 glass">
                   <div className="text-center flex flex-col space-y-2 py-4">
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <form
+                      onSubmit={handleSubmit(onSubmit)}
+                      className="space-y-4"
+                    >
                       <div className="grid w-full items-center gap-1.5 !text-left">
                         <Label htmlFor="username" className="text-[#fcf8db]">
                           Username
@@ -94,7 +102,10 @@ const Login: React.FC = () => {
                         )}
                       </div>
                       <div className="grid w-full items-center gap-1.5">
-                        <Label htmlFor="password" className="text-[#fcf8db] !text-left">
+                        <Label
+                          htmlFor="password"
+                          className="text-[#fcf8db] !text-left"
+                        >
                           Password
                         </Label>
                         <div className="relative">
@@ -106,7 +117,8 @@ const Login: React.FC = () => {
                               required: "Password is required",
                               minLength: {
                                 value: 8,
-                                message: "Password must be at least 8 characters",
+                                message:
+                                  "Password must be at least 8 characters",
                               },
                             })}
                           />

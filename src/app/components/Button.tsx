@@ -11,6 +11,7 @@ interface ButtonProps {
   disabled?: boolean;
   asChild?: boolean;
   className?: string;
+  type?: "button" | "submit" | "reset";
 
 }
 
@@ -20,6 +21,7 @@ const Button: React.FC<ButtonProps> = ({
   width = "full",
   icon,
   onClick,
+  type = "submit",
   children,
   disabled,
   className,
@@ -54,7 +56,7 @@ const Button: React.FC<ButtonProps> = ({
     <Comp
       onClick={onClick}
       disabled={disabled}
-      type={asChild ? undefined : "submit"}
+      type={type}
       className={classes}
     >
       {icon && <span className="min-w-max">{icon}</span>}

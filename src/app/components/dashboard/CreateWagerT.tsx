@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { CaretDoubleLeft, Money } from "@phosphor-icons/react";
 import { CalendarForm } from "@/app/components/dashboard/Calendar";
 import Button from "@/app/components/Button";
-import Time from "@/app/components/dashboard/TimePicker";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { getFn, postFn } from "@/lib/apiClient";
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import EventScheduler from "./TimerSchedule";
 
 // Define types
 interface FormData {
@@ -187,7 +187,7 @@ const CreateTournament: React.FC = () => {
                 <Label htmlFor="bet_on">Bet On</Label>
                 <Input
                   {...register("bet_on", {
-                    required: "Bet title is required",
+                    required: "Select game is required",
                   })}
                   id="bet_on"
                   placeholder="ex. Fifa 25"
@@ -202,10 +202,10 @@ const CreateTournament: React.FC = () => {
               </div>
 
               <div className="space-y-1 items-center gap-4">
-                <Label htmlFor="description">Bet Description or Terms</Label>
+                <Label htmlFor="description">Note to Participants</Label>
                 <Textarea
                   {...register("description", {
-                    required: "Description is required",
+                    required: "Note description is required",
                   })}
                   id="description"
                   placeholder="Enter the terms and necessary information of this bet"
@@ -284,12 +284,13 @@ const CreateTournament: React.FC = () => {
                 )}
               </div>
               <div>
-                <Time
+                <EventScheduler
                   onTimeChange={handleTimeChange}
                   {...register("match_time", {
                     required: "Match time is required",
                   })}
                 />
+
                 {errors.match_time && (
                   <p className="text-red-500 text-sm">
                     {errors.match_time.message}
@@ -320,6 +321,7 @@ const CreateTournament: React.FC = () => {
                 variant="secondary"
                 onClick={handleNextStep}
                 disabled={!isValid || isLoading}
+                type="button"
                 className={
                   !isValid || isLoading ? "opacity-50 cursor-not-allowed" : ""
                 }
