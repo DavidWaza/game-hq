@@ -20,7 +20,7 @@ const BetSwitchTab = () => {
 
   // Handle input changes (bet details)
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: string
   ) => {
     setBetDetails((prev) => ({
@@ -85,7 +85,7 @@ const BetSwitchTab = () => {
         {/* Common Fields for both Public and Private */}
         <div className="mb-4">
           <label htmlFor="gameTitle" className="block text-sm text-gray-300">
-            Bet Title
+            Select Game
           </label>
           <input
             id="gameTitle"
@@ -99,13 +99,12 @@ const BetSwitchTab = () => {
 
         <div className="mb-4">
           <label htmlFor="description" className="block text-sm text-gray-300">
-            Bet Description
+           Note to Participants
           </label>
-          <input
+          <textarea
             id="description"
-            type="text"
             className="w-full mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md"
-            placeholder="Enter bet description"
+            placeholder="Give your rules"
             value={betDetails.description}
             onChange={(e) => handleInputChange(e, "description")}
           />

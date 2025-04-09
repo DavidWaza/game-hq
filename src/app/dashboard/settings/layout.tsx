@@ -2,23 +2,67 @@
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, Shield, Wallet } from "lucide-react";
+import { User, Shield, Wallet, File } from "lucide-react";
+import {
+  ClockCounterClockwise,
+  Gavel,
+  Lifebuoy,
+  Prohibit,
+  Wrench,
+} from "@phosphor-icons/react";
+import { CurrencyNgn } from "@phosphor-icons/react/dist/ssr";
 
 const settingsNavItems = [
   {
-    title: "Account",
-    href: "/dashboard/settings",
+    title: "Personal Account",
+    href: "/dashboard/settings/personal-account",
     icon: <User className="w-4 min-w-4 h-4" />,
   },
   {
-    title: "Privacy",
-    href: "/dashboard/settings/privacy",
+    title: "Account Balance",
+    href: "/dashboard/settings/account",
+    icon: <Wallet className="w-4 min-w-4 h-4" />,
+  },
+  {
+    title: "Betting History",
+    href: "/dashboard/settings/betting-history",
+    icon: <File className="w-4 min-w-4 h-4" />,
+  },
+  {
+    title: "Transaction History",
+    href: "/dashboard/settings/transaction-history",
+    icon: <ClockCounterClockwise className="w-4 min-w-4 h-4" />,
+  },
+  {
+    title: "Security Settings",
+    href: "/dashboard/settings/security-settings",
     icon: <Shield className="w-4 min-w-4 h-4" />,
   },
   {
-    title: "Wallet",
-    href: "/dashboard/settings/wallet",
-    icon: <Wallet className="w-4 min-w-4 h-4" />,
+    title: "Preferences",
+    href: "/dashboard/settings/preferences",
+    icon: <Wrench className="w-4 min-w-4 h-4" />,
+  },
+  {
+    title: "Promotions and Bonuses",
+    href: "/dashboard/settings/promotion-and-bonuses",
+    icon: <CurrencyNgn className="w-4 min-w-4 h-4" />,
+  },
+  {
+    title: "Responsible Gambling Tools",
+    href: "/dashboard/settings/responsible-gambling-tools",
+    icon: <Prohibit className="w-4 min-w-4 h-4" />,
+  },
+  {
+    title: "Support & Help",
+    href: "/dashboard/settings/support-and-help",
+    icon: <Lifebuoy className="w-4 min-w-4 h-4" />,
+  },
+
+  {
+    title: "Legal & Compliance",
+    href: "/dashboard/settings/legal-and-compliance",
+    icon: <Gavel className="w-4 min-w-4 h-4" />,
   },
 ];
 

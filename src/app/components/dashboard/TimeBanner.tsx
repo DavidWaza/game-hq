@@ -68,7 +68,7 @@ const TimeBanner = () => {
           ]}
           firstButtonText="Accept"
           secondButtonText="Reject"
-          onClick={() => (window.location.href = "/dashboard/create-wager")}
+          onClick={() => (window.location.href = "/dashboard/tournament-lobby")}
         />
       </div>
 

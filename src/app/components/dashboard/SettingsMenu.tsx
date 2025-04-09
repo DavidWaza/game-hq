@@ -40,7 +40,6 @@ const SettingsMenu = () => {
       category: "Account",
       items: [
         { label: "Profile Settings", href: "/dashboard/settings", icon: "👤" },
-        { label: "Privacy", href: "/account/privacy", icon: "🔒" },
         { label: "Wallet", href: "/account/subscription", icon: "💰" },
       ],
     },

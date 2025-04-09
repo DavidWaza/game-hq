@@ -14,12 +14,15 @@ const Banner = () => {
     setReveal(true);
   };
 
+  
+
   return (
     <div className="relative min-h-[300px]  text-white">
       {/* Banner Background */}
       <div className="profile-banner relative w-full border-y-0 border border-[#f37f2d] border-x-0 border-b">
         {/* Optional: Add a subtle overlay for depth */}
         <div className="absolute inset-0 bg-black/20" />
+
         {/* Profile Avatar */}
         <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-[30%] transition-transform hover:scale-105">
           <div className="relative rounded-full w-32 h-32 xl:h-52 xl:w-52 border-4 border-[#f37f2d] bg-[#1a0b2e] flex items-center justify-center shadow-lg shadow-[#f37f2d]/50">
@@ -61,7 +64,7 @@ const Banner = () => {
         {/* Right: Edit Button */}
         <div className="flex justify-center md:justify-end mt-4 md:mt-0 w-full lg:w-1/2 ml-auto">
           <Button variant="primary" size="sm" onClick={handleReveal}>
-            <PencilSimpleLine size={20} />
+            <PencilSimpleLine size={25} />
             <span>Edit Profile</span>
           </Button>
         </div>
