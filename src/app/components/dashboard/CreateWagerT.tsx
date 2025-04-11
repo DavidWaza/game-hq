@@ -9,6 +9,7 @@ import Button from "@/app/components/Button";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { getFn, postFn } from "@/lib/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   Select,
@@ -31,15 +32,10 @@ interface FormData {
   match_time: string;
 }
 
-interface GameCategory {
-  id: number;
-  name: string;
-}
-
 const CreateTournament: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isMounted, setIsMounted] = useState<boolean>(false);
-  const [gameCategories, setGameCategories] = useState<GameCategory[]>([]);
+  const { store } = useAuth();
   const router = useRouter();
 
   const {
@@ -62,34 +58,6 @@ const CreateTournament: React.FC = () => {
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const fetchGameCategories = async () => {
-      try {
-        const categories = await getFn("api/gamecategories");
-        console.log(categories, "categories");
-        if (Array.isArray(categories)) {
-          setGameCategories(categories);
-        } else if (categories?.records) {
-          setGameCategories(categories.records);
-        } else {
-          throw new Error("Invalid categories format");
-        }
-      } catch (error) {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch game categories",
-          {
-            position: "top-right",
-            className: "p-4",
-          }
-        );
-      }
-    };
-
-    fetchGameCategories();
   }, []);
 
   const handleCategoryChange = (value: string) => {
@@ -137,7 +105,7 @@ const CreateTournament: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-4">
       <div className="relative bg-black text-white p-6 bg-opacity-90 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-[500px] max-w-[500px] grid grid-cols-1 gap-4">
         <div className="flex justify-between items-center p-5 border-none">
           <div className="justify-end">
@@ -165,7 +133,7 @@ const CreateTournament: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {gameCategories.map((category) => (
+                      {store?.categories?.map((category) => (
                         <SelectItem
                           key={category.id}
                           value={category.id.toString()}
