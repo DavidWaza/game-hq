@@ -1,11 +1,10 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { storeUserData, logout as logoutFn } from "@/lib/apiClient";
-import { useRouter } from "next/navigation";
 import { DataFromLogin, User, TypeCategories } from "../../types/global";
 import { getFn } from "@/lib/apiClient";
 interface StoreData {
-  categories: TypeCategories[] | [];
+  categories: TypeCategories[] | [] | undefined;
 }
 type StoreConFigKeys = keyof StoreData;
 interface AuthContextType {
@@ -17,7 +16,7 @@ interface AuthContextType {
 }
 interface DataHandler {
   storeValue: StoreConFigKeys;
-  data: null | any;
+  data: TypeCategories[] | undefined;
   path: string;
 }
 
@@ -31,14 +30,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [store, setStore] = useState<StoreData>({
     categories: [],
   });
-  const setState = (value: any, name: StoreConFigKeys) => {
+  const setState = (
+    value: TypeCategories[] | undefined,
+    name: StoreConFigKeys
+  ) => {
     console.log(value, name);
     setStore((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
-  const router = useRouter();
 
   // set user and token from sesion storage
   useEffect(() => {
@@ -73,7 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user !== null) {
         // set the array
         const useGetRequestDataHandler: DataHandler[] = [
-          { storeValue: "categories", data: null, path: "api/gamecategories" },
+          {
+            storeValue: "categories",
+            data: undefined,
+            path: "api/gamecategories",
+          },
         ];
 
         try {

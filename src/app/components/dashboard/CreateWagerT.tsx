@@ -8,7 +8,7 @@ import { CalendarForm } from "@/app/components/dashboard/Calendar";
 import Button from "@/app/components/Button";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { getFn, postFn } from "@/lib/apiClient";
+import { postFn } from "@/lib/apiClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
