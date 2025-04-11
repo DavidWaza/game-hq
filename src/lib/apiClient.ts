@@ -1,8 +1,9 @@
 "use client";
 import axios from "axios";
 import { toast } from "sonner";
+import { DataFromLogin } from "../../types/global";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_SERVICE_BASE_URL 
+const BASE_URL = process.env.NEXT_PUBLIC_API_SERVICE_BASE_URL;
 
 // Create Axios Instance
 const api = axios.create({
@@ -79,7 +80,7 @@ interface ApiError {
 const processErrorResponse = (error: unknown): string => {
   const apiError = error as ApiError;
   let message = "An error occurred";
-  
+
   if (apiError.response?.data?.message) {
     message = apiError.response.data.message;
   } else if (apiError.response?.data?.title) {
@@ -89,19 +90,20 @@ const processErrorResponse = (error: unknown): string => {
   } else if (apiError.message) {
     message = apiError.message;
   }
-  
+
   if (apiError.response?.status === 401) {
     message = "Unauthenticated! Please log in again.";
   }
-  
+
   return message;
 };
 
 // Function to Store Token After Login
-export const storeToken = async (token: string) => {
+export const storeUserData = async (data: DataFromLogin) => {
   try {
     // Store in sessionStorage
-    sessionStorage.setItem("token", token);
+    sessionStorage.setItem("token", data.token);
+    sessionStorage.setItem("user", JSON.stringify(data.user));
 
     // Store in HTTP-only cookie (optional, requires backend endpoint)
     const response = await fetch("/api/auth/set-token", {
@@ -109,7 +111,7 @@ export const storeToken = async (token: string) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ token }),
+      body: JSON.stringify({ token: data.token }),
     });
 
     if (!response.ok) {
@@ -118,6 +120,7 @@ export const storeToken = async (token: string) => {
   } catch (error) {
     console.error("Failed to store token:", error);
     sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
     throw error;
   }
 };
@@ -127,6 +130,7 @@ export const logout = async () => {
   try {
     // Remove from sessionStorage
     sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
 
     // Remove HTTP-only cookie (optional, requires backend endpoint)
     const response = await fetch("/api/auth/remove-token", {

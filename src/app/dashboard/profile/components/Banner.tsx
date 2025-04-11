@@ -14,8 +14,6 @@ const Banner = () => {
     setReveal(true);
   };
 
-  
-
   return (
     <div className="relative min-h-[300px]  text-white">
       {/* Banner Background */}
@@ -63,15 +61,24 @@ const Banner = () => {
 
         {/* Right: Edit Button */}
         <div className="flex justify-center md:justify-end mt-4 md:mt-0 w-full lg:w-1/2 ml-auto">
-          <Button variant="primary" size="sm" onClick={handleReveal}>
-            <PencilSimpleLine size={25} />
-            <span>Edit Profile</span>
-          </Button>
+          {!reveal && (
+            <div className="transRight">
+              <Button
+                className="active"
+                variant="primary"
+                size="sm"
+                onClick={handleReveal}
+              >
+                <PencilSimpleLine size={25} />
+                <span>Edit Profile</span>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       <div>
         {reveal ? (
-          <div className="flex justify-center items-center px-2">
+          <div className="transIn flex justify-center items-center px-2">
             <ProfileEdit reveal={reveal} setReveal={setReveal} />
           </div>
         ) : (

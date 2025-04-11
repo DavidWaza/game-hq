@@ -78,9 +78,11 @@ const Modal = ({
           </div>
         )}
         <div className="flex flex-col space-y-4">
-          <Button onClick={onClick}>{firstButtonText}</Button>
+          <Button className="active" onClick={onClick}>
+            {firstButtonText}
+          </Button>
           {secondButtonText && (
-            <Button variant="secondary" onClick={onTab}>
+            <Button className="active" variant="secondary" onClick={onTab}>
               {secondButtonText}
             </Button>
           )}

@@ -109,7 +109,10 @@ const ProfileEdit = ({ reveal, setReveal }: ProfileEditProps) => {
             <Label htmlFor="about" className="text-[#fcf8db]">
               About Me
             </Label>
-            <Textarea placeholder="A pro at fifa, bring on your best team" />
+            <Textarea
+              className="resize-none h-[150px]"
+              placeholder="A pro at fifa, bring on your best team"
+            />
           </div>
           <div>
             <Button variant="primary">

@@ -1,6 +1,6 @@
-
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Wallet = () => {
   const [balance, setBalance] = useState(1000);
@@ -8,12 +8,16 @@ const Wallet = () => {
   const [transactionType, setTransactionType] = useState("deposit");
   const [amount, setAmount] = useState("");
   const modalRef = useRef(null);
+  const { user } = useAuth();
 
   // Close modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !(modalRef.current as HTMLElement).contains(event.target as Node)) {
-      setIsOpen(false);
+      if (
+        modalRef.current &&
+        !(modalRef.current as HTMLElement).contains(event.target as Node)
+      ) {
+        setIsOpen(false);
       }
     };
 
@@ -47,10 +51,7 @@ const Wallet = () => {
       >
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Avatar */}
-          <div
-            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-[#233d4d] border-2 border-[#f37f2d] 
-                       flex items-center justify-center overflow-hidden"
-          >
+          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-[#233d4d] border-2 border-[#f37f2d] flex items-center justify-center overflow-hidden">
             <Image
               width={0}
               height={0}
@@ -64,14 +65,13 @@ const Wallet = () => {
           <div className="text-[#fcf8db] flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
             <div>
               <p className="text-xs sm:text-sm text-[#f37f2d] font-medium">
-                David Waza
+                {user?.username}
               </p>
               <p className="text-sm sm:text-base md:text-lg flex items-center gap-1">
                 <span className="text-[#f37f2d]">✧</span>
                 {balance} CP
               </p>
             </div>
-           
           </div>
         </div>
       </div>

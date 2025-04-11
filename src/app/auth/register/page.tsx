@@ -7,12 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
-import { postFn, storeToken } from "@/lib/apiClient";
+import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import Button from "../../components/Button";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import MobileRegister from "@/app/components/MobileRegister";
+import { useAuth } from "@/contexts/AuthContext";
+import { DataFromLogin } from "../../../../types/global";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -32,6 +34,7 @@ const evaluateStrength = (password: string) => {
 };
 
 const RegisterUser: React.FC = () => {
+  const { login } = useAuth();
   const router = useRouter();
   const [registrationType, setRegistrationType] = useState<"email" | "phone">(
     "email"
@@ -98,10 +101,11 @@ const RegisterUser: React.FC = () => {
       username?: string;
       password: string;
     }) => postFn("api/auth/register", userData),
-    onSuccess: async (data) => {
-       await storeToken(data?.token);
+    onSuccess: async (data: DataFromLogin) => {
+      toast.success("Registration Successful");
+      await login(data);
       setTimeout(() => {
-        router.push('/dashboard/splash-avatar');
+        router.push("/dashboard/splash-avatar");
       }, 3000);
     },
     onError: (error) => {
