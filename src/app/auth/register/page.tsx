@@ -37,7 +37,7 @@ const evaluateStrength = (password: string) => {
 const RegisterUser: React.FC = () => {
   const { login } = useAuth();
   const router = useRouter();
-  const [registrationType, setRegistrationType] = useState<"email" | "phone">(
+  const [registrationType] = useState<"email" | "phone">(
     "email"
   );
   const {
@@ -45,7 +45,7 @@ const RegisterUser: React.FC = () => {
     handleSubmit,
     setError,
     clearErrors,
-    reset,
+    // reset,
     watch,
     formState: { errors },
   } = useForm<{
@@ -63,11 +63,11 @@ const RegisterUser: React.FC = () => {
   const [strength, setStrength] = useState(0);
   const [openCode, setOpenCode] = useState(false);
 
-  const switchRegistrationType = () => {
-    setRegistrationType(registrationType === "email" ? "phone" : "email");
-    reset();
-    setStrength(0);
-  };
+  // const switchRegistrationType = () => {
+  //   setRegistrationType(registrationType === "email" ? "phone" : "email");
+  //   reset();
+  //   setStrength(0);
+  // };
 
   // Handle Password Change
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -297,7 +297,7 @@ const RegisterUser: React.FC = () => {
                       <div className="divider py-4">
                         <span>Or</span>
                       </div>
-                      <Button
+                      {/* <Button
                         variant="secondary"
                         size="md"
                         width="full"
@@ -317,7 +317,7 @@ const RegisterUser: React.FC = () => {
                         {registrationType === "email"
                           ? "Phone Number"
                           : "Email"}
-                      </Button>
+                      </Button> */}
                       <Button
                         variant="secondary"
                         size="md"
