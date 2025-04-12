@@ -9,7 +9,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Link from "next/link";
-import { SignOut } from "@phosphor-icons/react";
 import { useRouter, usePathname } from "next/navigation";
 import Login from "@/components/Login";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,7 +23,7 @@ interface LogoVariant {
 const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -99,11 +98,6 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
                     {/* Wallet & Avatar Button */}
                     <Wallet />
                     <SettingsMenu />
-                    <div className="hidden md:block">
-                      <button className="fine-button-primary" onClick={logout}>
-                        <SignOut size={25} />
-                      </button>
-                    </div>
                   </div>
                 )
               )}

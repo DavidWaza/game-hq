@@ -32,7 +32,7 @@ const Preferences = () => {
       </h1>
       <div className="space-y-6">
         {/* Notification Settings */}
-        <div className="bg-gradient-to-r from-gray-800 to-[#252b3e] rounded-md p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+        <div className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg p-5 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,165,0,0.2)] transition-all duration-300 hover:scale-[1.01] items-center justify-between gap-4 backdrop-blur-sm">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-orange-500/20 rounded-full">
               <Bell size={32} className="text-orange-500" />
@@ -90,7 +90,7 @@ const Preferences = () => {
         </div>
 
         {/* Language */}
-        <div className="bg-gradient-to-r from-gray-800 to-[#252b3e] rounded-md p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+        <div className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg p-5 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,165,0,0.2)] transition-all duration-300 hover:scale-[1.01] items-center justify-between gap-4 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-orange-500/20 rounded-full">
@@ -116,7 +116,7 @@ const Preferences = () => {
         </div>
 
         {/* Time Zone */}
-        <div className="bg-gradient-to-r from-gray-800 to-[#252b3e] rounded-md p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+        <div className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg p-5 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,165,0,0.2)] transition-all duration-300 hover:scale-[1.01] items-center justify-between gap-4 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-orange-500/20 rounded-full">
@@ -142,7 +142,7 @@ const Preferences = () => {
         </div>
 
         {/* Bet Limits */}
-        <div className="bg-gradient-to-r from-gray-800 to-[#252b3e] rounded-md p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+        <div className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg p-5 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,165,0,0.2)] transition-all duration-300 hover:scale-[1.01] items-center justify-between gap-4 backdrop-blur-sm">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-orange-500/20 rounded-full">
               <CurrencyNgn size={32} className="text-orange-500" />
