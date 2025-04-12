@@ -60,8 +60,8 @@ const BetSwitchTab = () => {
           disabled={isPublic}
           className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 ${
             !isPrivate
-              ? "bg-[#202216] text-[#F0DE9B]"
-              : "bg-gray-600 text-white"
+              ? "bg-[#EB8338] text-white"
+              : "bg-gray-600 text-black"
           }`}
         >
           Public Bet
@@ -70,7 +70,7 @@ const BetSwitchTab = () => {
           onClick={() => (setIsPrivate(true), setIsPublic(false))}
           disabled={isPrivate}
           className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 ${
-            isPrivate ? "bg-[#202216] text-[#F0DE9B]" : "bg-gray-600 text-white"
+            isPrivate ? "bg-[#EB8338] text-white" : "bg-gray-600 text-black"
           }`}
         >
           Private Bet

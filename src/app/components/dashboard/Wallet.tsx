@@ -1,9 +1,10 @@
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { CurrencyNgn } from "@phosphor-icons/react";
 
 const Wallet = () => {
-  const [balance, setBalance] = useState(1000);
+  const [balance, setBalance] = useState(10000);
   const [isOpen, setIsOpen] = useState(false);
   const [transactionType, setTransactionType] = useState("deposit");
   const [amount, setAmount] = useState("");
@@ -69,7 +70,8 @@ const Wallet = () => {
               </p>
               <p className="text-sm sm:text-base md:text-lg flex items-center gap-1">
                 <span className="text-[#f37f2d]">✧</span>
-                {balance} CP
+                <CurrencyNgn size={20} />
+                {balance}
               </p>
             </div>
           </div>
