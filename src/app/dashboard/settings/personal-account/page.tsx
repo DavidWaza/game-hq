@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import EditableAvatar from "./Components/EditableAvatar";
 import { toast } from "sonner";
 import { Clipboard } from "@phosphor-icons/react";
+import moment from 'moment'
 
 export default function SettingsPage() {
   const username = useAuth()?.user?.username;
@@ -64,8 +65,8 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="text-sm text-gray-400">
-                    <p>Joined December 19th, 2022</p>
-                    <p>Last Login on March 19th, 2024</p>
+                    <p>Joined 10th Sept, 2025</p>
+                    <p>Last Login on {moment(Date.now()).format("MMMM Do, YYYY")}</p>
                   </div>
                 </div>
               </CardContent>
