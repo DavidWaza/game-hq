@@ -49,6 +49,7 @@ const CreateMatchPage = () => {
       prevIndex + 1 < videoTrailers.length ? prevIndex + 1 : 0
     );
   };
+  
   // Randomize currentVideoIndex when matchMode changes
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * videoTrailers.length);
