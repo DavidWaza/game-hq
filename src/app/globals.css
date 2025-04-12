@@ -208,7 +208,8 @@
   background-color: #ffdeda;
   outline: 0;
 }
-.fine-button-primary.active:after {
+.fine-button-primary.active:after,
+.fine-button-secondary.active:after {
   transform: translate(0, 0);
   outline: 0;
 }

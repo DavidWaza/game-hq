@@ -1,18 +1,23 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { storeToken, logout as logoutFn } from "@/lib/apiClient";
-import { useRouter } from "next/navigation";
-interface User {
-  id: string;
-  email: string;
-  name: string;
+import { storeUserData, logout as logoutFn } from "@/lib/apiClient";
+import { DataFromLogin, User, TypeCategories } from "../../types/global";
+import { getFn } from "@/lib/apiClient";
+interface StoreData {
+  categories: TypeCategories[] | [] | undefined;
 }
-
+type StoreConFigKeys = keyof StoreData;
 interface AuthContextType {
   isAuthenticated: boolean | undefined;
   user: User | null;
-  login: (token: string) => Promise<void>;
+  login: (data: DataFromLogin) => Promise<void>;
   logout: () => Promise<void>;
+  store: StoreData;
+}
+interface DataHandler {
+  storeValue: StoreConFigKeys;
+  data: TypeCategories[] | undefined;
+  path: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,11 +27,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     undefined
   );
   const [user, setUser] = useState<User | null>(null);
-  const router = useRouter();
+  const [store, setStore] = useState<StoreData>({
+    categories: [],
+  });
+  const setState = (
+    value: TypeCategories[] | undefined,
+    name: StoreConFigKeys
+  ) => {
+    console.log(value, name);
+    setStore((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
+  // set user and token from sesion storage
   useEffect(() => {
     // Check if user is authenticated on mount
     const token = sessionStorage.getItem("token");
+    const sessionUser = sessionStorage.getItem("user");
+    if (sessionUser) {
+      setUser(JSON.parse(sessionUser));
+      // You can also fetch user details here if needed
+    }
     if (token) {
       return setIsAuthenticated(true);
       // You can also fetch user details here if needed
@@ -34,20 +57,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
   }, []);
 
-  const login = async (token: string) => {
-    await storeToken(token);
+  const login = async (data: DataFromLogin) => {
+    await storeUserData(data);
     setIsAuthenticated(true);
-    router.push("/dashboard");
+    setUser(data.user);
   };
-
   const logout = async () => {
     await logoutFn();
     setIsAuthenticated(false);
     setUser(null);
   };
 
+  // handle global use requests
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user !== null) {
+        // set the array
+        const useGetRequestDataHandler: DataHandler[] = [
+          {
+            storeValue: "categories",
+            data: undefined,
+            path: "api/gamecategories",
+          },
+        ];
+
+        try {
+          // Map over the array and call getFn for each path
+          const results = await Promise.all(
+            useGetRequestDataHandler.map(async (handler: DataHandler) => {
+              const data = await getFn(handler.path);
+              return { ...handler, data }; // Attach the fetched data to the handler
+            })
+          );
+
+          // Process the results as needed
+          results.forEach((result) => {
+            setState(result.data?.records, result.storeValue);
+          });
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      }
+    };
+
+    fetchData();
+  }, [user]);
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, user, login, logout, store }}
+    >
       {children}
     </AuthContext.Provider>
   );

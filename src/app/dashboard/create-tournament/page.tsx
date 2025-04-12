@@ -34,7 +34,6 @@ const CreateTournament = () => {
     );
   };
 
-
   useEffect(() => {
     const videoElement = videoRef.current;
 
@@ -42,7 +41,6 @@ const CreateTournament = () => {
       videoElement
         .play()
         .catch((err) => console.warn("Auto-play blocked:", err));
-     
     }
 
     return () => {
@@ -53,30 +51,33 @@ const CreateTournament = () => {
   }, [currentVideoIndex]);
 
   return (
-    <div className="create-wager-banner relative">
-      {/* Video Background (Plays One After Another) */}
-      <video
-        ref={videoRef}
-        key={videoTrailers[currentVideoIndex].id}
-        className="absolute inset-0 w-full h-full object-cover"
-        src={videoTrailers[currentVideoIndex].src}
-        autoPlay
-        muted
-        playsInline
-        onEnded={handleVideoEnd}
-      ></video>
-
-      <div className="absolute inset-0 bg-white bg-opacity-0"></div>
-
+    <>
       {/* Navbar */}
       <Navbar variant="primary" />
-      {/* Content Goes Here */}
-      <div className="relative z-10 flex items-center justify-center text-white">
-        <CreateWagerT />
+      <div className="create-wager-banner relative h-screen overflow-hidden">
+        {/* Video Background (Plays One After Another) */}
+        <video
+          ref={videoRef}
+          key={videoTrailers[currentVideoIndex].id}
+          className="absolute inset-0 w-full h-full object-cover"
+          src={videoTrailers[currentVideoIndex].src}
+          autoPlay
+          muted
+          playsInline
+          onEnded={handleVideoEnd}
+        ></video>
+
+        <div className="absolute inset-0 bg-white bg-opacity-0"></div>
+
+        {/* Content Goes Here */}
+        <div className="relative z-10 text-white h-full overflow-y-auto">
+          <div className="py-[140px] min-h-full flex items-center justify-center">
+            <CreateWagerT />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
-
 
 export default CreateTournament;

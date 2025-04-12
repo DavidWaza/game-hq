@@ -13,6 +13,8 @@ import Button from "../../components/Button";
 import Navbar from "@/components/Navbar";
 import MobileLogin from "@/app/components/MobileLogin";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { DataFromLogin } from "../../../../types/global";
 
 interface LoginFormData {
   username: string;
@@ -20,6 +22,7 @@ interface LoginFormData {
 }
 
 const Login: React.FC = () => {
+  const { login } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
   const usernameRef = useRef<HTMLInputElement>(null);
@@ -38,12 +41,12 @@ const Login: React.FC = () => {
 
   const loginMutation = useMutation({
     mutationFn: (userData: LoginFormData) => postFn("api/auth/login", userData),
-    onSuccess: () => {
-      toast.success("Login successful", {
-        position: "top-right",
-        className: "p-4",
-      });
-      router.push("/dashboard");
+    onSuccess: async (data: DataFromLogin) => {
+      if (data?.token) {
+        toast.success("Login Successful");
+        await login(data);
+        router.push("/dashboard");
+      }
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Login failed", {
