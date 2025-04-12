@@ -48,8 +48,6 @@ const SettingsMenu = () => {
       category: "System",
       items: [
         { label: "Settings", href: "/dashboard/settings", icon: "⚙️" },
-        { label: "Notifications", href: "/system/notifications", icon: "🔔" },
-        { label: "Help & Support", href: "/support", icon: "❓" },
         { label: "Logout", href: `#`, icon: "🚪" },
       ],
     },

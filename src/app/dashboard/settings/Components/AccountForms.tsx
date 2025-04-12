@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Button from "@/app/components/Button";
 import { CalendarForm } from "@/app/components/dashboard/Calendar";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AccountDetailsData {
   username: string;
@@ -14,7 +15,7 @@ interface AccountDetailsData {
   dob: Date;
 }
 
-const AccountForms = () => {
+const AccountForms = ({username}:{username:string}) => {
   const { setValue } = useForm<AccountDetailsData>();
   const {
     register,
@@ -38,6 +39,8 @@ const AccountForms = () => {
     setValue("dob", dob, { shouldValidate: true });
   };
 
+  const getUserEmail = useAuth()?.user?.email;
+
   return (
     <div className="w-full lg:w-[70%] bg-[#1a1f2e] rounded-lg p-7">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -48,6 +51,8 @@ const AccountForms = () => {
           </Label>
           <Input
             id="username"
+            value={username}
+            readOnly
             className="text-white"
             {...register("username", {
               required: "Username is required",
@@ -84,6 +89,7 @@ const AccountForms = () => {
           </Label>
           <Input
             id="email"
+            value={getUserEmail}
             className="text-white"
             {...register("email", {
               required: "Email Address is required",

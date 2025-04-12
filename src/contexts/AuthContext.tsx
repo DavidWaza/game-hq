@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const results = await Promise.all(
             useGetRequestDataHandler.map(async (handler: DataHandler) => {
               const data = await getFn(handler.path);
-              return { ...handler, data }; // Attach the fetched data to the handler
+              return { ...handler, data }; 
             })
           );
 
