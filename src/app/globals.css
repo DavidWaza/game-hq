@@ -545,3 +545,10 @@
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
 }
+
+.my_invitation_bg {
+  background-image: url('/assets/cod-4.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+}
