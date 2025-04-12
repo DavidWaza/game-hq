@@ -5,7 +5,7 @@ import StatusIndicator from "./Status";
 import { PencilSimpleLine } from "@phosphor-icons/react";
 import GameStats from "./GameStats";
 import ProfileEdit from "./ProfileEdit";
-import Button from "@/app/components/Button";
+import Button from "@/components/Button";
 
 const Banner = () => {
   const [reveal, setReveal] = React.useState(false);

@@ -11,7 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // import { Input } from "@/components/ui/input";
 
-import Button from "../Button";
+import Button from "@/components/Button";
 import { XCircle } from "@phosphor-icons/react";
 import ExpandableSearch from "./ExpandSearch";
 import WagerCard from "./WagerCard";
@@ -63,7 +63,7 @@ const JoinWager = () => {
                   gameDateSchedule={"23rd March, 2025"}
                   gameUsers={10}
                 />
-                  <WagerCard
+                <WagerCard
                   gameMode={"One-v-One"}
                   gameCategory={"Action"}
                   gameTitle={"Call of Duty"}

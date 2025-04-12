@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import Button from "@/app/components/Button";
+import Button from "@/components/Button";
 import { Input } from "@/components/ui/input";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Eye, EyeClosed } from "@phosphor-icons/react";

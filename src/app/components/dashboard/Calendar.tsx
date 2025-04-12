@@ -23,7 +23,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { usePathname } from "next/navigation";
 
 const FormSchema = z.object({
   dob: z.date({
@@ -33,9 +32,10 @@ const FormSchema = z.object({
 
 interface CalendarFormProps {
   onDateChange?: (date: Date) => void;
+  label?: string;
 }
 
-export function CalendarForm({ onDateChange }: CalendarFormProps) {
+export function CalendarForm({ onDateChange, label }: CalendarFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -53,7 +53,6 @@ export function CalendarForm({ onDateChange }: CalendarFormProps) {
       className: "p-4",
     });
   }
-  const pathname = usePathname();
 
   return (
     <Form {...form}>
@@ -64,9 +63,7 @@ export function CalendarForm({ onDateChange }: CalendarFormProps) {
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel className="!text-left text-white">
-                {pathname.includes("settings")
-                  ? "Date of Birth"
-                  : "Pick your Date"}
+                {!label ? "Date of Birth" : label}
               </FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -81,11 +78,7 @@ export function CalendarForm({ onDateChange }: CalendarFormProps) {
                       {field.value ? (
                         format(field.value, "PPP")
                       ) : (
-                        <span>
-                          {pathname.includes("settings")
-                            ? "Date of Birth"
-                            : "Schedule a Date"}
-                        </span>
+                        <span>{!label ? "Date of Birth" : label}</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>

@@ -9,7 +9,7 @@ import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
-import Button from "./Button";
+import Button from "@/components/Button";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;

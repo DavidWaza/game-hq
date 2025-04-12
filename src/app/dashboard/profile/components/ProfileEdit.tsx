@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
-import Button from "@/app/components/Button";
+import Button from "@/components/Button";
 import { CaretDoubleLeft } from "@phosphor-icons/react";
 
 interface ProfileEditFormData {

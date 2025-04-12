@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import Button from "./Button";
+import Button from "@/components/Button";
 import Link from "next/link";
 import { useForm, SubmitHandler } from "react-hook-form";
 import {

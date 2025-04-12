@@ -1,5 +1,4 @@
 "use client";
-
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay, EffectFade } from "swiper/modules";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,6 +29,10 @@ const Carousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isOpenMyGames, setIsOpenMyGames] = useState(false);
 
+  const navigateRouter = (path: string): void => {
+    window.location.href = path;
+  };
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* Buttons Container */}
@@ -37,7 +40,7 @@ const Carousel = () => {
         <div className="flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto lg:ml-auto lg:mr-10">
           {/* Create Wager */}
           <button
-            onClick={() => (setIsOpenInvite(false), setIsOpen(true))}
+            onClick={() => navigateRouter("/dashboard/create-match")}
             className="w-full bg-[#233d4d] text-[#fcf8db] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center items-center gap-2">
@@ -55,10 +58,8 @@ const Carousel = () => {
             setIsOpen={setIsOpen}
             firstButtonText="Create Tournament"
             secondButtonText="Create One-on-One"
-            onClick={() =>
-              (window.location.href = "/dashboard/create-tournament")
-            }
-            onTab={() => (window.location.href = "/dashboard/create-one-v-one")}
+            onClick={() => navigateRouter("/dashboard/create-tournament")}
+            onTab={() => navigateRouter("/dashboard/create-one-v-one")}
           />
 
           {/* My Invitations */}
@@ -83,12 +84,11 @@ const Carousel = () => {
             isOpen={isOpenInvite}
             setIsOpen={setIsOpenInvite}
             firstButtonText="Join Tournament"
-            secondButtonText="Join One-on-One"
+            secondButtonText="My Invitations"
             onClick={() =>
               (window.location.href = "/dashboard/join-tournament")
             }
-            onTab={() =>
-              (window.location.href = "/dashboard/join-one-on-one")}
+            onTab={() => navigateRouter("/dashboard/my-invitation")}
           />
 
           {/* My History */}
