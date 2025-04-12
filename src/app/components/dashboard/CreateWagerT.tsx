@@ -149,20 +149,6 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
           )}
         </div>
         {/* Bet On */}
-        <div className="space-y-2">
-          <Label htmlFor="bet_on">Bet On</Label>
-          <Input
-            {...register("bet_on", {
-              required: "Select game is required",
-            })}
-            id="bet_on"
-            placeholder="ex. Fifa 25"
-            className="w-full p-3 bg-gray-700 text-white rounded-lg shadow-md !h-[50px]"
-          />
-          {errors.bet_on && (
-            <p className="text-red-500 text-sm">{errors.bet_on.message}</p>
-          )}
-        </div>
         {/* Note to Participants */}
         <div className="space-y-2 items-center gap-4">
           <Label htmlFor="description">Note to Participants</Label>
