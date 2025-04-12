@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Mail, Globe, Shield } from "lucide-react";
+import { Mail, Globe, Shield } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,58 +14,24 @@ import {
 // import { Metadata } from "next";
 import AccountForms from "../Components/AccountForms";
 import { useAuth } from "@/contexts/AuthContext";
+import EditableAvatar from "./Components/EditableAvatar";
+import { toast } from "sonner";
+import { Clipboard } from "@phosphor-icons/react";
 
 export default function SettingsPage() {
-  const [avatarSrc, setAvatarSrc] = React.useState("/assets/default-av.jpg");
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarSrc(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleAvatarClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
   const username = useAuth()?.user?.username;
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const userId = "fbe99f2-7f4b-11ed-9e24-3ee8038fe302";
 
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        setAvatarSrc(reader.result);
-      };
-
-      // Handle potential errors during file reading
-      reader.onerror = (error) => {
-        console.error("Error reading file:", error);
-        // Optionally: Show an error message to the user
-      };
-
-      // Read the file content as a Data URL
-      reader.readAsDataURL(file);
-    } else if (file) {
-      // Handle the case where the selected file is not an image
-      console.warn("Selected file is not an image:", file.type);
-      // Optionally: Show an error message to the user
-    }
-
-    // Reset the input value to allow selecting the same file again
-    if (event.target) {
-      event.target.value = null;
-    }
+  const copyToClipboard = () => {
+    navigator.clipboard
+      .writeText(userId)
+      .then(() => {
+        toast.success("Bet ID copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
   };
 
   return (
@@ -80,34 +45,22 @@ export default function SettingsPage() {
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center space-y-4">
                   <div className="relative">
-                    <Avatar className="w-24 h-24">
-                      <AvatarImage src="/assets/default-av.jpg" />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="sheen absolute bottom-0 right-0 rounded-full bg-[#233d4d] hover:bg-[#f37f2d] border-none"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-
-                    <input
-                      type="file"
-                      ref={fileInputRef} // Assign the ref
-                      onChange={handleFileChange} // Call handler on file selection
-                      accept="image/*" // Accept only image files
-                      style={{ display: "none" }} // Hide the element visually
-                      aria-hidden="true" // Hide from accessibility tree
-                    />
+                    <EditableAvatar />
                   </div>
                   <div className="text-center">
                     <h2 className="text-xl font-semibold text-white">
                       {username}
                     </h2>
-                    <p className="text-sm text-gray-400 mt-1 break-all">
-                      fbe99f2-7f4b-11ed-9e24-3ee8038fe302
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-400 mt-1 break-all">
+                        {userId}
+                      </p>
+                      <Clipboard
+                        size={20}
+                        onClick={copyToClipboard}
+                        className="text-white cursor-pointer hover:scale-90 transition-all ease-in-out duration-300 hover:text-gray-600"
+                      />
+                    </div>
                   </div>
 
                   <div className="text-sm text-gray-400">
@@ -120,7 +73,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Main Settings Area */}
-          <div className="col-span-1 md:col-span-2 space-y-6">
+          <div className="col-span-1 md:col-span-2 space-y-6 ">
             {/* Mission Objectives */}
             <Card className="bg-[#1a1f2e] border-none transRightLonger">
               <CardHeader>

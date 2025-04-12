@@ -523,3 +523,25 @@
   min-height: 50vh;
   height: 50vh;
 }
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes slide-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s infinite ease-in-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-slow 2s infinite ease-in-out;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}

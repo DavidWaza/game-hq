@@ -51,7 +51,7 @@ const AccountForms = ({username}:{username:string}) => {
           </Label>
           <Input
             id="username"
-            value={username}
+            value={username ?? ''}
             readOnly
             className="text-white"
             {...register("username", {
@@ -89,7 +89,7 @@ const AccountForms = ({username}:{username:string}) => {
           </Label>
           <Input
             id="email"
-            value={getUserEmail}
+            value={getUserEmail ?? ''}
             className="text-white"
             {...register("email", {
               required: "Email Address is required",

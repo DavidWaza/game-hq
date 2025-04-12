@@ -17,7 +17,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
 import {
   Popover,
   PopoverContent,
@@ -47,17 +46,11 @@ export function CalendarForm({ onDateChange }: CalendarFormProps) {
     }
   };
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast.success(`Tournament scheduled for ${format(data.dob, "PPP")}`, {
-      position: "top-right",
-      className: "p-4",
-    });
-  }
+ 
   const pathname = usePathname();
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="dob"
@@ -74,7 +67,7 @@ export function CalendarForm({ onDateChange }: CalendarFormProps) {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-[240px] pl-3 text-left font-normal bg-black text-white border-gray-600 hover:bg-gray-900 hover:text-white",
+                        "w-[240px] pl-3 text-left font-normal bg-gray-700 text-white border-gray-500 hover:bg-gray-900 hover:text-white",
                         !field.value && "text-gray-400"
                       )}
                     >
@@ -107,7 +100,6 @@ export function CalendarForm({ onDateChange }: CalendarFormProps) {
             </FormItem>
           )}
         />
-      </form>
     </Form>
   );
 }
