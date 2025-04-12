@@ -1,19 +1,22 @@
 "use client";
 import axios from "axios";
 import { toast } from "sonner";
+import { DataFromLogin } from "../../types/global";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_SERVICE_BASE_URL 
+const BASE_URL = process.env.NEXT_PUBLIC_API_SERVICE_BASE_URL;
 
 // Create Axios Instance
+
 const api = axios.create({
   baseURL: BASE_URL,
 });
 
 // Request Interceptor: Attach Token
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     if (typeof window !== "undefined") {
       const token = sessionStorage.getItem("token");
+      // const { token } = await getUser();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -22,14 +25,13 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
 // Response Interceptor: Handle Token Expiration
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
       await logout();
-      window.location.href = "/auth/login";
+      window.location.href = "/";
     }
     return Promise.reject(error);
   }
@@ -45,7 +47,6 @@ export const getFn = async (url: string) => {
       position: "top-right",
       className: "p-4",
     });
-    throw error;
   }
 };
 
@@ -59,7 +60,6 @@ export const postFn = async <T>(url: string, data: T) => {
       position: "top-right",
       className: "p-4",
     });
-    throw error;
   }
 };
 
@@ -79,7 +79,7 @@ interface ApiError {
 const processErrorResponse = (error: unknown): string => {
   const apiError = error as ApiError;
   let message = "An error occurred";
-  
+
   if (apiError.response?.data?.message) {
     message = apiError.response.data.message;
   } else if (apiError.response?.data?.title) {
@@ -89,55 +89,77 @@ const processErrorResponse = (error: unknown): string => {
   } else if (apiError.message) {
     message = apiError.message;
   }
-  
+
   if (apiError.response?.status === 401) {
     message = "Unauthenticated! Please log in again.";
   }
-  
+
   return message;
 };
 
 // Function to Store Token After Login
-export const storeToken = async (token: string) => {
+export const storeUserData = async (data: DataFromLogin) => {
   try {
-    // Store in sessionStorage
-    sessionStorage.setItem("token", token);
-
     // Store in HTTP-only cookie (optional, requires backend endpoint)
-    const response = await fetch("/api/auth/set-token", {
+    sessionStorage.setItem("token", data.token);
+    const response = await fetch("/api/auth/set-user", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ token }),
+      body: JSON.stringify(data),
+      // body: JSON.stringify({ token: data.token }),
     });
 
     if (!response.ok) {
       throw new Error("Failed to set token cookie");
     }
+    getUser();
   } catch (error) {
     console.error("Failed to store token:", error);
-    sessionStorage.removeItem("token");
-    throw error;
+  }
+};
+
+export const getUser = async () => {
+  try {
+    // Store in HTTP-only cookie (optional, requires backend endpoint)
+    const response = await fetch("/api/auth/get-user", {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to get user");
+    }
+    const data = await response.json();
+    const returnObj = {
+      ...data,
+      user: JSON.parse(data.user),
+    };
+    return returnObj;
+  } catch (error) {
+    toast.error(processErrorResponse(error), {
+      position: "top-right",
+      className: "p-4",
+    });
   }
 };
 
 // Function to Remove Token on Logout
 export const logout = async () => {
   try {
-    // Remove from sessionStorage
-    sessionStorage.removeItem("token");
-
     // Remove HTTP-only cookie (optional, requires backend endpoint)
-    const response = await fetch("/api/auth/remove-token", {
+    const response = await fetch("/api/auth/remove-user", {
       method: "POST",
     });
 
     if (!response.ok) {
       throw new Error("Failed to remove token cookie");
+    } else {
+      sessionStorage.clear();
+      localStorage.clear();
+      window.location.href = "/";
     }
   } catch (error) {
-    console.error("Failed to logout:", error);
     toast.error(processErrorResponse(error), {
       position: "top-right",
       className: "p-4",

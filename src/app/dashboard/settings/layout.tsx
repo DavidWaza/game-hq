@@ -97,7 +97,7 @@ export default function SettingsLayout({
   return (
     <>
       <Navbar variant="primary" />
-      <div className="py-40">
+      <div className="py-28">
         <div className="container mx-auto p-4">
           <div className="space-y-6">
             {/* Settings Navigation Bar */}

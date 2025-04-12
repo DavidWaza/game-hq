@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
-import Button from "./Button";
+import Button from "@/components/Button";
 import { toast } from "sonner";
 
 const MobileLogin = () => {

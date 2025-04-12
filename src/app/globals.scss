@@ -24,7 +24,9 @@ $text-dark: #1a1a1a;
   padding: 0;
   box-sizing: border-box;
 }
-
+.transCube {
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.3, 1) !important;
+}
 .sheen {
   overflow: hidden;
   position: relative;
@@ -191,6 +193,19 @@ body {
     align-items: center;
     justify-content: center;
   }
+
+  .hidden_scroll {
+    &::-webkit-scrollbar {
+      width: 0 !important;
+      height: 0 !important;
+    }
+    // &:hover {
+    //   &::-webkit-scrollbar {
+    //     width: 8px !important;
+    //     height: 8px !important;
+    //   }
+    // }
+  }
   .align_auto {
     display: flex;
     align-items: center;
@@ -319,6 +334,62 @@ html {
 
     &:hover {
       background: color.adjust($secondary-color, $lightness: -10%);
+    }
+  }
+  .lds-ellipsis {
+    display: inline-block;
+    position: relative;
+    color: var(--text_light);
+    width: 80px;
+    height: 30px;
+    div {
+      position: absolute;
+      top: 10px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: currentColor;
+      animation-timing-function: cubic-bezier(0, 1, 1, 0);
+      &:nth-child(1) {
+        left: 8px;
+        animation: lds-ellipsis1 0.6s infinite;
+      }
+      &:nth-child(2) {
+        left: 8px;
+        animation: lds-ellipsis2 0.6s infinite;
+      }
+      &:nth-child(3) {
+        left: 32px;
+        animation: lds-ellipsis2 0.6s infinite;
+      }
+      &:nth-child(4) {
+        left: 56px;
+        animation: lds-ellipsis3 0.6s infinite;
+      }
+    }
+  }
+  @keyframes lds-ellipsis1 {
+    0% {
+      transform: scale(0);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes lds-ellipsis3 {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0);
+    }
+  }
+  @keyframes lds-ellipsis2 {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(24px, 0);
     }
   }
 }

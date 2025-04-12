@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
-import Button from "@/app/components/Button";
+import Button from "@/components/Button";
 import { CaretDoubleLeft } from "@phosphor-icons/react";
 
 interface ProfileEditFormData {
@@ -109,7 +109,10 @@ const ProfileEdit = ({ reveal, setReveal }: ProfileEditProps) => {
             <Label htmlFor="about" className="text-[#fcf8db]">
               About Me
             </Label>
-            <Textarea placeholder="A pro at fifa, bring on your best team" />
+            <Textarea
+              className="resize-none h-[150px]"
+              placeholder="A pro at fifa, bring on your best team"
+            />
           </div>
           <div>
             <Button variant="primary">

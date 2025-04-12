@@ -7,12 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
-import { postFn, storeToken } from "@/lib/apiClient";
+import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
-import Button from "../../components/Button";
+import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import MobileRegister from "@/app/components/MobileRegister";
+import { useAuth } from "@/contexts/AuthContext";
+import { DataFromLogin } from "../../../../types/global";
+import ReferralCode from "@/app/components/ReferralCode";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -32,6 +35,7 @@ const evaluateStrength = (password: string) => {
 };
 
 const RegisterUser: React.FC = () => {
+  const { login } = useAuth();
   const router = useRouter();
   const [registrationType, setRegistrationType] = useState<"email" | "phone">(
     "email"
@@ -54,11 +58,10 @@ const RegisterUser: React.FC = () => {
 
   const password = watch("password", "");
   const confirmPassword = watch("confirm_password", "");
-
   const [isVisible, setIsVisible] = useState(false);
   const [confirmIsVisible, setConfirmIsVisible] = useState(false);
-
   const [strength, setStrength] = useState(0);
+  const [openCode, setOpenCode] = useState(false);
 
   const switchRegistrationType = () => {
     setRegistrationType(registrationType === "email" ? "phone" : "email");
@@ -98,10 +101,11 @@ const RegisterUser: React.FC = () => {
       username?: string;
       password: string;
     }) => postFn("api/auth/register", userData),
-    onSuccess: async (data) => {
-       await storeToken(data?.token);
+    onSuccess: async (data: DataFromLogin) => {
+      toast.success("Registration Successful");
+      await login(data);
       setTimeout(() => {
-        router.push('/dashboard/splash-avatar');
+        router.push("/dashboard/splash-avatar");
       }, 3000);
     },
     onError: (error) => {
@@ -279,7 +283,11 @@ const RegisterUser: React.FC = () => {
                             </p>
                           )}
                         </div>
-
+                        <div className="text-left text-black underline hover:no-underline transition-all ease-linear duration-300 hover:text-[#F2631F]">
+                          <div onClick={() => setOpenCode(true)}>
+                            Apply Referral Code
+                          </div>
+                        </div>
                         <Button variant="primary">
                           {registerMutation.isPending
                             ? "Loading..."
@@ -337,6 +345,21 @@ const RegisterUser: React.FC = () => {
                   </div>
                 </div>
               </div>
+              {openCode && (
+                <>
+                  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl p-6 w-full max-w-md  transform transition-all duration-300 scale-100 animate-slide-in">
+                      <ReferralCode />
+                      <button
+                        onClick={() => setOpenCode(false)}
+                        className="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg transition-colors duration-200"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
               <Image
                 src={"/assets/register-duty.png"}
                 alt=""

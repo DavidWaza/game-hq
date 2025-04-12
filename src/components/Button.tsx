@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import ButtonSpinner from "./ButtonSpinner";
 
 interface ButtonProps {
   variant?: "primary" | "secondary";
@@ -10,9 +11,10 @@ interface ButtonProps {
   children: React.ReactNode;
   disabled?: boolean;
   asChild?: boolean;
+  spinnerColor?: string;
   className?: string;
+  loading?: boolean;
   type?: "button" | "submit" | "reset";
-
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -25,8 +27,9 @@ const Button: React.FC<ButtonProps> = ({
   children,
   disabled,
   className,
+  loading = false,
   asChild = false,
-  
+  spinnerColor = "#fff",
 }) => {
   // Define variant styles
   const variantClasses = {
@@ -50,17 +53,23 @@ const Button: React.FC<ButtonProps> = ({
 
   const Comp = asChild ? "div" : "button";
 
-
-
   return (
     <Comp
+      style={{ cursor: disabled ? "not-allowed" : "pointer" }}
       onClick={onClick}
       disabled={disabled}
       type={type}
       className={classes}
     >
-      {icon && <span className="min-w-max">{icon}</span>}
-      {children}
+      {!loading ? (
+        <>
+          {" "}
+          {icon && <span className="min-w-max">{icon}</span>}
+          {children}
+        </>
+      ) : (
+        <ButtonSpinner color={spinnerColor} />
+      )}
     </Comp>
   );
 };

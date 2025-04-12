@@ -8,9 +8,10 @@ import {
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import React, { useState } from "react";
+import ForgotPassword from "./Components/Forgotpassword";
 
 const SecuritySettings = () => {
-  // Sample data for login activity; replace with actual data
+  const [selectedPasswordModal, setSelectedPasswordModal] = useState(false);
   const loginActivity = [
     {
       id: 1,
@@ -28,7 +29,7 @@ const SecuritySettings = () => {
 
   // Mock state for 2FA toggle and KYC status
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-  const kycStatus = "Verified"; // Replace with actual KYC status
+  const kycStatus = "Verified";
 
   return (
     <div className="bg-[#1a1f2e] rounded-lg p-7 w-full">
@@ -38,7 +39,7 @@ const SecuritySettings = () => {
       </h1>
       <div className="space-y-6">
         {/* Password Management */}
-        <div className="bg-gradient-to-r from-gray-800 to-[#252b3e] rounded-md p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+        <div className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg p-5 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,165,0,0.2)] transition-all duration-300 hover:scale-[1.01] items-center justify-between gap-4 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-orange-500/20 rounded-full">
@@ -53,21 +54,21 @@ const SecuritySettings = () => {
                 </p>
               </div>
             </div>
-            <Link
-              href="/change-password"
-              className="flex items-center gap-1 text-orange-500 text-sm font-medium hover:text-orange-400 transition-all duration-200 group"
+            <div
+              className="flex items-center gap-1 text-orange-500 text-sm font-medium hover:text-orange-400 transition-all duration-200 group cursor-pointer"
+              onClick={() => setSelectedPasswordModal(true)}
             >
               <span>Change Password</span>
               <ArrowRight
                 size={18}
                 className="group-hover:scale-110 transition-transform duration-200"
               />
-            </Link>
+            </div>
           </div>
         </div>
 
         {/* Two-Factor Authentication */}
-        <div className="bg-gradient-to-r from-gray-800 to-[#252b3e] rounded-md p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+        <div className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg p-5 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,165,0,0.2)] transition-all duration-300 hover:scale-[1.01] items-center justify-between gap-4 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-orange-500/20 rounded-full">
@@ -98,13 +99,15 @@ const SecuritySettings = () => {
         </div>
 
         {/* Login Activity */}
-        <div className="bg-gradient-to-r from-gray-800 to-[#252b3e] rounded-md p-5 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg p-5 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,165,0,0.2)] transition-all duration-300 hover:scale-[1.01] items-center justify-between gap-4 backdrop-blur-sm">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-orange-500/20 rounded-full">
               <Clock size={32} className="text-orange-500" />
             </div>
             <div>
-              <h2 className="text-white text-xl font-semibold">Login Activity</h2>
+              <h2 className="text-white text-xl font-semibold">
+                Login Activity
+              </h2>
               <p className="text-gray-300 text-sm">
                 Review recent login attempts and devices.
               </p>
@@ -145,7 +148,7 @@ const SecuritySettings = () => {
         </div>
 
         {/* Account Verification */}
-        <div className="bg-gradient-to-r from-gray-800 to-[#252b3e] rounded-md p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+        <div className="bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg p-5 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,165,0,0.2)] transition-all duration-300 hover:scale-[1.01] items-center justify-between gap-4 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-orange-500/20 rounded-full">
@@ -186,6 +189,21 @@ const SecuritySettings = () => {
           </div>
         </div>
       </div>
+      {selectedPasswordModal && (
+        <>
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl p-6 w-full max-w-md  transform transition-all duration-300 scale-100 animate-slide-in">
+              <ForgotPassword />
+              <button
+                onClick={() => setSelectedPasswordModal(false)}
+                className="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg transition-colors duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

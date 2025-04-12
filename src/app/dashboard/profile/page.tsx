@@ -4,10 +4,10 @@ import Navbar from "@/components/Navbar";
 
 const ProfileDashboard = () => {
   return (
-    <div>
+    <>
       <Navbar variant="primary" />
       <Banner />
-    </div>
+    </>
   );
 };
 

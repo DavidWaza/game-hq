@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import Button from "@/app/components/Button";
+import Button from "@/components/Button";
 
 const SplashAvartar = () => {
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
@@ -36,11 +36,36 @@ const SplashAvartar = () => {
   };
 
   const avatars = [
-    { id: "mk", src: "/assets/mk-av.svg", borderColor: "#b7950b", isFull: true },
-    { id: "cod", src: "/assets/cod-av.svg", borderColor: "white", isFull: false },
-    { id: "football", src: "/assets/cards-av.svg", borderColor: "#979a9a", isFull: false },
-    { id: "basketball", src: "/assets/basketball-av.svg", borderColor: "#f37f2d", isFull: false },
-    { id: "ludo", src: "/assets/pawn-av.svg", borderColor: "#f37f2d", isFull: false },
+    {
+      id: "mk",
+      src: "/assets/mk-av.svg",
+      borderColor: "#b7950b",
+      isFull: true,
+    },
+    {
+      id: "cod",
+      src: "/assets/cod-av.svg",
+      borderColor: "white",
+      isFull: false,
+    },
+    {
+      id: "football",
+      src: "/assets/cards-av.svg",
+      borderColor: "#979a9a",
+      isFull: false,
+    },
+    {
+      id: "basketball",
+      src: "/assets/basketball-av.svg",
+      borderColor: "#f37f2d",
+      isFull: false,
+    },
+    {
+      id: "ludo",
+      src: "/assets/pawn-av.svg",
+      borderColor: "#f37f2d",
+      isFull: false,
+    },
   ];
 
   const handleAvatarClick = (avatarId: string) => {
@@ -76,7 +101,9 @@ const SplashAvartar = () => {
                   selectedAvatar === avatar.id
                     ? `border-[${avatar.borderColor}] border-4 scale-110 shadow-xl shadow-[${avatar.borderColor}]/50`
                     : `border-[${avatar.borderColor}]`
-                } flex items-center justify-center overflow-hidden transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl hover:shadow-[${avatar.borderColor}]/50 group cursor-pointer`}
+                } flex items-center justify-center overflow-hidden transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl hover:shadow-[${
+                  avatar.borderColor
+                }]/50 group cursor-pointer`}
                 onClick={() => handleAvatarClick(avatar.id)}
               >
                 <div className="relative flex items-center justify-center w-full h-full">
@@ -87,7 +114,9 @@ const SplashAvartar = () => {
                     alt={`${avatar.id} Avatar`}
                     className={`${
                       avatar.isFull ? "w-full h-full" : "w-[70%] h-[70%]"
-                    } object-${avatar.isFull ? "cover" : "contain"} transition-all duration-300 group-hover:brightness-110`}
+                    } object-${
+                      avatar.isFull ? "cover" : "contain"
+                    } transition-all duration-300 group-hover:brightness-110`}
                   />
                 </div>
               </div>

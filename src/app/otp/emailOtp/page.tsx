@@ -5,14 +5,14 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import Button from "@/app/components/Button";
+import Button from "@/components/Button";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 
 const EmailOtp = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const {  handleSubmit, setValue, watch } = useForm<{
+  const { handleSubmit, setValue, watch } = useForm<{
     otp: string[];
   }>({
     defaultValues: { otp: ["", "", "", "", "", ""] }, // Ensure default values
@@ -59,7 +59,9 @@ const EmailOtp = () => {
                   key={index}
                   index={index}
                   // value={otpValues[index] || ""}
-                  onChange={(e) => handleChange(index, (e.target as HTMLInputElement).value)}
+                  onChange={(e) =>
+                    handleChange(index, (e.target as HTMLInputElement).value)
+                  }
                 />
               ))}
             </InputOTPGroup>

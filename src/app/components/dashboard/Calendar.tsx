@@ -17,13 +17,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { usePathname } from "next/navigation";
 
 const FormSchema = z.object({
   dob: z.date({
@@ -33,9 +31,10 @@ const FormSchema = z.object({
 
 interface CalendarFormProps {
   onDateChange?: (date: Date) => void;
+  label?: string;
 }
 
-export function CalendarForm({ onDateChange }: CalendarFormProps) {
+export function CalendarForm({ onDateChange, label }: CalendarFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -47,26 +46,15 @@ export function CalendarForm({ onDateChange }: CalendarFormProps) {
     }
   };
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast.success(`Tournament scheduled for ${format(data.dob, "PPP")}`, {
-      position: "top-right",
-      className: "p-4",
-    });
-  }
-  const pathname = usePathname();
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="dob"
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel className="!text-left text-white">
-                {pathname.includes("settings")
-                  ? "Date of Birth"
-                  : "Pick your Date"}
+                {!label ? "Date of Birth" : label}
               </FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -74,18 +62,14 @@ export function CalendarForm({ onDateChange }: CalendarFormProps) {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-[240px] pl-3 text-left font-normal bg-black text-white border-gray-600 hover:bg-gray-900 hover:text-white",
+                        "w-[240px] pl-3 text-left font-normal bg-gray-700 text-white border-gray-500 hover:bg-gray-900 hover:text-white",
                         !field.value && "text-gray-400"
                       )}
                     >
                       {field.value ? (
                         format(field.value, "PPP")
                       ) : (
-                        <span>
-                          {pathname.includes("settings")
-                            ? "Date of Birth"
-                            : "Schedule a Date"}
-                        </span>
+                        <span>{!label ? "Date of Birth" : label}</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -107,7 +91,6 @@ export function CalendarForm({ onDateChange }: CalendarFormProps) {
             </FormItem>
           )}
         />
-      </form>
     </Form>
   );
 }
