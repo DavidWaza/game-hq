@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import Button from "../Button";
-import { CaretDoubleLeft, Money } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
+import { Money } from "@phosphor-icons/react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -14,7 +12,6 @@ const BetSwitchTab = () => {
     gameTitle: "",
     invitees: [""],
   });
-  const router = useRouter();
 
   // Handle tab toggle (public/private)
 
@@ -55,7 +52,7 @@ const BetSwitchTab = () => {
   };
 
   return (
-    <div className="relative bg-black text-white p-6 bg-opacity-90 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-full lg:w-[500px] grid grid-cols-1 gap-4">
+    <section className="transIn">
       {/* Switch Button: Public/Private Bet */}
       <div className="flex justify-center items-center space-x-4">
         <button
@@ -81,8 +78,9 @@ const BetSwitchTab = () => {
       </div>
 
       {/* Form: Public/Private Bet */}
-      <div className="w-full max-w-md mt-6">
+      <div className="w-full mt-6">
         {/* Common Fields for both Public and Private */}
+        {/* Select Game */}
         <div className="mb-4">
           <label htmlFor="gameTitle" className="block text-sm text-gray-300">
             Select Game
@@ -96,19 +94,20 @@ const BetSwitchTab = () => {
             onChange={(e) => handleInputChange(e, "gameTitle")}
           />
         </div>
-
+        {/* Note to Participants */}
         <div className="mb-4">
           <label htmlFor="description" className="block text-sm text-gray-300">
-           Note to Participants
+            Note to Participants
           </label>
           <textarea
             id="description"
-            className="w-full mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md"
+            className="w-full mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md resize-none h-[150px]"
             placeholder="Give your rules"
             value={betDetails.description}
             onChange={(e) => handleInputChange(e, "description")}
           />
         </div>
+        {/* Wager Amount */}
         <div className="space-y-1 mb-4">
           <Label htmlFor="amount" className="text-right">
             Wager Amount
@@ -135,7 +134,7 @@ const BetSwitchTab = () => {
 
         {/* Private Bet Fields */}
         {isPrivate && (
-          <div className="space-y-4">
+          <div className="space-y-4 transIn">
             <div>
               <label className="block text-sm text-gray-300">
                 Invite Users
@@ -144,58 +143,48 @@ const BetSwitchTab = () => {
                 <div key={index} className="flex items-center space-x-2 mb-5">
                   <input
                     type="text"
-                    className="w-3/4 mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md"
+                    className="w-full mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md"
                     placeholder={`Invitee ${index + 1}`}
                     value={invitee}
                     onChange={(e) => handleInviteeChange(e, index)}
                   />
-                  <button
-                    type="button"
-                    onClick={() => deleteInvitee(index)}
-                    className="mt-2 text-red-500 hover:text-red-700 transition-colors"
-                    disabled={betDetails.invitees.length === 1}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M3 7h18"
-                      />
-                    </svg>
-                  </button>
-                  {index === betDetails.invitees.length - 1 && (
+                  {betDetails.invitees.length !== 1 && (
                     <button
                       type="button"
-                      onClick={handleAddInvitee}
-                      className="px-4 py-2 rounded-lg text-sm flex items-center whitespace-nowrap bg-[#202216] text-[#F0DE9B]"
+                      onClick={() => deleteInvitee(index)}
+                      className="mt-2 text-red-500 hover:text-red-700 transition-colors"
+                      disabled={betDetails.invitees.length === 1}
                     >
-                      + Add Invitee
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M3 7h18"
+                        />
+                      </svg>
                     </button>
                   )}
                 </div>
               ))}
+              <button
+                type="button"
+                onClick={handleAddInvitee}
+                className="ml-auto px-4 py-2 rounded-lg text-sm flex items-center whitespace-nowrap bg-[#202216] text-[#F0DE9B]"
+              >
+                + Add Invitee
+              </button>
             </div>
           </div>
         )}
-
-        {/* Submit Button */}
-        <Button>Create Bet</Button>
       </div>
-      <div
-        onClick={() => router.back()}
-        className="text-white text-center pt-5 flex items-center justify-center gap-3 hover:animate-bounce cursor-pointer"
-      >
-        <CaretDoubleLeft size={25} />
-        Back
-      </div>
-    </div>
+    </section>
   );
 };
 

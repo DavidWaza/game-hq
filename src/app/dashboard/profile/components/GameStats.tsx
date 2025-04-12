@@ -42,7 +42,7 @@ const GameStats = () => {
         el.classList.remove("animate-pulse");
       }, 1500);
     });
-  }, []);
+  }, [stats.losses, stats.wins]);
 
   // Custom stat card with animation
   const StatCard: React.FC<{

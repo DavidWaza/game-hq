@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import Button from "@/app/components/Button";
+import Button from "@/components/Button";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -11,7 +11,7 @@ const ForgotPassword = () => {
   //   "email"
   // );
   const [isLoading, setIsLoading] = useState(false);
-//   const [email, setEmail] = useState("");
+  //   const [email, setEmail] = useState("");
 
   const { register, handleSubmit } = useForm<{
     email?: string;
@@ -21,16 +21,16 @@ const ForgotPassword = () => {
 
   const onSubmit: SubmitHandler<{
     email?: string;
-    phone?:number;
+    phone?: number;
   }> = () => {
     try {
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
       }, 3000);
-    //   if (email) {
-    //     window.location.href = "/forgot-password/set-password";
-    //   }
+      //   if (email) {
+      //     window.location.href = "/forgot-password/set-password";
+      //   }
     } catch (error) {
       console.error(error);
     }

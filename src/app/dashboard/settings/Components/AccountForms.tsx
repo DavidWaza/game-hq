@@ -3,7 +3,7 @@ import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Button from "@/app/components/Button";
+import Button from "@/components/Button";
 import { CalendarForm } from "@/app/components/dashboard/Calendar";
 import { useAuth } from "@/contexts/AuthContext";
 

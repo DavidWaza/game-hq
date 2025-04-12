@@ -1,5 +1,5 @@
 "use client";
-import Button from "@/app/components/Button";
+import Button from "@/components/Button";
 import {
   Popover,
   PopoverContent,

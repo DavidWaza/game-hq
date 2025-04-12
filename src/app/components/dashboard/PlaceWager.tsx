@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { CalendarForm } from "../../components/dashboard/Calendar";
-import Button from "../Button";
+import Button from "@/components/Button";
 import { Check, Plus, Trash } from "@phosphor-icons/react";
 import { Label } from "@/components/ui/label";
 

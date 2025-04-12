@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { storeUserData, logout as logoutFn } from "@/lib/apiClient";
 import { DataFromLogin, User, TypeCategories } from "../../types/global";
-import { getFn } from "@/lib/apiClient";
+import { getFn, getUser } from "@/lib/apiClient";
 interface StoreData {
   categories: TypeCategories[] | [] | undefined;
 }
@@ -43,18 +43,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // set user and token from sesion storage
   useEffect(() => {
-    // Check if user is authenticated on mount
-    const token = sessionStorage.getItem("token");
-    const sessionUser = sessionStorage.getItem("user");
-    if (sessionUser) {
-      setUser(JSON.parse(sessionUser));
-      // You can also fetch user details here if needed
-    }
-    if (token) {
-      return setIsAuthenticated(true);
-      // You can also fetch user details here if needed
-    }
-    setIsAuthenticated(false);
+    const fetchUser = async () => {
+      try {
+        const dataResponse = await getUser();
+        if (dataResponse?.user) {
+          console.log({ user: dataResponse?.user });
+          setUser(dataResponse.user);
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch {}
+    };
+    fetchUser();
   }, []);
 
   const login = async (data: DataFromLogin) => {

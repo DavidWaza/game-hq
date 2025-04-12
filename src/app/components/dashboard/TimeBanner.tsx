@@ -4,7 +4,7 @@ import { Bungee } from "next/font/google";
 import Image from "next/image";
 import React from "react";
 import CountdownTimer from "./CountdownTimer";
-import Button from "../Button";
+import Button from "@/components/Button";
 import { motion } from "framer-motion";
 import { CurrencyNgn } from "@phosphor-icons/react";
 import Modal from "./Modal";

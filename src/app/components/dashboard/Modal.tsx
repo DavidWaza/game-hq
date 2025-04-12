@@ -1,4 +1,4 @@
-import Button from "../Button";
+import Button from "@/components/Button";
 import { motion } from "framer-motion";
 import { X } from "@phosphor-icons/react";
 import { Cinzel_Decorative } from "next/font/google";
