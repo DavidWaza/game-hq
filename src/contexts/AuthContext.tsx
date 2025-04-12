@@ -1,10 +1,16 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { storeUserData, logout as logoutFn } from "@/lib/apiClient";
-import { DataFromLogin, User, TypeCategories } from "../../types/global";
+import {
+  DataFromLogin,
+  User,
+  TypeCategories,
+  TypeGames,
+} from "../../types/global";
 import { getFn, getUser } from "@/lib/apiClient";
 interface StoreData {
   categories: TypeCategories[] | [] | undefined;
+  games: TypeGames[] | [] | undefined;
 }
 type StoreConFigKeys = keyof StoreData;
 interface AuthContextType {
@@ -16,7 +22,7 @@ interface AuthContextType {
 }
 interface DataHandler {
   storeValue: StoreConFigKeys;
-  data: TypeCategories[] | undefined;
+  data: TypeCategories[] | TypeGames[] | undefined;
   path: string;
 }
 
@@ -29,9 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [store, setStore] = useState<StoreData>({
     categories: [],
+    games: [],
   });
   const setState = (
-    value: TypeCategories[] | undefined,
+    value: TypeCategories[] | TypeGames[] | undefined,
     name: StoreConFigKeys
   ) => {
     console.log(value, name);
@@ -79,6 +86,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             storeValue: "categories",
             data: undefined,
             path: "api/gamecategories",
+          },
+          {
+            storeValue: "games",
+            data: undefined,
+            path: "api/games",
           },
         ];
 
