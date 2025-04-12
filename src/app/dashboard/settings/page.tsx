@@ -1,12 +1,11 @@
 "use client";
 import React from "react";
-import { usePathname } from "next/navigation";
 
 const SettingsPage = () => {
-  const pathname = usePathname();
-  const personalAccountPath = "/dashboard/settings/personal-account";
   return (
-    <div>{pathname.includes(personalAccountPath)}</div>
+    <div className="text-white flex flex-col items-center justify-center h-screen bg-[#1a1f2e] rounded-lg p-7 w-full">
+      Select a tab
+    </div>
   );
 };
 

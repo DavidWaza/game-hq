@@ -87,6 +87,8 @@ const Carousel = () => {
             onClick={() =>
               (window.location.href = "/dashboard/join-tournament")
             }
+            onTab={() =>
+              (window.location.href = "/dashboard/join-one-on-one")}
           />
 
           {/* My History */}
