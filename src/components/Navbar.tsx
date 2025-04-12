@@ -53,7 +53,7 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
     >
       <nav className="flex justify-between items-center gap-3 px-4 mx-auto container">
         <div className="">
-          <Link href={"/"}>
+          <Link href={"/"} className="!outline-none !border-none">
             <div>
               <p className={`text-2xl md:text-4xl font-medium ${textColor}`}>
                 GameHQ

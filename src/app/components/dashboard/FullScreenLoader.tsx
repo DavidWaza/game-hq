@@ -1,8 +1,14 @@
 // components/FullScreenLoader.jsx
 import Image from "next/image";
 import React from "react";
-
-const FullScreenLoader = ({ isLoading }: { isLoading: boolean }) => {
+type TypeLoader = {
+  isLoading: boolean;
+  text?: string;
+};
+const FullScreenLoader = ({
+  isLoading,
+  text = "Ready, Set, Play",
+}: TypeLoader) => {
   if (!isLoading) return null;
 
   return (
@@ -14,11 +20,11 @@ const FullScreenLoader = ({ isLoading }: { isLoading: boolean }) => {
         <Image
           src={"/assets/bouncing-ball.svg"}
           alt="Loading animation"
-          width={80} 
-          height={80} 
+          width={80}
+          height={80}
           className="w-20 h-auto"
         />
-        <p className="text-white font-semibold mt-2 text-lg">Ready, Set, Play</p>
+        <p className="text-white font-semibold mt-2 text-lg">{text}</p>
       </div>
     </section>
   );
