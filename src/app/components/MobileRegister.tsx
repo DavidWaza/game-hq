@@ -29,7 +29,7 @@ const evaluateStrength = (password: string) => {
 };
 
 const MobileRegister = () => {
-  const [registrationType, setRegistrationType] = useState<"email" | "phone">(
+  const [registrationType] = useState<"email" | "phone">(
     "email"
   );
   const {
@@ -37,7 +37,7 @@ const MobileRegister = () => {
     handleSubmit,
     setError,
     clearErrors,
-    reset,
+    // reset,
     watch,
     formState: { errors },
   } = useForm<{
@@ -55,11 +55,11 @@ const MobileRegister = () => {
 
   const [strength, setStrength] = useState(0);
 
-  const switchRegistrationType = () => {
-    setRegistrationType(registrationType === "email" ? "phone" : "email");
-    reset();
-    setStrength(0);
-  };
+  // const switchRegistrationType = () => {
+  //   setRegistrationType(registrationType === "email" ? "phone" : "email");
+  //   reset();
+  //   setStrength(0);
+  // };
 
   const handlePasswordChangeMobile = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -129,6 +129,7 @@ const MobileRegister = () => {
 
   return (
     <div>
+      
       <div className="relative block md:hidden">
         <div className="bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center h-full">
           <div className="grid lg:grid-cols-3">
@@ -140,7 +141,7 @@ const MobileRegister = () => {
             <div className="col-span-2">
               <div className="relative z-20">
                 <div className="pt-0 px-0">
-                  <div className="px-10 space-y-5 border rounded-lg rounded-t-none py-3 glass-mobile">
+                  <div className=" px-5 space-y-5 border rounded-lg rounded-t-none py-3 glass-mobile overflow-hidden">
                     <div className="text-center flex flex-col space-y-2 py-4">
                       <form
                         onSubmit={handleSubmit(onSubmit)}
@@ -280,7 +281,7 @@ const MobileRegister = () => {
                       <div className="divider py-4">
                         <span>Or</span>
                       </div>
-                      <Button
+                      {/* <Button
                         variant="secondary"
                         size="md"
                         width="full"
@@ -300,7 +301,7 @@ const MobileRegister = () => {
                         {registrationType === "email"
                           ? "Phone Number"
                           : "Email"}
-                      </Button>
+                      </Button> */}
                       <Button
                         variant="secondary"
                         size="md"
@@ -328,6 +329,7 @@ const MobileRegister = () => {
                   </div>
                 </div>
               </div>
+              <div className="overflow-hidden">
               <Image
                 src={"/assets/register-duty.png"}
                 alt=""
@@ -336,6 +338,8 @@ const MobileRegister = () => {
                 sizes="100vw"
                 className="w-2/3 mr-0 ml-auto h-auto object-contain object-center absolute top-60 right-0"
               />
+              </div>
+            
             </div>
           </div>
         </div>

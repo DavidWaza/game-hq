@@ -1,8 +1,55 @@
 "use client";
+import { useAuth } from "@/contexts/AuthContext";
+import { getFn } from "@/lib/apiClient";
 import { CurrencyNgn, ArrowDown, ArrowUp } from "@phosphor-icons/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+interface Wallet {
+  user_id: number;
+  balance: string;
+}
 
 const AccountBalance = () => {
+  const auth = useAuth();
+  const userId = auth?.user?.id || 0;
+  const [balance, setBalance] = useState("0.00");
+
+  const fetchAccountBalance = async () => {
+    try {
+      console.log("Current user ID:", userId, "Type:", typeof userId);
+
+      const response = await getFn(`api/wallets`);
+      console.log("API Response:", response);
+
+      const wallets = Array.isArray(response) ? response : response.data || [];
+      console.log("Wallets array:", wallets);
+
+      const userWallet = wallets.find(
+        (wallet: Wallet) => Number(wallet.user_id) === Number(userId)
+      );
+
+      console.log("Found user wallet:", userWallet);
+
+      if (userWallet) {
+        console.log(`Account Balance: ${userWallet.balance}`);
+        setBalance(userWallet.balance);
+        return userWallet.balance;
+      } else {
+        console.log("No wallet was found for this user");
+        setBalance("0.00");
+        return "0.00";
+      }
+    } catch (err) {
+      console.log("Error fetching wallet:", err);
+      setBalance("0.00");
+      return "0.00";
+    }
+  };
+
+  useEffect(() => {
+    fetchAccountBalance();
+  }, [userId]);
+
   return (
     <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 w-full max-w-5xl shadow-2xl transition-all duration-300">
       <h1 className="text-3xl font-semibold text-white mb-8 tracking-tight">
@@ -11,30 +58,35 @@ const AccountBalance = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Balance Cards */}
         <div className="bg-gray-700/50 rounded-lg p-6 hover:bg-gray-700/70 transition-all duration-200">
-          <p className="text-gray-300 text-sm font-medium mb-2">Current Balance</p>
+          <p className="text-gray-300 text-sm font-medium mb-2">
+            Current Balance
+          </p>
           <div className="flex items-center">
             <CurrencyNgn size={32} className="text-teal-400" />
-            <h2 className="text-3xl font-bold text-yellow-100 ml-3">10,000.00</h2>
+            <h2 className="text-3xl font-bold text-yellow-100 ml-3">
+              {balance}
+            </h2>
           </div>
         </div>
-
         <div className="bg-gray-700/50 rounded-lg p-6 hover:bg-gray-700/70 transition-all duration-200">
-          <p className="text-gray-300 text-sm font-medium mb-2">Bonus Balance</p>
+          <p className="text-gray-300 text-sm font-medium mb-2">
+            Bonus Balance
+          </p>
           <div className="flex items-center">
             <CurrencyNgn size={32} className="text-teal-400" />
             <h2 className="text-3xl font-bold text-yellow-100 ml-3">0.00</h2>
           </div>
         </div>
-
         <div className="bg-gray-700/50 rounded-lg p-6 hover:bg-gray-700/70 transition-all duration-200">
-          <p className="text-gray-300 text-sm font-medium mb-2">Ongoing Bet Placed</p>
+          <p className="text-gray-300 text-sm font-medium mb-2">
+            Ongoing Bet Placed
+          </p>
           <div className="flex items-center">
             <CurrencyNgn size={32} className="text-teal-400" />
             <h2 className="text-3xl font-bold text-yellow-100 ml-3">5,000</h2>
           </div>
         </div>
       </div>
-
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-end">
         <button

@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Bungee } from "next/font/google";
 import Image from "next/image";
-import React from "react";
 import CountdownTimer from "./CountdownTimer";
 import Button from "@/components/Button";
 import { motion } from "framer-motion";
@@ -91,24 +90,27 @@ const TimeBanner = () => {
           className="w-full max-w-[430px] h-auto object-cover"
         />
       </div>
+
+      {/* Scroll Down Button - Centered and Responsive */}
       <motion.div
-        className="absolute z-30 left-[45%] bottom-10 -translate-x-1/2"
+        className="absolute z-30 bottom-8 w-full flex justify-center"
         animate={{ y: [0, -15, 0] }}
         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       >
         <button
           onClick={scrollToSection}
-          className="flex flex-col items-center text-white text-center px-4 py-2 rounded-lg"
+          className="flex flex-col items-center text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f37f2d] hover:bg-[#f37f2d]/20 transition-colors"
+          aria-label="Scroll to next section"
         >
           <Image
             src={"/assets/cod-icon.svg"}
-            alt="Countdown"
+            alt="Scroll down icon"
             width={0}
             height={0}
-            sizes="100vw"
-            className="w-[70%] max-w-[430px] mx-auto h-auto object-cover"
+            sizes="(max-width: 640px) 50px, 60px"
+            className="w-[50px] sm:w-[60px] h-auto object-cover"
           />
-          <p className="mt-2">Scroll Down</p>
+          <p className="mt-2 text-sm sm:text-base">Scroll Down</p>
         </button>
       </motion.div>
     </div>

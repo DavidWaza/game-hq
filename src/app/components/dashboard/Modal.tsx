@@ -1,15 +1,15 @@
 import Button from "@/components/Button";
 import { motion } from "framer-motion";
 import { X } from "@phosphor-icons/react";
-import { Cinzel_Decorative } from "next/font/google";
+// import { Cinzel_Decorative } from "next/font/google";
 import ReactMarkdown from "react-markdown";
 
-const cinzel = Cinzel_Decorative({
-  variable: "--Cinzel_Decorative",
-  display: "swap",
-  subsets: ["latin"],
-  weight: "400",
-});
+// const cinzel = Cinzel_Decorative({
+//   variable: "--Cinzel_Decorative",
+//   display: "swap",
+//   subsets: ["latin"],
+//   weight: "400",
+// });
 
 interface ModalProps {
   isOpen: boolean;
@@ -70,10 +70,10 @@ const Modal = ({
         >
           <X size={24} />
         </button>
-        <h2 className="text-xl font-bold text-center">{header}</h2>
+        <h2 className="text-xl font-normal text-center">{header}</h2>
         {sub && <p className="text-sm text-gray-300 text-center pb-5">{sub}</p>}
         {contentItems && (
-          <div className={`text-sm ${cinzel.className}`}>
+          <div className={`text-sm `}>
             <ReactMarkdown>{generateMarkdownContent()}</ReactMarkdown>
           </div>
         )}

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Button from "@/components/Button";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
+import { postFn } from "@/lib/apiClient";
+import { toast } from "sonner";
 
 interface ForgotPasswordAuth {
   oldpassword: string;
@@ -31,8 +33,23 @@ const ForgotPassword = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<ForgotPasswordAuth> = (formData) => {
-    console.log(formData);
+  const onSubmit: SubmitHandler<ForgotPasswordAuth> = async (formData) => {
+    try {
+      const response = await postFn(`api/account/changepassword`, formData);
+      console.log('pass', response.data)
+      toast.success("Pasword change succesfully", {
+        position: "top-right",
+        className: "p-4",
+      });
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Please try again", {
+        position: "top-right",
+        className: "p-4",
+      });
+    }
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +71,7 @@ const ForgotPassword = () => {
     // Validate if passwords match
     const newpassword = getValues("newpassword");
     if (newConfirmPassword !== newpassword) {
-        setError("confirmpassword", { message: "Passwords do not match" });
+      setError("confirmpassword", { message: "Passwords do not match" });
     } else {
       clearErrors("confirmpassword");
     }

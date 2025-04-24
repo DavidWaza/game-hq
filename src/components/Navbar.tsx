@@ -66,32 +66,45 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
           {isAuthenticated !== undefined && (
             <>
               {!isAuthenticated && !isAuthRoute ? (
-                <div className="flex items-center gap-5 relative transLeft">
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={() => router.push("/auth/register")}
-                  >
-                    Create Account
-                  </Button>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="primary" size="sm">
-                        Login
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent
-                      style={{ borderRadius: "24px" }}
-                      aria-describedby="login-dialog-description"
-                      className="sm:max-w-[425px]"
+                <>
+                  <div className="lg:flex items-center gap-5 relative transLeft hidden">
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      onClick={() => router.push("/auth/register")}
                     >
-                      <DialogHeader>
-                        <DialogTitle className="">LOGIN</DialogTitle>
-                      </DialogHeader>
-                      <Login />
-                    </DialogContent>
-                  </Dialog>
-                </div>
+                      Create Account
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="primary" size="sm">
+                          Login
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent
+                        style={{ borderRadius: "24px" }}
+                        aria-describedby="login-dialog-description"
+                        className="sm:max-w-[425px]"
+                      >
+                        <DialogHeader>
+                          <DialogTitle className="">LOGIN</DialogTitle>
+                        </DialogHeader>
+                        <Login />
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  <div className="lg:hidden flex gap-5 underline">
+                    <Link
+                      href={"/auth/register"}
+                      className="text-white hover:scale-50 transition-all ease-in-out"
+                    >
+                      Create Account
+                    </Link>
+                    <Link href={"/auth/login"} className="text-[#f37f2d]">
+                      Login
+                    </Link>
+                  </div>
+                </>
               ) : (
                 !isAuthRoute && (
                   <div className="flex items-center gap-5 relative transLeft">

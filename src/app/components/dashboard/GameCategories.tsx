@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import StatusCard from "./SetGamesCard";
+import { getFn } from "@/lib/apiClient";
 
 // Sample games data with categories
 const gamesData = [
@@ -12,7 +13,7 @@ const gamesData = [
     nameSrc: "Call of Duty",
     nameAlt: "Call of Duty",
     category: "Action Games",
-    players: 100,
+    players: 10,
     isNameImage: false,
   },
   {
@@ -22,7 +23,7 @@ const gamesData = [
     nameSrc: "Fifa 25",
     nameAlt: "FIFA",
     category: "Sports Games",
-    players: 120,
+    players: 5,
     isNameImage: false,
   },
   {
@@ -32,7 +33,7 @@ const gamesData = [
     nameSrc: "Chess Master",
     nameAlt: "Chess Master",
     category: "Board Games",
-    players: 85,
+    players: 8,
     isNameImage: false,
   },
   {
@@ -42,7 +43,7 @@ const gamesData = [
     nameSrc: "Monopoly",
     nameAlt: "Monopoly",
     category: "Board Games",
-    players: 95,
+    players: 9,
     isNameImage: false,
   },
   {
@@ -52,7 +53,7 @@ const gamesData = [
     nameSrc: "Yahtzee",
     nameAlt: "Yahtzee",
     category: "Dice Games",
-    players: 60,
+    players: 6,
     isNameImage: false,
   },
   {
@@ -62,7 +63,7 @@ const gamesData = [
     nameSrc: "Poker",
     nameAlt: "Poker",
     category: "Card Games",
-    players: 110,
+    players: 11,
     isNameImage: false,
   },
   {
@@ -72,7 +73,7 @@ const gamesData = [
     nameSrc: "Battlefield",
     nameAlt: "Battlefield",
     category: "Action Games",
-    players: 90,
+    players: 9,
     isNameImage: false,
   },
   {
@@ -82,7 +83,7 @@ const gamesData = [
     nameSrc: "NBA 2K25",
     nameAlt: "NBA 2K25",
     category: "Sports Games",
-    players: 105,
+    players: 2,
     isNameImage: false,
   },
 ];
@@ -113,12 +114,26 @@ const gameCategories = [
 // Main Component
 const GameCategories = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [getTournament, setGetTournament] = useState([]);
 
   // Filter games based on selected category
   const filteredGames =
     selectedCategory === "All"
       ? gamesData
       : gamesData.filter((game) => game.category === selectedCategory);
+
+  // fetch games
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const response = await getFn(`api/tournamentstables`);
+        setGetTournament(response.records)
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchGames();
+  }, []);
 
   return (
     <div className=" py-20">
@@ -177,8 +192,9 @@ const GameCategories = () => {
               key={game.id}
               logo={game.img}
               name={game.title}
+              players={game.players}
               status={game.category}
-              prize={5000}
+              prize={50000}
               time="3pm"
               borderColor={`${
                 game.category === "Sports Games"

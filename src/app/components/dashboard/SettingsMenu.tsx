@@ -40,7 +40,7 @@ const SettingsMenu = () => {
       category: "Account",
       items: [
         { label: "Profile", href: "/dashboard/profile", icon: "👤" },
-        { label: "Wallet", href: "/account/subscription", icon: "💰" },
+        { label: "Wallet", href: "/dashboard/account", icon: "💰" },
       ],
     },
 

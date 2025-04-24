@@ -408,6 +408,7 @@
   border: 1px solid rgba(247, 247, 247, 0.3);
 }
 .glass-mobile {
+  width: 100%;
   background: rgba(247, 247, 247, 0.33);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);

@@ -27,7 +27,6 @@ const Carousel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenInvite, setIsOpenInvite] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isOpenMyGames, setIsOpenMyGames] = useState(false);
 
   const navigateRouter = (path: string): void => {
     window.location.href = path;
@@ -94,9 +93,7 @@ const Carousel = () => {
           {/* My History */}
 
           <button
-            onClick={() => (
-              setIsOpenMyGames(true), setIsOpen(false), setIsOpenInvite(false)
-            )}
+            onClick={() => window.location.href = '/dashboard/my-games'}
             className="w-full bg-[#233d4d] text-[#fcf8db] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center gap-2">
@@ -111,12 +108,7 @@ const Carousel = () => {
           </button>
         </div>
       </div>
-      <Modal
-        isOpen={isOpenMyGames}
-        setIsOpen={setIsOpenMyGames}
-        firstButtonText="My Profile"
-        onClick={() => (window.location.href = "/dashboard/profile")}
-      />
+     
 
       {/* Swiper Container */}
       <Swiper
