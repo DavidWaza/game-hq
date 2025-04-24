@@ -70,7 +70,12 @@ const Login: React.FC = () => {
 
   return (
     <div>
-      <Navbar variant="secondary" />
+       <div className="hidden lg:block">
+        <Navbar variant="secondary" />
+      </div>
+      <div className="lg:hidden block">
+        <Navbar variant="primary" />
+      </div>
       <div className="lg:p-24 h-screen relative md:block hidden">
         <div className="card-two max-w-[1300px] bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center md:h-full lg:h-[40rem]">
           <div className="grid lg:grid-cols-3">

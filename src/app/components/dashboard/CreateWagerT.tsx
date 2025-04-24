@@ -103,12 +103,12 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   // Expose the submit function to the parent component
   useImperativeHandle(ref, () => ({
     submitForm: async () => {
-      const isValidForm = await trigger(); // Trigger validation for all fields
+      const isValidForm = await trigger();
       if (isValidForm) {
-        handleSubmit(onSubmit)(); // Submit the form if valid
-        return true; // Indicate success
+        handleSubmit(onSubmit)();
+        return true;
       }
-      return false; // Indicate failure
+      return false;
     },
   }));
 
@@ -148,7 +148,6 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             <p className="text-red-500 text-sm">{errors.category_id.message}</p>
           )}
         </div>
-        {/* Bet On */}
         {/* Note to Participants */}
         <div className="space-y-2 items-center gap-4">
           <Label htmlFor="description">Note to Participants</Label>

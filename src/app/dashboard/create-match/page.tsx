@@ -64,7 +64,6 @@ const CreateMatchPage = () => {
         .play()
         .catch((err) => console.warn("Auto-play blocked:", err));
     }
-
     return () => {
       if (videoElement) {
         videoElement.pause();

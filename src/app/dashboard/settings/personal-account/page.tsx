@@ -15,25 +15,10 @@ import {
 import AccountForms from "../Components/AccountForms";
 import { useAuth } from "@/contexts/AuthContext";
 import EditableAvatar from "./Components/EditableAvatar";
-import { toast } from "sonner";
-import { Clipboard } from "@phosphor-icons/react";
 import moment from 'moment'
 
 export default function SettingsPage() {
   const username = useAuth()?.user?.username;
-
-  const userId = "fbe99f2-7f4b-11ed-9e24-3ee8038fe302";
-
-  const copyToClipboard = () => {
-    navigator.clipboard
-      .writeText(userId)
-      .then(() => {
-        toast.success("Bet ID copied to clipboard!");
-      })
-      .catch((err) => {
-        console.error("Failed to copy: ", err);
-      });
-  };
 
   return (
     <>
@@ -52,16 +37,7 @@ export default function SettingsPage() {
                     <h2 className="text-xl font-semibold text-white">
                       {username}
                     </h2>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-400 mt-1 break-all">
-                        {userId}
-                      </p>
-                      <Clipboard
-                        size={20}
-                        onClick={copyToClipboard}
-                        className="text-white cursor-pointer hover:scale-90 transition-all ease-in-out duration-300 hover:text-gray-600"
-                      />
-                    </div>
+                   
                   </div>
 
                   <div className="text-sm text-gray-400">
@@ -81,7 +57,7 @@ export default function SettingsPage() {
                 <CardTitle className="text-white">Personal Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <AccountForms username={username || "Guest"} />
+                <AccountForms />
               </CardContent>
             </Card>
             {/* Email Management */}

@@ -11,6 +11,8 @@ import {
   Wrench,
 } from "@phosphor-icons/react";
 import { CurrencyNgn } from "@phosphor-icons/react/dist/ssr";
+import { useRef, useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const settingsNavItems = [
   {
@@ -58,7 +60,6 @@ const settingsNavItems = [
     href: "/dashboard/settings/support-and-help",
     icon: <Lifebuoy className="w-4 min-w-4 h-4" />,
   },
-
   {
     title: "Legal & Compliance",
     href: "/dashboard/settings/legal-and-compliance",
@@ -68,24 +69,83 @@ const settingsNavItems = [
 
 function SettingsNav() {
   const pathname = usePathname();
+  const navRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  // Scroll by a fixed amount
+  const scrollLeft = () => {
+    if (navRef.current) {
+      navRef.current.scrollBy({ left: -200, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (navRef.current) {
+      navRef.current.scrollBy({ left: 200, behavior: "smooth" });
+    }
+  };
+
+  // Monitor scroll position to toggle arrow visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      if (navRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = navRef.current;
+        setCanScrollLeft(scrollLeft > 0);
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1); // -1 for precision
+      }
+    };
+
+    const navElement = navRef.current;
+    navElement?.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial check
+
+    return () => navElement?.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      {settingsNavItems.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={`text-sm flex items-center gap-2 px-4 py-2 rounded-md transition-colors whitespace-normal min-w-max sheen !translate-y-0 ${
-            pathname === item.href
-              ? "bg-[#233d4d] text-[#f37f2d] active"
-              : "text-gray-300 hover:bg-[#233d4d] hover:text-[#f37f2d]"
-          }`}
+    <div className="relative">
+      {/* Left Arrow */}
+      {canScrollLeft && (
+        <button
+          onClick={scrollLeft}
+          className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#233d4d] text-[#f37f2d] p-2 rounded-full hover:bg-[#2e4a5e] transition-colors z-10"
         >
-          {item.icon}
-          {item.title}
-        </Link>
-      ))}
-    </nav>
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Navigation Bar */}
+      <nav
+        ref={navRef}
+        className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-2"
+      >
+        {settingsNavItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`text-sm flex items-center gap-2 px-4 py-2 rounded-md transition-colors whitespace-normal min-w-max sheen !translate-y-0 ${
+              pathname === item.href
+                ? "bg-[#233d4d] text-[#f37f2d] active"
+                : "text-gray-300 hover:bg-[#233d4d] hover:text-[#f37f2d]"
+            }`}
+          >
+            {item.icon}
+            {item.title}
+          </Link>
+        ))}
+      </nav>
+
+      {/* Right Arrow */}
+      {canScrollRight && (
+        <button
+          onClick={scrollRight}
+          className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#233d4d] text-[#f37f2d] p-2 rounded-full hover:bg-[#2e4a5e] transition-colors z-10"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      )}
+    </div>
   );
 }
 

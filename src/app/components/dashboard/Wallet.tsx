@@ -4,10 +4,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CurrencyNgn } from "@phosphor-icons/react";
 
 const Wallet = () => {
-  const [balance, setBalance] = useState(10000);
+  const [balance] = useState(10000);
   const [isOpen, setIsOpen] = useState(false);
-  const [transactionType, setTransactionType] = useState("deposit");
-  const [amount, setAmount] = useState("");
+  // const [transactionType, setTransactionType] = useState("deposit");
+  // const [amount, setAmount] = useState("");
   const modalRef = useRef(null);
   const { user } = useAuth();
 
@@ -30,18 +30,18 @@ const Wallet = () => {
     };
   }, [isOpen]);
 
-  const handleTransaction = () => {
-    const numAmount = parseInt(amount);
-    if (!numAmount || numAmount <= 0) return;
+  // const handleTransaction = () => {
+  //   const numAmount = parseInt(amount);
+  //   if (!numAmount || numAmount <= 0) return;
 
-    if (transactionType === "deposit") {
-      setBalance(balance + numAmount);
-    } else if (transactionType === "withdraw" && numAmount <= balance) {
-      setBalance(balance - numAmount);
-    }
-    setAmount("");
-    setIsOpen(false);
-  };
+  //   if (transactionType === "deposit") {
+  //     setBalance(balance + numAmount);
+  //   } else if (transactionType === "withdraw" && numAmount <= balance) {
+  //     setBalance(balance - numAmount);
+  //   }
+  //   setAmount("");
+  //   setIsOpen(false);
+  // };
 
   return (
     <div className="relative w-full sm:w-auto">
@@ -78,74 +78,6 @@ const Wallet = () => {
         </div>
       </div>
 
-      {/* Transaction Modal */}
-      {isOpen && (
-        <div
-          ref={modalRef}
-          className="absolute top-full hidden md:block mt-2 left-0 right-0 sm:right-auto mx-auto sm:mx-0 w-full sm:w-72 bg-[#233d4d] 
-                     p-3 sm:p-4 rounded-lg border-2 sm:border-4 border-[#f37f2d] shadow-2xl 
-                     z-50 animate-fadeIn"
-        >
-          <h3 className="text-base sm:text-lg text-[#fcf8db] mb-3 sm:mb-4 text-center font-bold">
-            Magic Transaction
-          </h3>
-
-          {/* Transaction Type Toggle */}
-          <div className="flex justify-center gap-2 sm:gap-4 mb-3 sm:mb-4">
-            <button
-              onClick={() => setTransactionType("deposit")}
-              className={`px-2 sm:px-3 py-1 rounded-full border text-xs sm:text-sm ${
-                transactionType === "deposit"
-                  ? "bg-[#f37f2d] border-[#fcf8db] text-[#233d4d]"
-                  : "bg-[#fcf8db] border-[#f37f2d] text-[#233d4d]"
-              } hover:bg-[#f37f2d] hover:text-[#fcf8db] transition-colors`}
-            >
-              Deposit
-            </button>
-            <button
-              onClick={() => setTransactionType("withdraw")}
-              className={`px-2 sm:px-3 py-1 rounded-full border text-xs sm:text-sm ${
-                transactionType === "withdraw"
-                  ? "bg-[#f37f2d] border-[#fcf8db] text-[#233d4d]"
-                  : "bg-[#fcf8db] border-[#f37f2d] text-[#233d4d]"
-              } hover:bg-[#f37f2d] hover:text-[#fcf8db] transition-colors`}
-            >
-              Withdraw
-            </button>
-          </div>
-
-          {/* Amount Input */}
-          <div className="mb-3 sm:mb-4">
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter amount"
-              className="w-full bg-[#fcf8db] border-2 border-[#f37f2d] rounded p-1 sm:p-2 
-                        text-[#233d4d] text-sm placeholder-[#233d4d] focus:outline-none 
-                        focus:border-[#f37f2d]"
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-between gap-2">
-            <button
-              onClick={handleTransaction}
-              className="bg-[#f37f2d] hover:bg-[#fcf8db] text-[#233d4d] px-2 sm:px-4 py-1 sm:py-2 
-                        rounded border-2 border-[#233d4d] transition-colors text-sm font-medium flex-1"
-            >
-              Confirm
-            </button>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="bg-[#fcf8db] hover:bg-[#f37f2d] text-[#233d4d] px-2 sm:px-4 py-1 sm:py-2 
-                        rounded border-2 border-[#233d4d] transition-colors text-sm font-medium flex-1"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

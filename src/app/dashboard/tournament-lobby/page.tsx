@@ -14,6 +14,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import Chat from "./Components/Message";
 
 export default function TournamentLobby() {
   const [micEnabled, setMicEnabled] = useState(true);
@@ -24,6 +26,7 @@ export default function TournamentLobby() {
   const [countdown, setCountdown] = useState<number | null>(null); // Countdown from 5
   const [showTransition, setShowTransition] = useState(false);
   const router = useRouter();
+  const playername = useAuth()?.user?.username || "Challenger";
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -42,7 +45,7 @@ export default function TournamentLobby() {
     } else if (countdown === 0) {
       // Show transition animation before switching to "Game in Session"
       setShowTransition(true);
-      
+
       // After transition animation completes, show game in session
       setTimeout(() => {
         setIsReady(true);
@@ -52,85 +55,62 @@ export default function TournamentLobby() {
     }
   }, [countdown]);
 
-  const formatTime = (seconds:number) => {
+  const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? "0" + secs : secs}`;
   };
 
   const handleReadyClick = () => {
-    setCountdown(5); 
+    setCountdown(5);
   };
 
   const players = [
-    { id: 1, name: "David Waza", status: "Ready", captain: true },
+    { id: 1, name: playername, status: "Ready", captain: true },
     { id: 2, name: "GhostShadow", status: "Ready", captain: false },
     { id: 3, name: "VipeR_X", status: "Ready", captain: false },
     { id: 4, name: "Sniper_Elite", status: "Not Ready", captain: false },
     { id: 5, name: "", status: "Empty", captain: false },
   ];
 
-  const chatMessages = [
-    {
-      id: 1,
-      sender: "System",
-      message: "Welcome to the Call of Duty Tournament Lobby!",
-      time: "14:35",
-    },
-    {
-      id: 2,
-      sender: "David Waza",
-      message: "Hey everyone, let's warm up before the match",
-      time: "14:36",
-    },
-    {
-      id: 3,
-      sender: "GhostShadow",
-      message: "I'll be using sniper loadout for Search & Destroy",
-      time: "14:37",
-    },
-    {
-      id: 4,
-      sender: "VipeR_X",
-      message: "Sounds good, I'll cover mid",
-      time: "14:37",
-    },
-  ];
-
   // Animation variants for different elements
   const countdownVariants = {
     initial: { scale: 0.5, opacity: 0 },
     animate: { scale: 1, opacity: 1 },
-    exit: { scale: 1.5, opacity: 0 }
+    exit: { scale: 1.5, opacity: 0 },
   };
 
   const transitionVariants = {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
-    exit: { opacity: 0 }
+    exit: { opacity: 0 },
   };
 
   const gameSessionVariants = {
     initial: { y: 50, opacity: 0 },
-    animate: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, delay: 0.3 } },
+    animate: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100, delay: 0.3 },
+    },
   };
 
   const iconVariants = {
     initial: { scale: 0, rotate: -180 },
-    animate: { 
-      scale: 1, 
+    animate: {
+      scale: 1,
       rotate: 0,
-      transition: { type: "spring", stiffness: 200, delay: 0.5 }
-    }
+      transition: { type: "spring", stiffness: 200, delay: 0.5 },
+    },
   };
 
   const textVariants = {
     initial: { y: 20, opacity: 0 },
-    animate: { 
-      y: 0, 
+    animate: {
+      y: 0,
       opacity: 1,
-      transition: { delay: 0.7 }
-    }
+      transition: { delay: 0.7 },
+    },
   };
 
   return (
@@ -166,7 +146,7 @@ export default function TournamentLobby() {
             <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center sm:w-9 sm:h-9">
               <span className="text-xs font-bold sm:text-sm">DW</span>
             </div>
-            <span className="font-medium hidden sm:block">David Waza</span>
+            <span className="font-medium hidden sm:block">{playername}</span>
             <span className="text-green-400 font-medium text-xs sm:text-sm">
               1000 CP
             </span>
@@ -296,7 +276,7 @@ export default function TournamentLobby() {
               <h2 className="text-2xl font-bold text-orange-400 mb-4 sm:text-3xl sm:mb-6">
                 Call of Duty Tournament
               </h2>
-              
+
               <AnimatePresence>
                 {!isReady ? (
                   <motion.div
@@ -387,15 +367,15 @@ export default function TournamentLobby() {
                     animate="animate"
                     className="flex flex-col min-h-[50vh] items-center justify-center"
                   >
-                    <motion.div 
+                    <motion.div
                       variants={iconVariants}
                       initial="initial"
                       animate="animate"
                     >
                       <Timer size={56} color="#fb923c" />
                     </motion.div>
-                    
-                    <motion.div 
+
+                    <motion.div
                       variants={textVariants}
                       initial="initial"
                       animate="animate"
@@ -437,43 +417,7 @@ export default function TournamentLobby() {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 sm:p-5">
-            {chatMessages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`${
-                  msg.sender === "System" ? "text-orange-400" : ""
-                }`}
-              >
-                <div className="flex justify-between text-xs text-gray-400 mb-1">
-                  <span
-                    className={`font-medium ${
-                      msg.sender === "David Waza" ? "text-orange-400" : ""
-                    }`}
-                  >
-                    {msg.sender}
-                  </span>
-                  <span>{msg.time}</span>
-                </div>
-                <div className="bg-gray-800 rounded-lg p-2 text-sm sm:p-3">
-                  {msg.message}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="p-4 border-t border-gray-800 sm:p-5">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Type a message..."
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-              />
-              <button className="absolute right-2 top-2 text-orange-400 hover:text-orange-500">
-                <CaretDoubleRight size={20} />
-              </button>
-            </div>
-          </div>
+          <Chat />
         </div>
       </div>
 
@@ -501,13 +445,13 @@ export default function TournamentLobby() {
       {/* Countdown Overlay */}
       <AnimatePresence>
         {countdown !== null && countdown > 0 && (
-          <motion.div 
+          <motion.div
             className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-30"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div 
+            <motion.div
               className="flex flex-col items-center"
               variants={countdownVariants}
               initial="initial"
@@ -515,20 +459,26 @@ export default function TournamentLobby() {
               exit="exit"
               key={countdown}
             >
-              <motion.div 
+              <motion.div
                 className="bg-gray-800 flex items-center justify-center p-8 rounded-full w-32 h-32 shadow-lg shadow-orange-500/30"
-                animate={{ 
-                  boxShadow: ["0 0 0px #fb923c", "0 0 20px #fb923c", "0 0 0px #fb923c"],
+                animate={{
+                  boxShadow: [
+                    "0 0 0px #fb923c",
+                    "0 0 20px #fb923c",
+                    "0 0 0px #fb923c",
+                  ],
                 }}
-                transition={{ 
+                transition={{
                   duration: 1,
                   ease: "easeInOut",
-                  repeat: 0
+                  repeat: 0,
                 }}
               >
-                <h2 className="text-7xl font-bold text-orange-400">{countdown}</h2>
+                <h2 className="text-7xl font-bold text-orange-400">
+                  {countdown}
+                </h2>
               </motion.div>
-              <motion.p 
+              <motion.p
                 className="text-white text-lg mt-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -551,37 +501,37 @@ export default function TournamentLobby() {
             animate="animate"
             exit="exit"
           >
-            <motion.div
-              className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden"
-            >
+            <motion.div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
               {/* Animated elements for transition effect */}
               <motion.div
                 className="absolute w-full h-full"
-                initial={{ 
-                  background: "radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 100%)" 
+                initial={{
+                  background:
+                    "radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 100%)",
                 }}
-                animate={{ 
-                  background: "radial-gradient(circle, rgba(251,146,60,0.3) 0%, rgba(0,0,0,1) 70%)" 
+                animate={{
+                  background:
+                    "radial-gradient(circle, rgba(251,146,60,0.3) 0%, rgba(0,0,0,1) 70%)",
                 }}
                 transition={{ duration: 1 }}
               />
-              
+
               {/* Logo animation */}
               <motion.div
                 className="relative z-10"
                 initial={{ scale: 0 }}
-                animate={{ 
+                animate={{
                   scale: [0, 1.2, 1],
-                  rotate: [0, 0, 0]
+                  rotate: [0, 0, 0],
                 }}
-                transition={{ 
+                transition={{
                   duration: 1,
-                  times: [0, 0.6, 1] 
+                  times: [0, 0.6, 1],
                 }}
               >
                 <Trophy size={120} className="text-orange-400" />
               </motion.div>
-              
+
               {/* Text animation */}
               <motion.div
                 className="absolute bottom-1/3 text-center"
@@ -589,25 +539,33 @@ export default function TournamentLobby() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7, duration: 0.5 }}
               >
-                <h2 className="text-4xl font-bold text-orange-400 mb-2">GAME ON!</h2>
+                <h2 className="text-4xl font-bold text-orange-400 mb-2">
+                  GAME ON!
+                </h2>
                 <p className="text-lg text-gray-300">Prepare for battle</p>
               </motion.div>
-              
+
               {/* Particles effect */}
               {[...Array(20)].map((_, i) => (
                 <motion.div
                   key={i}
                   className="absolute w-2 h-2 rounded-full bg-orange-400"
-                  initial={{ 
-                    x: 0, 
+                  initial={{
+                    x: 0,
                     y: 0,
-                    opacity: 1
+                    opacity: 1,
                   }}
-                  animate={{ 
-                    x: Math.random() > 0.5 ? Math.random() * 500 : Math.random() * -500,
-                    y: Math.random() > 0.5 ? Math.random() * 500 : Math.random() * -500,
+                  animate={{
+                    x:
+                      Math.random() > 0.5
+                        ? Math.random() * 500
+                        : Math.random() * -500,
+                    y:
+                      Math.random() > 0.5
+                        ? Math.random() * 500
+                        : Math.random() * -500,
                     opacity: 0,
-                    scale: Math.random() * 3
+                    scale: Math.random() * 3,
                   }}
                   transition={{ duration: 1.5, delay: Math.random() * 0.5 }}
                 />

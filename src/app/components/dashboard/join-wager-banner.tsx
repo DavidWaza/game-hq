@@ -31,7 +31,7 @@ const CreateWagerBanner = () => {
       <div className="grid lg:grid-cols-2 items-start">
         {/* Left Side Content */}
         <div>
-          <h1 className="text-[#FCF8DB] uppercase text-6xl py-10 lg:py-20">
+          <h1 className="text-[#FCF8DB] uppercase text-3xl lg:text-6xl py-10 lg:py-20">
             let the tournament begin...
           </h1>
 
