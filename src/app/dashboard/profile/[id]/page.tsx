@@ -1,9 +1,14 @@
-import React from 'react'
+import React from "react";
+import Navbar from "@/components/Navbar";
+import Banner from "../components/Banner";
 
-const Pageuser = () => {
+const ProfileDashboard = () => {
   return (
-    <div>Pageuser</div>
-  )
-}
+    <>
+      <Navbar variant="primary" />
+      <Banner />
+    </>
+  );
+};
 
-export default Pageuser
+export default ProfileDashboard;

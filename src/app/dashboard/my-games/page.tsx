@@ -1,14 +1,17 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import InviteCard from "@/app/components/dashboard/InviteCard";
+import { getFn } from "@/lib/apiClient";
+import { CreatedGames} from "../../../../types/global";
 
 const CreateWagerBanner = () => {
   const username = useAuth()?.user?.username || "Challenger";
-
+  const [data, setData] = useState<CreatedGames[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Animation variants for smooth entrance
   const containerVariants = {
@@ -31,6 +34,24 @@ const CreateWagerBanner = () => {
     },
   };
 
+  const getMyGames = async () => {
+    setLoading(true);
+    try {
+      const response:CreatedGames = await getFn(`/api/games`);
+      console.log(response, "xsxsxs");
+      if (response) {
+        setData(response.records);
+      }
+    } catch {
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getMyGames();
+  }, []);
+
   return (
     <div className="relative min-h-screen bg-[#0f0f0f] overflow-hidden">
       <Navbar variant="primary" />
@@ -41,7 +62,7 @@ const CreateWagerBanner = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid lg:grid-cols-2 gap-16 items-center"
+          className="grid lg:grid-cols-2 gap-16 items-start"
         >
           {/* Left Side Content */}
           <div className="space-y-10">
@@ -55,16 +76,23 @@ const CreateWagerBanner = () => {
               <br />
               <span className="text-[#e0e0e0]">Created Games</span>
             </motion.h1>
-
             <div>
-              <InviteCard
-                name="Call of Duty"
-                status="Now"
-                prize={2000}
-                time="2pm"
-                date="12th Aug"
-                borderColor="bg-green-500"
-              />
+              {!loading && (
+                <>
+                  {data.map((game, index) => (
+                    <div key={index}>
+                      <InviteCard
+                        name={game.name}
+                        status="Now"
+                        prize={2000}
+                        time="2pm"
+                        date="12th Aug"
+                        borderColor="bg-green-500"
+                      />
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
 
@@ -77,7 +105,7 @@ const CreateWagerBanner = () => {
               repeat: Infinity,
               repeatType: "loop",
             }}
-            className="relative"
+            className="relative hidden md:block"
           >
             <div className="relative w-full">
               <Image
