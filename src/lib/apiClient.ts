@@ -6,7 +6,6 @@ import { DataFromLogin } from "../../types/global";
 const BASE_URL = process.env.NEXT_PUBLIC_API_SERVICE_BASE_URL;
 
 // Create Axios Instance
-
 const api = axios.create({
   baseURL: BASE_URL,
 });

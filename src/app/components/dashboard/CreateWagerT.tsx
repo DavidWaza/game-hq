@@ -24,15 +24,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import EventScheduler from "./TimerSchedule";
+import { Controller } from "react-hook-form";
 
 // Define types
 interface FormData {
-  category_id: string;
+  game_id: string;
   bet_on: string;
   description: string;
   amount: string;
   number_of_participants: number;
-  created_at: Date | null;
+  match_date: Date | null;
   match_time: string;
 }
 interface CreateTournamentProps {
@@ -50,17 +51,18 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
     register,
     handleSubmit,
     formState: { errors },
+    control,
     setValue,
     trigger,
   } = useForm<FormData>({
     mode: "onChange",
     defaultValues: {
-      category_id: "",
+      game_id: "",
       bet_on: "",
       description: "",
       amount: "",
       number_of_participants: 0,
-      created_at: null,
+      match_date: null,
       match_time: "",
     },
   });
@@ -70,12 +72,12 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   }, []);
 
   const handleCategoryChange = (value: string) => {
-    setValue("category_id", value, { shouldValidate: true });
+    setValue("game_id", value, { shouldValidate: true });
   };
 
-  const handleDateChange = (created_at: Date): void => {
-    setValue("created_at", created_at, { shouldValidate: true });
-  };
+  // const handleDateChange = (match_date: Date): void => {
+  //   setValue("match_date", match_date, { shouldValidate: true });
+  // };
 
   const handleTimeChange = (match_time: string): void => {
     setValue("match_time", match_time, { shouldValidate: true });
@@ -124,7 +126,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
           <Label>Select Game</Label>
           <Select
             onValueChange={handleCategoryChange}
-            {...register("category_id", {
+            {...register("game_id", {
               required: "Game category is required",
             })}
           >
@@ -144,8 +146,8 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
               </SelectGroup>
             </SelectContent>
           </Select>
-          {errors.category_id && (
-            <p className="text-red-500 text-sm">{errors.category_id.message}</p>
+          {errors.game_id && (
+            <p className="text-red-500 text-sm">{errors.game_id.message}</p>
           )}
         </div>
         {/* Note to Participants */}
@@ -212,18 +214,20 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
           )}
         </div>
         {/* Date */}
-        <div className="space-y-2">
-          <CalendarForm
-            onDateChange={handleDateChange}
-            {...register("created_at", {
-              required: "Date is required",
-            })}
-            label={"Select a date"}
-          />
-          {errors.created_at && (
-            <p className="text-red-500 text-sm">{errors.created_at.message}</p>
-          )}
-        </div>
+        <Controller
+  name="match_date"
+  control={control}
+  rules={{ required: "Date is required" }}
+  render={({ field }) => (
+    <CalendarForm
+      onDateChange={(date) => field.onChange(date)}
+      label="Select a date"
+    />
+  )}
+/>
+{errors.match_date && (
+  <p className="text-red-500 text-sm">{errors.match_date.message}</p>
+)}
         {/* Match Time */}
         <div className="space-y-2">
           <EventScheduler

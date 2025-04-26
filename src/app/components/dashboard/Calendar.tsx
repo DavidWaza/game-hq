@@ -30,7 +30,7 @@ const FormSchema = z.object({
 });
 
 interface CalendarFormProps {
-  onDateChange?: (date: Date) => void;
+  onDateChange?: (date: string) => void;
   label?: string;
 }
 
@@ -42,9 +42,11 @@ export function CalendarForm({ onDateChange, label }: CalendarFormProps) {
   const handleDateSelect = (date: Date | undefined) => {
     if (date && onDateChange) {
       form.setValue("dob", date, { shouldValidate: true });
-      onDateChange(date);
+      const formattedDate = format(date, "yyyy-MM-dd");
+      onDateChange(formattedDate);
     }
   };
+  
 
   return (
     <Form {...form}>
