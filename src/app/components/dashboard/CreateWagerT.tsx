@@ -31,7 +31,7 @@ interface FormData {
   game_id: string;
   bet_on: string;
   description: string;
-  amount: string;
+  amount: number;
   number_of_participants: number;
   match_date: Date | null;
   match_time: string;
@@ -58,9 +58,8 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
     mode: "onChange",
     defaultValues: {
       game_id: "",
-      bet_on: "",
       description: "",
-      amount: "",
+      amount: 0,
       number_of_participants: 0,
       match_date: null,
       match_time: "",
@@ -138,9 +137,9 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {store?.categories?.map((category) => (
-                  <SelectItem key={category.id} value={category.id.toString()}>
-                    {category.name}
+                {store?.games?.map((game) => (
+                  <SelectItem key={game.id} value={game.id.toString()}>
+                    {game.name}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -215,19 +214,19 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
         </div>
         {/* Date */}
         <Controller
-  name="match_date"
-  control={control}
-  rules={{ required: "Date is required" }}
-  render={({ field }) => (
-    <CalendarForm
-      onDateChange={(date) => field.onChange(date)}
-      label="Select a date"
-    />
-  )}
-/>
-{errors.match_date && (
-  <p className="text-red-500 text-sm">{errors.match_date.message}</p>
-)}
+          name="match_date"
+          control={control}
+          rules={{ required: "Date is required" }}
+          render={({ field }) => (
+            <CalendarForm
+              onDateChange={(date) => field.onChange(date)}
+              label="Select a date"
+            />
+          )}
+        />
+        {errors.match_date && (
+          <p className="text-red-500 text-sm">{errors.match_date.message}</p>
+        )}
         {/* Match Time */}
         <div className="space-y-2">
           <EventScheduler

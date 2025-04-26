@@ -24,16 +24,20 @@ export type TypeGames = {
   name: string;
   created_at: string | null;
   updated_at: string | null;
+  banner: string;
+  sub_banner: string[];
+  video_banner: string;
+  sub_video: string[];
+  theme_settings: string
 };
 export type TypeSingleTournament = {
   amount: string;
-  bet_on: string;
-  game_image: string;
-  category_id: string;
+  game_id: string;
   description: string;
   id: string;
   match_time: string;
-  number_of_participants: string;
+  match_date: string;
+  number_of_participants: number;
   user_id: number;
   created_at: string | null;
   updated_at: string | null;

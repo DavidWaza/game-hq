@@ -11,7 +11,7 @@ interface AccountDetailsData {
   fullname: string;
   email: string;
   phonenumber: string;
-  dob: Date;
+  dob: string;
 }
 
 const AccountForms = () => {
@@ -34,15 +34,13 @@ const AccountForms = () => {
     console.log(formData);
   };
 
-  const handleDateChange = (dob: Date): void => {
+  const handleDateChange = (dob: string): void => {
     setValue("dob", dob, { shouldValidate: true });
   };
 
   return (
     <div className="w-full lg:w-[70%] bg-[#1a1f2e] rounded-lg p-7">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-     
-
         {/* Fullname */}
         <div className="grid w-full items-center gap-1.5 !text-left">
           <Label htmlFor="fullname" className="text-[#fcf8db]">
