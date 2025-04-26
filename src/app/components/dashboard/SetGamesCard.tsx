@@ -4,42 +4,41 @@ import { Clock } from "@phosphor-icons/react";
 import Modal from "./Modal";
 
 // Existing interfaces for game rules remain unchanged
-interface GameRuleSet {
-  title: string;
-  rules: string[];
-}
+// interface GameRuleSet {
+//   title: string;
+//   rules: string[];
+// }
 
-interface GameRulesCategory {
-  [gameName: string]: GameRuleSet;
-}
+// interface GameRulesCategory {
+//   [gameName: string]: GameRuleSet;
+// }
 
-interface GameRulesData {
-  [category: string]: GameRulesCategory;
-}
+// interface GameRulesData {
+//   [category: string]: GameRulesCategory;
+// }
 
 // Existing gameRules and defaultRules remain unchanged
-const gameRules: GameRulesData = {
-  // ... (same as provided)
-};
+// const gameRules: GameRulesData = {
+// };
 
-const defaultRules: GameRuleSet = {
-  title: "Tournament Rules",
-  rules: [
-    "Registration – All players must register at least **30 minutes** before tournament start time.",
-    "Format – Single elimination bracket, matches as described in game-specific rules.",
-    "Disputes – Tournament organizers have final say in all rule interpretations and disputes.",
-    "Prizes – Top 3 places receive prizes according to tournament specifications.",
-    "Code of Conduct – Players must maintain respectful behavior throughout the tournament."
-  ]
-};
+// const defaultRules: GameRuleSet = {
+//   title: "Tournament Rules",
+//   rules: [
+//     "Registration – All players must register at least **30 minutes** before tournament start time.",
+//     "Format – Single elimination bracket, matches as described in game-specific rules.",
+//     "Disputes – Tournament organizers have final say in all rule interpretations and disputes.",
+//     "Prizes – Top 3 places receive prizes according to tournament specifications.",
+//     "Code of Conduct – Players must maintain respectful behavior throughout the tournament.",
+//   ],
+// };
 
 interface StatusCardProps {
-  logo: string;
+  logo?: string;
   name: string;
-  status: string;
-  prize: number;
+  status?: string;
+  prize: string;
   time: string;
-  borderColor: string;
+  borderColor?: string;
   players: number; // New prop for number of players
 }
 
@@ -56,7 +55,7 @@ const StatusCard: React.FC<StatusCardProps> = ({
 
   // Calculate odds based on number of players
   const calculateOdds = () => {
-    const availablePool = prize * 0.9; // After 10% platform fee
+    const availablePool = Number(prize) * 0.9;
     const oddsDetails = {
       first: { percentage: 0, odds: 0, amount: 0 },
       second: { percentage: 0, odds: 0, amount: 0 },
@@ -71,8 +70,16 @@ const StatusCard: React.FC<StatusCardProps> = ({
       oddsDetails.first = { percentage: 100, odds: 2.7, amount: availablePool };
       oddsDetails.totalOdds = 2.7;
     } else if (players === 4) {
-      oddsDetails.first = { percentage: 75, odds: 2.7, amount: availablePool * 0.75 };
-      oddsDetails.second = { percentage: 25, odds: 0.9, amount: availablePool * 0.25 };
+      oddsDetails.first = {
+        percentage: 75,
+        odds: 2.7,
+        amount: availablePool * 0.75,
+      };
+      oddsDetails.second = {
+        percentage: 25,
+        odds: 0.9,
+        amount: availablePool * 0.25,
+      };
       oddsDetails.totalOdds = 2.7 + 0.9;
     } else if (players >= 5 && players <= 10) {
       // Linear scaling for odds
@@ -81,9 +88,21 @@ const StatusCard: React.FC<StatusCardProps> = ({
       const oddsSecond = 1.35 + t * (2.7 - 1.35);
       const oddsThird = 0.45 + t * (0.9 - 0.45);
 
-      oddsDetails.first = { percentage: 60, odds: oddsFirst, amount: availablePool * 0.6 };
-      oddsDetails.second = { percentage: 30, odds: oddsSecond, amount: availablePool * 0.3 };
-      oddsDetails.third = { percentage: 10, odds: oddsThird, amount: availablePool * 0.1 };
+      oddsDetails.first = {
+        percentage: 60,
+        odds: oddsFirst,
+        amount: availablePool * 0.6,
+      };
+      oddsDetails.second = {
+        percentage: 30,
+        odds: oddsSecond,
+        amount: availablePool * 0.3,
+      };
+      oddsDetails.third = {
+        percentage: 10,
+        odds: oddsThird,
+        amount: availablePool * 0.1,
+      };
       oddsDetails.totalOdds = oddsFirst + oddsSecond + oddsThird;
     }
 
@@ -92,23 +111,23 @@ const StatusCard: React.FC<StatusCardProps> = ({
 
   const odds = calculateOdds();
 
-  const getGameRules = () => {
-    if (gameRules[status]?.[name]) {
-      return gameRules[status][name];
-    } else if (gameRules[status]) {
-      return {
-        title: `${status} Tournament Rules`,
-        rules: defaultRules.rules
-      };
-    } else {
-      return {
-        title: `${name} Tournament Rules`,
-        rules: defaultRules.rules
-      };
-    }
-  };
+  // const getGameRules = () => {
+  //   if (gameRules[status]?.[name]) {
+  //     return gameRules[status][name];
+  //   } else if (gameRules[status]) {
+  //     return {
+  //       title: `${status} Tournament Rules`,
+  //       rules: defaultRules.rules
+  //     };
+  //   } else {
+  //     return {
+  //       title: `${name} Tournament Rules`,
+  //       rules: defaultRules.rules
+  //     };
+  //   }
+  // };
 
-  const selectedRules = getGameRules();
+  // const selectedRules = getGameRules();
 
   return (
     <>
@@ -118,13 +137,16 @@ const StatusCard: React.FC<StatusCardProps> = ({
       >
         {/* Left Section with Logo */}
         <div className="flex flex-col items-center text-white">
-          <Image
-            src={logo}
-            alt={name}
-            width={60}
-            height={60}
-            className="w-10 h-10"
-          />
+          {logo && (
+            <Image
+              src={logo}
+              alt={name}
+              width={60}
+              height={60}
+              className="w-10 h-10"
+            />
+          )}
+
           <span className="text-sm font-semibold text-center">{name}</span>
         </div>
 
@@ -137,7 +159,10 @@ const StatusCard: React.FC<StatusCardProps> = ({
         <div className="flex-1 flex flex-col md:flex-row justify-between items-center text-white border-l border-gray-700 md:pl-5 w-full space-y-3 md:space-y-0">
           <div className="text-center md:text-left">
             <h4 className="text-gray-400 text-sm">{name.toUpperCase()}</h4>
+            {status && (
+
             <p className="text-[#FCF8DB] text-xs">● {status.toUpperCase()}</p>
+            )}
             <p className="text-[#FCF8DB] text-xs">Players: {players}</p>
           </div>
           <div className="text-center md:text-left">
@@ -170,20 +195,32 @@ const StatusCard: React.FC<StatusCardProps> = ({
         isOpen={isModalOpen}
         setIsOpen={setIsModalOpen}
         header={`${name.toUpperCase()} GAME RULES`}
-        sub={`Prize Pool: ₦${prize} • Start Time: ${time} • Players: ${players} • Total Odds: ${odds.totalOdds.toFixed(2)}×`}
-        contentTitle={selectedRules.title}
-        contentItems={[
-          ...selectedRules.rules,
-          `Prize Distribution:`,
-          `- 1st Place: ${odds.first.percentage}% (₦${odds.first.amount.toFixed(2)}, ${odds.first.odds.toFixed(2)}×)`,
-          odds.second.percentage > 0
-            ? `- 2nd Place: ${odds.second.percentage}% (₦${odds.second.amount.toFixed(2)}, ${odds.second.odds.toFixed(2)}×)`
-            : "",
-          odds.third.percentage > 0
-            ? `- 3rd Place: ${odds.third.percentage}% (₦${odds.third.amount.toFixed(2)}, ${odds.third.odds.toFixed(2)}×)`
-            : "",
-          `Platform Fee: 10%`,
-        ].filter((item) => item !== "")}
+        sub={`Prize Pool: ₦${prize} • Start Time: ${time} • Players: ${players} • Total Odds: ${odds.totalOdds.toFixed(
+          2
+        )}×`}
+        // contentTitle={selectedRules.title}
+        // contentItems={[
+        //   ...selectedRules.rules,
+        //   `Prize Distribution:`,
+        //   `- 1st Place: ${odds.first.percentage}% (₦${odds.first.amount.toFixed(
+        //     2
+        //   )}, ${odds.first.odds.toFixed(2)}×)`,
+        //   odds.second.percentage > 0
+        //     ? `- 2nd Place: ${
+        //         odds.second.percentage
+        //       }% (₦${odds.second.amount.toFixed(2)}, ${odds.second.odds.toFixed(
+        //         2
+        //       )}×)`
+        //     : "",
+        //   odds.third.percentage > 0
+        //     ? `- 3rd Place: ${
+        //         odds.third.percentage
+        //       }% (₦${odds.third.amount.toFixed(2)}, ${odds.third.odds.toFixed(
+        //         2
+        //       )}×)`
+        //     : "",
+        //   `Platform Fee: 10%`,
+        // ].filter((item) => item !== "")}
         firstButtonText="Accept & Join"
         secondButtonText="Decline"
         onClick={() => {

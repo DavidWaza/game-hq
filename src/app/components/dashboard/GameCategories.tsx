@@ -4,6 +4,44 @@ import Image from "next/image";
 import StatusCard from "./SetGamesCard";
 import { getFn } from "@/lib/apiClient";
 
+interface TournamentRecord {
+  id: string;
+  user_id: number;
+  description: string;
+  amount: string;
+  number_of_participants: number;
+  match_time: string;
+  match_date: string;
+  created_at: string;
+  updated_at: string | null;
+  game_id: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    email_verified_at: string | null;
+    remember_token: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+  };
+  game: Game | null;
+}
+
+interface Game {
+  id: string;
+  category_id: string;
+  name: string;
+  game_image: string;
+  description: string;
+  banner: string;
+  sub_banner: string[];
+  video_banner: string;
+  sub_video: string[];
+  theme_settings: string;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 // Sample games data with categories
 const gamesData = [
   {
@@ -114,7 +152,7 @@ const gameCategories = [
 // Main Component
 const GameCategories = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [getTournament, setGetTournament] = useState([]);
+  const [getTournament, setGetTournament] = useState< TournamentRecord[]>([]);
 
   // Filter games based on selected category
   const filteredGames =
@@ -127,6 +165,7 @@ const GameCategories = () => {
     const fetchGames = async () => {
       try {
         const response = await getFn(`api/tournamentstables`);
+        console.log(response.records, 'queen')
         setGetTournament(response.records)
       } catch (err) {
         console.log(err);
@@ -187,28 +226,28 @@ const GameCategories = () => {
           {selectedCategory === "All" ? "All Games" : selectedCategory}
         </h2>
         <div className="grid grid-cols-1 gap-4 px-4">
-          {filteredGames.map((game) => (
+          {getTournament.map((game) => (
             <StatusCard
               key={game.id}
-              logo={game.img}
-              name={game.title}
-              players={game.players}
-              status={game.category}
-              prize={50000}
-              time="3pm"
-              borderColor={`${
-                game.category === "Sports Games"
-                  ? "bg-[#FCF8DB]"
-                  : game.category === "Action Games"
-                  ? "bg-[#f37f2d]"
-                  : game.category === "Board Games"
-                  ? "bg-white"
-                  : game.category === "Dice Games"
-                  ? "bg-[#922b21]"
-                  : game.category === "Card Games"
-                  ? "bg-[#f1c40f]"
-                  : ""
-              }`}
+              // logo={game.img}
+              name={game.game_id}
+              players={game.number_of_participants}
+              // status={game.category}
+              prize={game.amount}
+              time={game.match_time}
+              // borderColor={`${
+              //   game.category === "Sports Games"
+              //     ? "bg-[#FCF8DB]"
+              //     : game.category === "Action Games"
+              //     ? "bg-[#f37f2d]"
+              //     : game.category === "Board Games"
+              //     ? "bg-white"
+              //     : game.category === "Dice Games"
+              //     ? "bg-[#922b21]"
+              //     : game.category === "Card Games"
+              //     ? "bg-[#f1c40f]"
+              //     : ""
+              // }`}
             />
           ))}
         </div>

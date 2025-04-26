@@ -91,7 +91,7 @@ const CreateMatchPage = () => {
 
         {/* Content Centered in the Middle */}
         <div className="relative z-10 text-white h-full overflow-y-auto">
-          <div className="py-[140px] min-h-full flex items-center justify-center px-4">
+          <div className="py-[140px] min-h-full flex items-center justify-center px-4 max-w-2xl m-auto">
             <CreateMatch matchMode={matchMode} setMatchMode={setMatchMode} />
           </div>
         </div>
