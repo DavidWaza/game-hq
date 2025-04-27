@@ -25,6 +25,7 @@ const StatusCard: React.FC<StatusCardProps> = ({
   logo,
   name,
   status,
+  players,
   prize,
   time,
   tournament,
