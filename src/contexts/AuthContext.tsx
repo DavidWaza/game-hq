@@ -13,11 +13,16 @@ import {
   TypeGames,
   TypeSingleTournament,
 } from "../../types/global";
+import { useParams } from "next/navigation";
 
+interface StoreActions {
+  getTournament: () => void;
+}
 interface StoreData {
   categories: TypeCategories[] | undefined;
   games: TypeGames[] | undefined;
   singleTournament: TypeSingleTournament | undefined;
+  dispatch: StoreActions;
 }
 
 type StoreConfigKeys = keyof StoreData;
@@ -37,11 +42,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | undefined>(
     undefined
   );
+  const params = useParams();
+  const slug = `${params?.slug}`;
   const [user, setUser] = useState<User | null>(null);
   const [store, setStore] = useState<StoreData>({
+    // data
     categories: undefined,
     games: undefined,
     singleTournament: undefined,
+    // actions
+    dispatch: {
+      getTournament: async (dataSlug: string = slug) => {
+        try {
+          const response: TypeSingleTournament = await getFn(
+            `/api/tournamentstables/view/${dataSlug}`
+          );
+          if (response?.id) {
+            setState(response, "singleTournament");
+          }
+        } catch {}
+      },
+    },
   });
 
   // Update store state

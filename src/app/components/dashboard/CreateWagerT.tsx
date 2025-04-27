@@ -152,7 +152,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
           )}
         </div>
         {/* Note to Participants */}
-        <div className="space-y-2 items-center gap-4">
+        <div className="space-y-2">
           <Label htmlFor="description">Note to Participants</Label>
           <div className="editorWrapper">
             {typeof window !== "undefined" ? (

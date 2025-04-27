@@ -11,29 +11,11 @@ import { useAuth } from "@/contexts/AuthContext";
 const CreateWager = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedGame, setSelectedGame] = useState<TypeGames>();
-  const { store, setState } = useAuth();
+  const { store } = useAuth();
   const params = useParams();
   const slug = params?.slug;
 
-  const getTournament = async () => {
-    if (!store.singleTournament) {
-      setLoading(true);
-      try {
-        const response: TypeSingleTournament = await getFn(
-          `/api/tournamentstables/view/${slug}`
-        );
-        if (response?.id) {
-          setState(response, "singleTournament");
-          filterGame();
-        }
-      } catch {
-      } finally {
-        setLoading(false);
-      }
-    }
-    setLoading(false);
-  };
-  const filterGame = async () => {
+  const filterGame = () => {
     if (store.games?.length && store.singleTournament) {
       const t: TypeGames | undefined = store.games.find(
         (el) => el.id === store?.singleTournament?.game_id
@@ -45,6 +27,13 @@ const CreateWager = () => {
   };
 
   useEffect(() => {
+    const getTournament = async () => {
+      if (!store.singleTournament) {
+        setLoading(true);
+        await store.dispatch.getTournament();
+      }
+      setLoading(false);
+    };
     getTournament();
   }, [slug]);
 

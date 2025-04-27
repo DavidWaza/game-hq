@@ -44,11 +44,11 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
         </button>
       </div>
       {/* content */}
-      <div className="relative bg-primary text-white py-4 bg-opacity-90 rounded-3xl shadow-lg border-4 border-[#fcf8db] w-full justify_auto h-full max-h-[700px]">
+      <div className="relative bg-primary text-white py-4 bg-opacity-90 rounded-3xl shadow-lg border-4 border-[#fcf8db] w-full justify_auto h-full max-h-[750px]">
         {/* content */}
         <div className="overflow-y-auto px-6 pb-6 w-full hidden_scroll">
           {!matchMode ? (
-            <BetSwitchTab />
+            <BetSwitchTab loading={loading} setLoading={setLoading} />
           ) : (
             <>
               {typeof window !== "undefined" ? (
