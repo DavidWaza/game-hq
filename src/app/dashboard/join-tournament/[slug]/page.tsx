@@ -53,7 +53,7 @@ const CreateWager = () => {
   return (
     <>
       <Navbar variant="primary" />
-      {loading && !data?.id && !selectedGame?.id ? (
+      {loading || !data?.id || !selectedGame?.id ? (
         <FullScreenLoader isLoading={true} text="Loading Tournament Details" />
       ) : (
         <>

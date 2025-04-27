@@ -78,17 +78,20 @@ const CreateWager = () => {
   useEffect(() => {
     getTournaments();
   }, []);
+
   useEffect(() => {
     filterForSoonestTournament();
-  }, [data.length]);
+  }, [data.length, store.games]);
+
   useEffect(() => {
     filterGame();
-  }, [selectedData?.id]);
+  }, [selectedData?.id, store?.games?.length]);
+  console.log(selectedGame);
 
   return (
     <>
       <Navbar variant="primary" />
-      {loading && !data.length && !selectedData?.id && !selectedGame?.id ? (
+      {loading || !data.length || !selectedData?.id || !selectedGame?.id ? (
         <FullScreenLoader isLoading={true} text="Loading All Tournaments" />
       ) : (
         <>

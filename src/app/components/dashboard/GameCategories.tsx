@@ -9,7 +9,12 @@ import {
   TypeSingleTournament,
 } from "../../../../types/global";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatNumber } from "@/lib/utils";
+import {
+  calculateTournamentOdds,
+  formatCurrency,
+  formatNumber,
+} from "@/lib/utils";
+import Modal from "./Modal";
 
 interface TournamentRecord {
   id: string;
@@ -139,7 +144,11 @@ const GameCategories = ({
 }: {
   tournaments: TypeSingleTournament[];
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedTournament, setSelectedTournament] = useState<
+    TypeSingleTournament | undefined
+  >(undefined);
   const [getTournament, setGetTournament] = useState<TournamentRecord[]>([]);
   const { store } = useAuth();
 
@@ -162,6 +171,11 @@ const GameCategories = ({
           if (findCategory && findCategory.id === fnCategory) return game;
         }
       });
+  };
+
+  const showModal = (val: TypeSingleTournament) => {
+    setSelectedTournament(val);
+    setIsModalOpen(true);
   };
 
   return (
@@ -222,30 +236,27 @@ const GameCategories = ({
             : getCategoryById(selectedCategory)?.name + " Games"}
         </h2>
         <div className="grid grid-cols-1 gap-4">
-          {filteredGames(selectedCategory).map((game) => (
-            <StatusCard
-              key={game.id}
-              // logo={game.img}
-              name={game.game.name}
-              players={game.number_of_participants}
-              // status={game.category}
-              prize={game.amount}
-              time={game.match_time}
-              // borderColor={`${
-              //   game.category === "Sports Games"
-              //     ? "bg-[#FCF8DB]"
-              //     : game.category === "Action Games"
-              //     ? "bg-[#f37f2d]"
-              //     : game.category === "Board Games"
-              //     ? "bg-white"
-              //     : game.category === "Dice Games"
-              //     ? "bg-[#922b21]"
-              //     : game.category === "Card Games"
-              //     ? "bg-[#f1c40f]"
-              //     : ""
-              // }`}
-            />
-          ))}
+          <table className="w-full max-w-3xl table border-separate border-spacing-y-4 -mt-4">
+            <tbody>
+              {filteredGames(selectedCategory).map((game, index: number) => (
+                <StatusCard
+                  key={
+                    filteredGames(selectedCategory).length +
+                    game.id +
+                    index +
+                    2312
+                  }
+                  logo={game.game.game_image}
+                  name={game.game.name}
+                  players={game.number_of_participants}
+                  prize={game.amount}
+                  time={game.match_time}
+                  showModal={showModal}
+                  tournament={game}
+                />
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Show message when no games are available */}
@@ -259,6 +270,25 @@ const GameCategories = ({
           ""
         )}
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        setIsOpen={setIsModalOpen}
+        header="GAME RULES"
+        sub={`Prize Pool: ${formatCurrency(
+          selectedTournament?.amount || 0
+        )} • Start Time: ${selectedTournament?.match_time} • Players: ${
+          selectedTournament?.number_of_participants
+        } • Total Odds: ${calculateTournamentOdds(
+          selectedTournament
+        ).totalOdds.toFixed(2)}×`}
+        contentTitle={selectedTournament?.game?.name + " Tournament Rules"}
+        contentItems={[selectedTournament?.description || ""]}
+        firstButtonText="Accept"
+        onClick={() =>
+          (window.location.href = `/dashboard/tournament-lobby/${selectedTournament?.id}`)
+        }
+        onTab={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
