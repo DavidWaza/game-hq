@@ -124,6 +124,7 @@ $text-dark: #1a1a1a;
       &.ql-blank {
         &::before {
           color: hsl(var(--muted-foreground));
+          left: 10px;
           // opacity: 0.6;
           font-weight: 700;
           font-size: 14px;

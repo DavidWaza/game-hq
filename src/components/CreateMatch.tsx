@@ -1,3 +1,4 @@
+"use client";
 import React, { useRef, useState } from "react";
 import Button from "@/components/Button";
 import BetSwitchTab from "@/app/components/dashboard/BetSwitchTab";
@@ -49,11 +50,17 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
           {!matchMode ? (
             <BetSwitchTab />
           ) : (
-            <CreateTournament
-              ref={tournamentRef}
-              loading={loading}
-              setLoading={setLoading}
-            />
+            <>
+              {typeof window !== "undefined" ? (
+                <CreateTournament
+                  ref={tournamentRef}
+                  loading={loading}
+                  setLoading={setLoading}
+                />
+              ) : (
+                ""
+              )}
+            </>
           )}
         </div>
         {/* bottom section */}

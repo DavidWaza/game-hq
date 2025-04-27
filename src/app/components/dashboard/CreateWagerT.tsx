@@ -4,11 +4,9 @@ import React, {
   useImperativeHandle,
   useState,
   useEffect,
-  useRef,
 } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Money } from "@phosphor-icons/react";
 import { CalendarForm } from "@/app/components/dashboard/Calendar";
 import { useRouter } from "next/navigation";
@@ -26,7 +24,8 @@ import {
 } from "@/components/ui/select";
 import EventScheduler from "./TimerSchedule";
 import { Controller } from "react-hook-form";
-import RichTextEditor from "@/components/RichTextEditor";
+import dynamic from "next/dynamic";
+// import RichTextEditor from "@/components/RichTextEditor";
 
 // Define types
 interface FormData {
@@ -49,6 +48,9 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   const { store } = useAuth();
   const router = useRouter();
   // const quill = new Quill('#editor');
+  const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
+    ssr: false,
+  });
 
   const {
     register,
@@ -153,13 +155,17 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
         <div className="space-y-2 items-center gap-4">
           <Label htmlFor="description">Note to Participants</Label>
           <div className="editorWrapper">
-            <RichTextEditor
-              value={watch("description")} // Bind the value to react-hook-form
-              onChange={(value) =>
-                setValue("description", value, { shouldValidate: true })
-              } // Update the form value
-              placeholder="Enter the terms and necessary information of this bet"
-            />
+            {typeof window !== "undefined" ? (
+              <RichTextEditor
+                value={watch("description")} // Bind the value to react-hook-form
+                onChange={(value) =>
+                  setValue("description", value, { shouldValidate: true })
+                } // Update the form value
+                placeholder="Enter the rules, terms and necessary information for this match"
+              />
+            ) : (
+              ""
+            )}
           </div>
           {errors.description && (
             <p className="text-red-500 text-sm">{errors.description.message}</p>
