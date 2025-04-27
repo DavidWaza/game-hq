@@ -1,14 +1,24 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Bungee } from "next/font/google";
 import Image from "next/image";
 import CountdownTimer from "@/components/CountdownTimer";
 import Button from "@/components/Button";
 import { motion } from "framer-motion";
 import Modal from "@/app/components/dashboard/Modal";
 import { TypeGames, TypeSingleTournament } from "../../../types/global";
-import { formatCurrency, formatNumber } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import {
+  calculateTournamentOdds,
+  formatCurrency,
+  formatNumber,
+} from "@/lib/utils";
 
+const bungee = Bungee({
+  variable: "--bungee",
+  display: "swap",
+  subsets: ["latin"],
+  weight: "400",
+});
 type TypePropsComponent = {
   game: TypeGames | undefined;
   tournamentDetails: TypeSingleTournament | undefined;
@@ -16,7 +26,6 @@ type TypePropsComponent = {
 
 const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
   const [isOpenTournament, setIsOpenTournament] = useState(false);
-  const router = useRouter();
 
   const [theme, setTheme] = useState({
     mouse_pointer: "/assets/cod-icon.svg",
@@ -47,23 +56,18 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
           isOpen={isOpenTournament}
           setIsOpen={setIsOpenTournament}
           header="GAME RULES"
+          sub={`Prize Pool: ${formatCurrency(
+            tournamentDetails?.amount || 0
+          )}  • Start Time: ${tournamentDetails?.match_time} • Players: ${
+            tournamentDetails?.number_of_participants
+          } • Total Odds: ${calculateTournamentOdds(
+            tournamentDetails
+          ).totalOdds.toFixed(2)}×`}
           contentTitle={game?.name + " Tournament Rules"}
           contentItems={[tournamentDetails?.description || ""]}
           firstButtonText="Accept"
           onClick={() =>
-            router.push(
-              `/dashboard/tournament-lobby/${
-                game?.id
-              }?name=${encodeURIComponent(
-                game?.name || ""
-              )}&banner=${encodeURIComponent(
-                game?.banner || ""
-              )}&amount${encodeURIComponent(
-                tournamentDetails?.amount || 0
-              )}&match_time${encodeURIComponent(
-                tournamentDetails?.match_time || ""
-              )}`
-            )
+            (window.location.href = `/dashboard/tournament-lobby/${tournamentDetails?.id}`)
           }
         />
       </div>
@@ -85,38 +89,38 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
         })}
       </div>
       {/* Content */}
-      <div className="relative z-30 text-[#FCF8DB] flex flex-col items-center justify-center min-h-screen py-[140px] text-center px-4">
-        <h1 className="lg:text-7xl text-4xl uppercase mb-2">
-          {game?.name} tournament
-        </h1>
-        <p className="uppercase lg:text-2xl text-xl mb-2">
-          <span className="text-[#f37f2d]">
-            {formatNumber(tournamentDetails?.number_of_participants || 0)}
-          </span>{" "}
-          Participants left
-        </p>
-        <div className="flex items-center">
-          {/* <CurrencyNgn
-            size={20}
-            weight="duotone"
-            color="#f37f2d"
-            className="font-bold"
-          /> */}
-          <p className="text-[#FCF8DB] text-lg">
-            {formatCurrency(tournamentDetails?.amount || 0)}
+      <div className="relative z-30 text-[#FCF8DB] min-h-screen flex_center">
+        <div className="flex flex-col items-center justify-center py-[140px] text-center px-4 transInLonger">
+          <h2 className={`${bungee.className} text-2xl font-bold uppercase`}>
+            next tournament
+          </h2>
+          <h1 className="lg:text-7xl text-4xl uppercase my-2">
+            {game?.name} tournament
+          </h1>
+          <p className="uppercase lg:text-2xl text-xl mb-2">
+            <span className="text-[#f37f2d]">
+              {formatNumber(tournamentDetails?.number_of_participants || 0)}
+            </span>{" "}
+            Participants left
           </p>
-        </div>
-        <CountdownTimer
-          targetDate={
-            new Date(
-              `${tournamentDetails?.match_date}T${tournamentDetails?.match_time}`
-            )
-          }
-        />
-        <div className="w-56 my-10">
-          <Button onClick={() => setIsOpenTournament(true)}>
-            Join tournament
-          </Button>
+          <div className="flex items-center">
+         
+            <p className="text-[#FCF8DB] text-lg">
+              {formatCurrency(tournamentDetails?.amount || 0)}
+            </p>
+          </div>
+          <CountdownTimer
+            targetDate={
+              new Date(
+                `${tournamentDetails?.match_date}T${tournamentDetails?.match_time}`
+              )
+            }
+          />
+          <div className="w-full max-w-56 my-10">
+            <Button onClick={() => setIsOpenTournament(true)}>
+              Join tournament
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -9,46 +9,12 @@ import {
   TypeSingleTournament,
 } from "../../../../types/global";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatNumber } from "@/lib/utils";
-
-// interface TournamentRecord {
-//   id: string;
-//   user_id: number;
-//   description: string;
-//   amount: string;
-//   number_of_participants: number;
-//   match_time: string;
-//   match_date: string;
-//   created_at: string;
-//   updated_at: string | null;
-//   game_id: string;
-//   user: {
-//     id: number;
-//     username: string;
-//     email: string;
-//     email_verified_at: string | null;
-//     remember_token: string | null;
-//     created_at: string | null;
-//     updated_at: string | null;
-//   };
-//   game: Game | null;
-// }
-
-// interface Game {
-//   id: string;
-//   category_id: string;
-//   name: string;
-//   game_image: string;
-//   description: string;
-//   banner: string;
-//   sub_banner: string[];
-//   video_banner: string;
-//   sub_video: string[];
-//   theme_settings: string;
-//   created_at: string | null;
-//   updated_at: string | null;
-// }
-
+import {
+  calculateTournamentOdds,
+  formatCurrency,
+  formatNumber,
+} from "@/lib/utils";
+import Modal from "./Modal";
 
 // Main Component
 const GameCategories = ({
@@ -56,7 +22,11 @@ const GameCategories = ({
 }: {
   tournaments: TypeSingleTournament[];
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedTournament, setSelectedTournament] = useState<
+    TypeSingleTournament | undefined
+  >(undefined);
   const { store } = useAuth();
 
   const getCategoryById = (id: string): TypeCategories | undefined => {
@@ -78,6 +48,11 @@ const GameCategories = ({
           if (findCategory && findCategory.id === fnCategory) return game;
         }
       });
+  };
+
+  const showModal = (val: TypeSingleTournament) => {
+    setSelectedTournament(val);
+    setIsModalOpen(true);
   };
 
   return (
@@ -139,27 +114,32 @@ const GameCategories = ({
         </h2>
         <div className="grid grid-cols-1 gap-4">
           {filteredGames(selectedCategory).map((game) => (
-            <StatusCard
+            <div
               key={game.id}
-              // logo={game.img}
-              name={game.game.name}
-              players={game.number_of_participants}
-              prize={game.amount}
-              time={game.match_time}
-              borderColor={`${
-                game.game.name === "Chess"
-                  ? "bg-[#FCF8DB]"
-                  : game.game.name === "FIFA"
-                  ? "bg-[#f37f2d]"
-                  : game.game.name === "Mortal Combat"
-                  ? "bg-white"
-                  : game.game.name === "Call Of Duty"
-                  ? "bg-[#922b21]"
-                  : game.game.name === "Card Games"
-                  ? "bg-[#f1c40f]"
-                  : ""
-              }`}
-            />
+              onClick={() => showModal(game)}
+              className="cursor-pointer"
+            >
+              <StatusCard
+                tournament={game}
+                name={game.game.name}
+                players={game.number_of_participants}
+                prize={game.amount}
+                time={game.match_time}
+                borderColor={`${
+                  game.game.name === "Chess"
+                    ? "bg-[#FCF8DB]"
+                    : game.game.name === "FIFA"
+                    ? "bg-[#f37f2d]"
+                    : game.game.name === "Mortal Combat"
+                    ? "bg-white"
+                    : game.game.name === "Call Of Duty"
+                    ? "bg-[#922b21]"
+                    : game.game.name === "Card Games"
+                    ? "bg-[#f1c40f]"
+                    : ""
+                }`}
+              />
+            </div>
           ))}
         </div>
 
@@ -174,6 +154,25 @@ const GameCategories = ({
           ""
         )}
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        setIsOpen={setIsModalOpen}
+        header="GAME RULES"
+        sub={`Prize Pool: ${formatCurrency(
+          selectedTournament?.amount || 0
+        )} • Start Time: ${selectedTournament?.match_time} • Players: ${
+          selectedTournament?.number_of_participants
+        } • Total Odds: ${calculateTournamentOdds(
+          selectedTournament
+        ).totalOdds.toFixed(2)}×`}
+        contentTitle={selectedTournament?.game?.name + " Tournament Rules"}
+        contentItems={[selectedTournament?.description || ""]}
+        firstButtonText="Accept"
+        onClick={() =>
+          (window.location.href = `/dashboard/tournament-lobby/${selectedTournament?.id}`)
+        }
+        onTab={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
