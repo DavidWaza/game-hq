@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import StatusCard from "./SetGamesCard";
-import { getFn } from "@/lib/apiClient";
+// import { getFn } from "@/lib/apiClient";
 import {
   TypeCategories,
   TypeGames,
@@ -11,127 +11,44 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { formatNumber } from "@/lib/utils";
 
-interface TournamentRecord {
-  id: string;
-  user_id: number;
-  description: string;
-  amount: string;
-  number_of_participants: number;
-  match_time: string;
-  match_date: string;
-  created_at: string;
-  updated_at: string | null;
-  game_id: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-    email_verified_at: string | null;
-    remember_token: string | null;
-    created_at: string | null;
-    updated_at: string | null;
-  };
-  game: Game | null;
-}
+// interface TournamentRecord {
+//   id: string;
+//   user_id: number;
+//   description: string;
+//   amount: string;
+//   number_of_participants: number;
+//   match_time: string;
+//   match_date: string;
+//   created_at: string;
+//   updated_at: string | null;
+//   game_id: string;
+//   user: {
+//     id: number;
+//     username: string;
+//     email: string;
+//     email_verified_at: string | null;
+//     remember_token: string | null;
+//     created_at: string | null;
+//     updated_at: string | null;
+//   };
+//   game: Game | null;
+// }
 
-interface Game {
-  id: string;
-  category_id: string;
-  name: string;
-  game_image: string;
-  description: string;
-  banner: string;
-  sub_banner: string[];
-  video_banner: string;
-  sub_video: string[];
-  theme_settings: string;
-  created_at: string | null;
-  updated_at: string | null;
-}
+// interface Game {
+//   id: string;
+//   category_id: string;
+//   name: string;
+//   game_image: string;
+//   description: string;
+//   banner: string;
+//   sub_banner: string[];
+//   video_banner: string;
+//   sub_video: string[];
+//   theme_settings: string;
+//   created_at: string | null;
+//   updated_at: string | null;
+// }
 
-// Sample games data with categories
-const gamesData = [
-  {
-    id: 1,
-    title: "Call of Duty",
-    img: "/assets/1-3-3.png",
-    nameSrc: "Call of Duty",
-    nameAlt: "Call of Duty",
-    category: "Action Games",
-    players: 10,
-    isNameImage: false,
-  },
-  {
-    id: 2,
-    title: "FIFA 25",
-    img: "/assets/1-2-3.png",
-    nameSrc: "Fifa 25",
-    nameAlt: "FIFA",
-    category: "Sports Games",
-    players: 5,
-    isNameImage: false,
-  },
-  {
-    id: 3,
-    title: "Chess Master",
-    img: "/assets/1-4-3.png",
-    nameSrc: "Chess Master",
-    nameAlt: "Chess Master",
-    category: "Board Games",
-    players: 8,
-    isNameImage: false,
-  },
-  {
-    id: 4,
-    title: "Monopoly",
-    img: "/assets/1-4-3.png",
-    nameSrc: "Monopoly",
-    nameAlt: "Monopoly",
-    category: "Board Games",
-    players: 9,
-    isNameImage: false,
-  },
-  {
-    id: 5,
-    title: "Yahtzee",
-    img: "/assets/1-2-3.png",
-    nameSrc: "Yahtzee",
-    nameAlt: "Yahtzee",
-    category: "Dice Games",
-    players: 6,
-    isNameImage: false,
-  },
-  {
-    id: 6,
-    title: "Poker",
-    img: "/assets/1-4-3.png",
-    nameSrc: "Poker",
-    nameAlt: "Poker",
-    category: "Card Games",
-    players: 11,
-    isNameImage: false,
-  },
-  {
-    id: 7,
-    title: "Battlefield",
-    img: "/assets/1-3-3.png",
-    nameSrc: "Battlefield",
-    nameAlt: "Battlefield",
-    category: "Action Games",
-    players: 9,
-    isNameImage: false,
-  },
-  {
-    id: 8,
-    title: "NBA 2K25",
-    img: "/assets/1-2-3.png",
-    nameSrc: "NBA 2K25",
-    nameAlt: "NBA 2K25",
-    category: "Sports Games",
-    players: 2,
-    isNameImage: false,
-  },
-];
 
 // Main Component
 const GameCategories = ({
@@ -140,7 +57,6 @@ const GameCategories = ({
   tournaments: TypeSingleTournament[];
 }) => {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [getTournament, setGetTournament] = useState<TournamentRecord[]>([]);
   const { store } = useAuth();
 
   const getCategoryById = (id: string): TypeCategories | undefined => {

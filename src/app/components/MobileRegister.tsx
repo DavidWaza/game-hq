@@ -10,28 +10,15 @@ import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import Button from "@/components/Button";
-
-const evaluateStrength = (password: string) => {
-  const lengthCriteria = password.length >= 8;
-  const lowercaseCriteria = /[a-z]/.test(password);
-  const uppercaseCriteria = /[A-Z]/.test(password);
-  const numberCriteria = /\d/.test(password);
-  const specialCharCriteria = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-  let strength = 0;
-  if (lengthCriteria) strength++;
-  if (lowercaseCriteria) strength++;
-  if (uppercaseCriteria) strength++;
-  if (numberCriteria) strength++;
-  if (specialCharCriteria) strength++;
-
-  return strength;
-};
+import { DataFromLogin } from "../../../types/global";
+// import ReferralCode from "./ReferralCode";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 const MobileRegister = () => {
-  const [registrationType] = useState<"email" | "phone">(
-    "email"
-  );
+  const [registrationType] = useState<"email" | "phone">("email");
+  const { login } = useAuth();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -43,32 +30,24 @@ const MobileRegister = () => {
   } = useForm<{
     email: string;
     password: string;
+    username:string;
     phone: number;
     confirm_password: string;
   }>();
 
-  const password_mobile = watch("password", "");
-  const confirmPassword_mobile = watch("confirm_password", "");
-
+  const password = watch("password", "");
+  const confirmPassword = watch("confirm_password", "");
   const [isVisible_mobile, setIsVisible_mobile] = useState(false);
   const [confirmIsVisible_mobile, setConfirmIsVisible_mobile] = useState(false);
 
-  const [strength, setStrength] = useState(0);
-
-  // const switchRegistrationType = () => {
-  //   setRegistrationType(registrationType === "email" ? "phone" : "email");
-  //   reset();
-  //   setStrength(0);
-  // };
-
+  // Handle Password Change
   const handlePasswordChangeMobile = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const newPassword = e.target.value;
-    setStrength(evaluateStrength(newPassword));
 
     // Clear confirm password error if passwords start matching
-    if (confirmPassword_mobile === newPassword) {
+    if (confirmPassword === newPassword) {
       clearErrors("confirm_password");
     }
   };
@@ -80,7 +59,7 @@ const MobileRegister = () => {
     const newConfirmPassword = e.target.value;
 
     // Validate if passwords match
-    if (newConfirmPassword !== password_mobile) {
+    if (newConfirmPassword !== password) {
       setError("confirm_password", { message: "Passwords do not match" });
     } else {
       clearErrors("confirm_password");
@@ -91,12 +70,14 @@ const MobileRegister = () => {
     mutationFn: (userData: {
       email?: string;
       phone?: number;
+      username?: string;
       password: string;
     }) => postFn("api/auth/register", userData),
-    onSuccess: (data) => {
-      toast.success("Registration successful", data);
+    onSuccess: async (data: DataFromLogin) => {
+      toast.success("Registration Successful");
+      await login(data);
       setTimeout(() => {
-        window.location.href = "/otp/emailOtp";
+        router.push("/dashboard");
       }, 3000);
     },
     onError: (error) => {
@@ -108,6 +89,7 @@ const MobileRegister = () => {
   const onSubmit: SubmitHandler<{
     email?: string;
     phone?: number;
+    username:string;
     password: string;
     confirm_password: string;
   }> = (formData) => {
@@ -118,18 +100,8 @@ const MobileRegister = () => {
     registerMutation.mutate(formData);
   };
 
-  const strengthLabels = ["Weak", "Fair", "Good", "Strong", "Very Strong"];
-  const strengthColors = [
-    "bg-red-500",
-    "bg-yellow-500",
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-teal-500",
-  ];
-
   return (
     <div>
-      
       <div className="relative block md:hidden">
         <div className="bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center h-full">
           <div className="grid lg:grid-cols-3">
@@ -141,7 +113,7 @@ const MobileRegister = () => {
             <div className="col-span-2">
               <div className="relative z-20">
                 <div className="pt-0 px-0">
-                  <div className=" px-5 space-y-5 border rounded-lg rounded-t-none py-3 glass-mobile overflow-hidden">
+                  <div className="px-5 space-y-5 border rounded-lg rounded-t-none py-3 glass-mobile overflow-hidden">
                     <div className="text-center flex flex-col space-y-2 py-4">
                       <form
                         onSubmit={handleSubmit(onSubmit)}
@@ -158,6 +130,17 @@ const MobileRegister = () => {
                                 id="email"
                                 {...register("email")}
                                 placeholder="Ex. davidwaza@gmail.com"
+                              />
+                            </div>
+                            <div className="grid w-full items-center gap-1.5 !text-left">
+                              <Label htmlFor="email" className="text-[#fcf8db]">
+                                Username
+                              </Label>
+                              <Input
+                                type="text"
+                                id="username"
+                                {...register("username")}
+                                placeholder="david"
                               />
                             </div>
                           </>
@@ -186,7 +169,6 @@ const MobileRegister = () => {
                           </Label>
                           <div className="relative">
                             <Input
-                              value={password_mobile}
                               type={isVisible_mobile ? "text" : "password"}
                               id="password"
                               placeholder="******"
@@ -215,14 +197,6 @@ const MobileRegister = () => {
                               )}
                             </button>
                           </div>
-                          <div className="mt-2">
-                            <div
-                              className={`h-2 w-full rounded ${strengthColors[strength]} transition-all duration-300`}
-                            />
-                            <span className="block text-right text-sm text-gray-500 mt-1">
-                              {strengthLabels[strength]}
-                            </span>
-                          </div>
                           {errors.password && (
                             <p className="text-red-500 text-sm !text-left">
                               {errors.password.message}
@@ -230,7 +204,8 @@ const MobileRegister = () => {
                           )}
                         </div>
 
-                        <div className="grid w-full items-center gap-1.5">
+                        {/* Confirmed Passwoord */}
+                        <div className="text-left w-full items-center">
                           <Label
                             htmlFor="confirm_password"
                             className="text-[#fcf8db] !text-left"
@@ -239,7 +214,6 @@ const MobileRegister = () => {
                           </Label>
                           <div className="relative">
                             <Input
-                              value={confirmPassword_mobile}
                               type={
                                 confirmIsVisible_mobile ? "text" : "password"
                               }
@@ -281,27 +255,6 @@ const MobileRegister = () => {
                       <div className="divider py-4">
                         <span>Or</span>
                       </div>
-                      {/* <Button
-                        variant="secondary"
-                        size="md"
-                        width="full"
-                        onClick={switchRegistrationType}
-                        icon={
-                          <Image
-                            src={"/assets/icons/mail.svg"}
-                            alt="Email Icon"
-                            width={0}
-                            height={0}
-                            sizes="100vw"
-                            className="w-5 h-5 object-contain object-center"
-                          />
-                        }
-                      >
-                        Register with{" "}
-                        {registrationType === "email"
-                          ? "Phone Number"
-                          : "Email"}
-                      </Button> */}
                       <Button
                         variant="secondary"
                         size="md"
@@ -330,16 +283,15 @@ const MobileRegister = () => {
                 </div>
               </div>
               <div className="overflow-hidden">
-              <Image
-                src={"/assets/register-duty.png"}
-                alt=""
-                width={0}
-                height={0}
-                sizes="100vw"
-                className="w-2/3 mr-0 ml-auto h-auto object-contain object-center absolute top-60 right-0"
-              />
+                <Image
+                  src={"/assets/register-duty.png"}
+                  alt=""
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="w-2/3 mr-0 ml-auto h-auto object-contain object-center absolute top-60 right-0"
+                />
               </div>
-            
             </div>
           </div>
         </div>
