@@ -32,6 +32,8 @@ export type TypeGames = {
   theme_settings: string
 };
 export type TypeSingleTournament = {
+  title: string;
+  game: TypeGames,
   amount: string;
   game_id: string;
   description: string;
@@ -45,11 +47,11 @@ export type TypeSingleTournament = {
 };
 
 export type CreatedGames = {
-  banner:string;
-  category_id:string;
-  description:string;
-  name:string;
-  game_image:string;
-  id:string;
-  records:[]
+  banner: string;
+  category_id: string;
+  description: string;
+  name: string;
+  game_image: string;
+  id: string;
+  records: []
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import GameCategories from "./GameCategories";
+import { TypeSingleTournament } from "../../../../types/global";
 
 const images = [
   "/assets/m.png",
@@ -9,7 +10,11 @@ const images = [
   "/assets/h2_img2_2.png",
 ];
 
-const CreateWagerBanner = () => {
+const CreateWagerBanner = ({
+  tournaments,
+}: {
+  tournaments: TypeSingleTournament[];
+}) => {
   const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
@@ -36,7 +41,7 @@ const CreateWagerBanner = () => {
           </h1>
 
           {/* Create Wager */}
-          <GameCategories />
+          <GameCategories tournaments={tournaments} />
         </div>
 
         {/* Right Side Image (Independent) */}

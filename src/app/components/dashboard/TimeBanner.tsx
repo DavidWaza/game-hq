@@ -74,7 +74,7 @@ const TimeBanner = () => {
       {/* Bottom Images */}
       <div className="hidden absolute bottom-0 left-0 w-full lg:flex justify-between items-end px-4 z-20">
         <Image
-          src={"/assets/soap.png"}
+          src={"/assets/game-banners/cod-sub-1.png"}
           alt="Soap"
           width={0}
           height={0}

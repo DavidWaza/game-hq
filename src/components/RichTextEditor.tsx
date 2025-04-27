@@ -48,7 +48,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         quillInstance.current = null; // Cleanup
       };
     }
-  }, [onChange, value, placeholder]);
+  }, []);
 
   return <div ref={quillRef} className="quill-editor"></div>;
 };

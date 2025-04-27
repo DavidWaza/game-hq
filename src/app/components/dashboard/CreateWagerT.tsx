@@ -41,6 +41,9 @@ interface CreateTournamentProps {
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
+const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
+  ssr: false,
+});
 
 const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   const { setLoading } = props;
@@ -48,9 +51,6 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   const { store } = useAuth();
   const router = useRouter();
   // const quill = new Quill('#editor');
-  const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
-    ssr: false,
-  });
 
   const {
     register,

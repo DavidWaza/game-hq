@@ -3,6 +3,13 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import StatusCard from "./SetGamesCard";
 import { getFn } from "@/lib/apiClient";
+import {
+  TypeCategories,
+  TypeGames,
+  TypeSingleTournament,
+} from "../../../../types/global";
+import { useAuth } from "@/contexts/AuthContext";
+import { formatNumber } from "@/lib/utils";
 
 interface TournamentRecord {
   id: string;
@@ -126,53 +133,36 @@ const gamesData = [
   },
 ];
 
-const gameCategories = [
-  {
-    img: "/assets/cod-cat.png",
-    link: "Action Games",
-    label: "Action Games",
-  },
-  {
-    img: "/assets/soccer-cat.png",
-    link: "Sports Games",
-    label: "Sports Games",
-  },
-  {
-    img: "/assets/board-cat.png",
-    link: "Board Games",
-    label: "Board Games",
-  },
-  {
-    img: "/assets/card-cat.png",
-    link: "Card Games",
-    label: "Card Games",
-  },
-];
-
 // Main Component
-const GameCategories = () => {
+const GameCategories = ({
+  tournaments,
+}: {
+  tournaments: TypeSingleTournament[];
+}) => {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [getTournament, setGetTournament] = useState< TournamentRecord[]>([]);
+  const [getTournament, setGetTournament] = useState<TournamentRecord[]>([]);
+  const { store } = useAuth();
 
+  const getCategoryById = (id: string): TypeCategories | undefined => {
+    return store?.categories?.find((el) => el.id === id);
+  };
   // Filter games based on selected category
-  const filteredGames =
-    selectedCategory === "All"
-      ? gamesData
-      : gamesData.filter((game) => game.category === selectedCategory);
 
-  // fetch games
-  useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        const response = await getFn(`api/tournamentstables`);
-        console.log(response.records, 'queen')
-        setGetTournament(response.records)
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchGames();
-  }, []);
+  const filteredGames = (fnCategory: string): TypeSingleTournament[] => {
+    if (fnCategory === "All") return tournaments;
+    else
+      return tournaments.filter((game: TypeSingleTournament) => {
+        const findGame: TypeGames | undefined = store?.games?.find(
+          (el) => el.id === game.game_id
+        );
+        if (findGame) {
+          const findCategory: TypeCategories | undefined = getCategoryById(
+            findGame?.category_id
+          );
+          if (findCategory && findCategory.id === fnCategory) return game;
+        }
+      });
+  };
 
   return (
     <div className=" py-20">
@@ -184,9 +174,11 @@ const GameCategories = () => {
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Add "All" category */}
 
-          <div
+          <button
             onClick={() => setSelectedCategory("All")}
-            className="flex items-center gap-2 hover:bg-[#353736] rounded-full p-2 text-[#FCF8DB]"
+            className={`flex items-center gap-2 hover:bg-[#353736] rounded-full p-2 text-[#FCF8DB] ${
+              selectedCategory === "All" ? "bg-[#353736]" : ""
+            }`}
           >
             <Image
               src={"/assets/stadium-cat.png"}
@@ -196,26 +188,28 @@ const GameCategories = () => {
               sizes="100vw"
               className="w-6 object-contain object-center"
             />
-            All Games
-          </div>
+            All Games {formatNumber(tournaments?.length || 0)}
+          </button>
 
           {/* List of categories */}
-          {gameCategories.map((cat, index) => (
-            <div
+          {store?.categories?.map((cat, index) => (
+            <button
               key={index}
-              onClick={() => setSelectedCategory(cat.link)}
-              className="flex items-center gap-2 hover:bg-[#353736] rounded-full p-2 text-[#FCF8DB]"
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`flex items-center gap-2 hover:bg-[#353736] rounded-full p-2 text-[#FCF8DB] ${
+                selectedCategory === cat.id ? "bg-[#353736]" : ""
+              }`}
             >
               <Image
-                src={cat.img}
+                src={cat.category_image}
                 alt=""
                 width={0}
                 height={0}
                 sizes="100vw"
                 className="w-5 object-contain object-center text-white"
               />
-              {cat.label}
-            </div>
+              {cat.name} Games {formatNumber(filteredGames(cat.id).length)}
+            </button>
           ))}
         </div>
       </div>
@@ -223,14 +217,16 @@ const GameCategories = () => {
       {/* Games Section */}
       <div>
         <h2 className="text-2xl font-bold mb-4 text-[#FCF8DB] my-10">
-          {selectedCategory === "All" ? "All Games" : selectedCategory}
+          {selectedCategory === "All"
+            ? "All Games"
+            : getCategoryById(selectedCategory)?.name + " Games"}
         </h2>
-        <div className="grid grid-cols-1 gap-4 px-4">
-          {getTournament.map((game) => (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredGames(selectedCategory).map((game) => (
             <StatusCard
               key={game.id}
               // logo={game.img}
-              name={game.game_id}
+              name={game.game.name}
               players={game.number_of_participants}
               // status={game.category}
               prize={game.amount}
@@ -253,12 +249,14 @@ const GameCategories = () => {
         </div>
 
         {/* Show message when no games are available */}
-        {filteredGames.length === 0 && (
-          <div className="text-center py-10">
+        {filteredGames(selectedCategory).length === 0 ? (
+          <div className="transIn text-center py-10">
             <p className="text-lg text-gray-500">
               No games available in this category
             </p>
           </div>
+        ) : (
+          ""
         )}
       </div>
     </div>

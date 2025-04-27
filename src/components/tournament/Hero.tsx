@@ -34,44 +34,11 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
       style={{
         backgroundImage: `url(${game?.banner})`,
       }}
-      className="time-banner relative overflow-hidden"
+      className="time-banner relative !h-full min-h-screen"
     >
       {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black opacity-80 z-10"></div>
-
-      {/* Content */}
-      <div className="relative z-30 text-[#FCF8DB] flex flex-col items-center justify-center h-full text-center">
-        <h1 className="text-7xl uppercase py-2">{game?.name} tournament</h1>
-        <p className="uppercase text-2xl pb-2">
-          <span className="text-[#f37f2d]">
-            {formatNumber(tournamentDetails?.number_of_participants || 0)}
-          </span>{" "}
-          Participants left
-        </p>
-        <div className="flex items-center">
-          {/* <CurrencyNgn
-            size={20}
-            weight="duotone"
-            color="#f37f2d"
-            className="font-bold"
-          /> */}
-          <p className="text-[#FCF8DB] text-lg">
-            {formatCurrency(tournamentDetails?.amount || 0)}
-          </p>
-        </div>
-        <CountdownTimer
-          targetDate={
-            new Date(
-              `${tournamentDetails?.match_date}T${tournamentDetails?.match_time}`
-            )
-          }
-        />
-        <div className="w-56 my-10">
-          <Button onClick={() => setIsOpenTournament(true)}>
-            Join tournament
-          </Button>
-        </div>
-      </div>
+      <div className="h-full w-full absolute inset-0 bg-black opacity-80 z-10"></div>
+      {/* modal */}
       <div className="absolute z-50">
         <Modal
           isOpen={isOpenTournament}
@@ -101,6 +68,41 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
             />
           );
         })}
+      </div>
+      {/* Content */}
+      <div className="relative z-30 text-[#FCF8DB] flex flex-col items-center justify-center min-h-screen py-[140px] text-center px-4">
+        <h1 className="lg:text-7xl text-4xl uppercase mb-2">
+          {game?.name} tournament
+        </h1>
+        <p className="uppercase lg:text-2xl text-xl mb-2">
+          <span className="text-[#f37f2d]">
+            {formatNumber(tournamentDetails?.number_of_participants || 0)}
+          </span>{" "}
+          Participants left
+        </p>
+        <div className="flex items-center">
+          {/* <CurrencyNgn
+            size={20}
+            weight="duotone"
+            color="#f37f2d"
+            className="font-bold"
+          /> */}
+          <p className="text-[#FCF8DB] text-lg">
+            {formatCurrency(tournamentDetails?.amount || 0)}
+          </p>
+        </div>
+        <CountdownTimer
+          targetDate={
+            new Date(
+              `${tournamentDetails?.match_date}T${tournamentDetails?.match_time}`
+            )
+          }
+        />
+        <div className="w-56 my-10">
+          <Button onClick={() => setIsOpenTournament(true)}>
+            Join tournament
+          </Button>
+        </div>
       </div>
 
       {/* Scroll Down Button - Centered and Responsive */}

@@ -526,13 +526,24 @@
 }
 
 @keyframes pulse-slow {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 @keyframes slide-in {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .animate-pulse-slow {
@@ -548,7 +559,7 @@
 }
 
 .my_invitation_bg {
-  background-image: url('/assets/cod-4.jpg');
+  background-image: url("/assets/cod-4.jpg");
   background-size: cover;
   background-position: center;
   height: 100vh;

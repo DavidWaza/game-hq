@@ -77,16 +77,22 @@ const CreateMatchPage = () => {
       <Navbar variant="primary" />
       {/* video */}
       <div className="create-wager-banner fixed top-0 left-0 bottom-0 w-dvw h-dvh">
-        <video
-          ref={videoRef}
-          key={videoTrailers[currentVideoIndex].id}
-          className="w-full h-full object-cover"
-          src={videoTrailers[currentVideoIndex].src}
-          autoPlay
-          muted
-          playsInline
-          onEnded={handleVideoEnd}
-        ></video>
+        {process.env.NEXT_PUBLIC_HIDE_VIDEO &&
+        process.env.NEXT_PUBLIC_HIDE_VIDEO !== "false" ? (
+          <video
+            ref={videoRef}
+            key={videoTrailers[currentVideoIndex].id}
+            className="w-full h-full object-cover"
+            src={videoTrailers[currentVideoIndex].src}
+            autoPlay
+            muted
+            playsInline
+            onEnded={handleVideoEnd}
+          ></video>
+        ) : (
+          ""
+        )}
+
         <div className="absolute top-0 left-0 w-full h-full bottom-0 bg-black bg-opacity-50"></div>
       </div>
       {/* gradient */}

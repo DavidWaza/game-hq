@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Clock } from "@phosphor-icons/react";
 import Modal from "./Modal";
+import { formatNumber } from "@/lib/utils";
 
 // Existing interfaces for game rules remain unchanged
 // interface GameRuleSet {
@@ -132,7 +133,7 @@ const StatusCard: React.FC<StatusCardProps> = ({
   return (
     <>
       <div
-        className="bg-[#0F1218] p-5 rounded-xl flex flex-col md:flex-row items-center gap-5 w-full max-w-3xl relative shadow-lg cursor-pointer hover:bg-[#161b24] transition-colors z-auto"
+        className="transLeft bg-[#0F1218] p-5 rounded-xl flex flex-col md:flex-row items-center gap-5 w-full max-w-3xl relative shadow-lg cursor-pointer hover:bg-[#161b24] transition-colors z-auto"
         onClick={() => setIsModalOpen(true)}
       >
         {/* Left Section with Logo */}
@@ -160,10 +161,11 @@ const StatusCard: React.FC<StatusCardProps> = ({
           <div className="text-center md:text-left">
             <h4 className="text-gray-400 text-sm">{name.toUpperCase()}</h4>
             {status && (
-
-            <p className="text-[#FCF8DB] text-xs">● {status.toUpperCase()}</p>
+              <p className="text-[#FCF8DB] text-xs">● {status.toUpperCase()}</p>
             )}
-            <p className="text-[#FCF8DB] text-xs">Players: {players}</p>
+            <p className="text-[#FCF8DB] text-xs">
+              Players: {formatNumber(players)}
+            </p>
           </div>
           <div className="text-center md:text-left">
             <h4 className="text-gray-400 text-sm">PRIZE</h4>
