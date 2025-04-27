@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -47,6 +48,7 @@ const MobileRegister = () => {
     confirm_password: string;
   }>();
 
+  const router = useRouter();
   const password_mobile = watch("password", "");
   const confirmPassword_mobile = watch("confirm_password", "");
 
@@ -96,7 +98,7 @@ const MobileRegister = () => {
     onSuccess: (data) => {
       toast.success("Registration successful", data);
       setTimeout(() => {
-        window.location.href = "/otp/emailOtp";
+        router.push("/otp/emailOtp");
       }, 3000);
     },
     onError: (error) => {

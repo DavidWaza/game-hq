@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import MobileRegister from "@/app/components/MobileRegisterAlt";
+import { useRouter } from "next/navigation";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -50,6 +51,7 @@ const RegisterUser: React.FC = () => {
     confirm_password: string;
   }>();
 
+  const router = useRouter();
   const password = watch("password", "");
   const confirmPassword = watch("confirm_password", "");
   const [isVisible, setIsVisible] = useState(false);
@@ -96,7 +98,7 @@ const RegisterUser: React.FC = () => {
     }) => postFn("api/auth/register", userData),
     onSuccess: () => {
       setTimeout(() => {
-        window.location.href = "/dashboard/splash-avatar";
+        router.push("/dashboard/splash-avatar");
       }, 3000);
     },
     onError: (error) => {

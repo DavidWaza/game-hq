@@ -10,10 +10,12 @@ import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import Button from "@/components/Button";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const MobileLogin = () => {
   const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+  const router = useRouter();
 
   const { register, handleSubmit } = useForm<{
     // email: string;
@@ -35,7 +37,7 @@ const MobileLogin = () => {
     onSuccess: (data) => {
       toast.success("Login Successful", data);
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        router.push("/dashboard");
       }, 3000);
     },
     onError: (error) => {

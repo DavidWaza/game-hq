@@ -3,9 +3,11 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
 
 const SplashAvartar = () => {
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+  const router = useRouter();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -126,7 +128,7 @@ const SplashAvartar = () => {
       </div>
       <div className="py-10">
         <Button
-          onClick={() => (window.location.href = "/dashboard")}
+          onClick={() => router.push("/dashboard")}
           disabled={!selectedAvatar}
           className={`${
             !selectedAvatar

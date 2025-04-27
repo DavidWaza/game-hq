@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -29,9 +30,7 @@ const evaluateStrength = (password: string) => {
 };
 
 const MobileRegister = () => {
-  const [registrationType] = useState<"email" | "phone">(
-    "email"
-  );
+  const [registrationType] = useState<"email" | "phone">("email");
   const {
     register,
     handleSubmit,
@@ -47,6 +46,7 @@ const MobileRegister = () => {
     confirm_password: string;
   }>();
 
+  const router = useRouter();
   const password_mobile = watch("password", "");
   const confirmPassword_mobile = watch("confirm_password", "");
 
@@ -96,7 +96,7 @@ const MobileRegister = () => {
     onSuccess: (data) => {
       toast.success("Registration successful", data);
       setTimeout(() => {
-        window.location.href = "/otp/emailOtp";
+        router.push("/otp/emailOtp");
       }, 3000);
     },
     onError: (error) => {
@@ -129,7 +129,6 @@ const MobileRegister = () => {
 
   return (
     <div>
-      
       <div className="relative block md:hidden">
         <div className="bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center h-full">
           <div className="grid lg:grid-cols-3">
@@ -330,16 +329,15 @@ const MobileRegister = () => {
                 </div>
               </div>
               <div className="overflow-hidden">
-              <Image
-                src={"/assets/register-duty.png"}
-                alt=""
-                width={0}
-                height={0}
-                sizes="100vw"
-                className="w-2/3 mr-0 ml-auto h-auto object-contain object-center absolute top-60 right-0"
-              />
+                <Image
+                  src={"/assets/register-duty.png"}
+                  alt=""
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="w-2/3 mr-0 ml-auto h-auto object-contain object-center absolute top-60 right-0"
+                />
               </div>
-            
             </div>
           </div>
         </div>
