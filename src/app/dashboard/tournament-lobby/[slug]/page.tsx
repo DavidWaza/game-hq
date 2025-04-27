@@ -17,7 +17,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import Chat from "../Components/Message";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 
 export default function TournamentLobby() {
   const [micEnabled, setMicEnabled] = useState(true);
@@ -35,10 +34,10 @@ export default function TournamentLobby() {
   const searchParams = useSearchParams();
   const name = searchParams.get("name");
   const banner = searchParams.get("banner");
-  const amount = searchParams.get('amount')
-  const matchTime  = searchParams.get('match_time')
+  const amount = searchParams.get("amount");
+  const matchTime = searchParams.get("match_time");
 
-
+  console.log(name, "xsxsxs");
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
       const countdownTimer = setInterval(() => {
@@ -192,7 +191,9 @@ export default function TournamentLobby() {
             <Clock size={14} className="text-orange-400 mr-1 sm:mr-2" />
             <span className="text-xs sm:text-sm">
               Starts in:{" "}
-              <span className="font-bold">{matchTime ? formatTime(Number(matchTime)) : "N/A"}</span>
+              <span className="font-bold">
+                {matchTime ? formatTime(Number(matchTime)) : "N/A"}
+              </span>
             </span>
           </div>
           <div className="flex items-center px-3 py-1 bg-gray-800 rounded-full">
@@ -206,7 +207,6 @@ export default function TournamentLobby() {
               <span className="text-xs font-bold sm:text-sm">DW</span>
             </div>
             <span className="font-medium hidden sm:block">{playername}</span>
-           
           </div>
           <button
             className="lg:hidden"
@@ -395,15 +395,14 @@ export default function TournamentLobby() {
                         </ul>
                       </div>
                     </div>
-                    <div className="rounded-xl py-4">
-                      <Image
-                        src={`${banner}`}
-                        width={0}
-                        height={0}
-                        alt="tournament-banner"
-                        className="w-full h-0 object-center object-contain"
-                      />
-                    </div>
+                    <div
+                      className="rounded-xl py-4 !h-full min-h-[50vh]"
+                      style={{
+                        backgroundImage: `url(${banner})`,
+                        backgroundPosition: 'Center',
+                        backgroundSize:'Cover'
+                      }}
+                    ></div>
                     <div className="mt-4 sm:mt-6">
                       <button
                         className="bg-orange-400 hover:bg-orange-500 text-gray-900 font-bold py-2 px-4 rounded-xl w-full transition-colors sm:py-3 sm:px-6"

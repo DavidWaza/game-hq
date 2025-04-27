@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { TypeSingleTournament } from "../../types/global";
+import { toast } from "sonner";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -81,4 +82,18 @@ export function calculateTournamentOdds(data: TypeSingleTournament | undefined) 
   }
 
   return oddsDetails;
+}
+export function copyToClipboard(text: string = 'Text', statusText: string = 'Link copied to clipboard!') {
+  navigator.clipboard.writeText(text).then(() => {
+    toast.success(statusText, {
+      position: "top-right",
+      className: "p-4",
+    });
+  }).catch((err) => {
+    toast.error('Failed to copy URL', {
+      position: "top-right",
+      className: "p-4",
+    });
+    console.error(err)
+  });
 }

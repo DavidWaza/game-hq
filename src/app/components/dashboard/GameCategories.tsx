@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import StatusCard from "./SetGamesCard";
-// import { getFn } from "@/lib/apiClient";
 import {
   TypeCategories,
   TypeGames,
@@ -112,35 +111,28 @@ const GameCategories = ({
             ? "All Games"
             : getCategoryById(selectedCategory)?.name + " Games"}
         </h2>
-        <div className="grid grid-cols-1 gap-4">
-          {filteredGames(selectedCategory).map((game) => (
-            <div
-              key={game.id}
-              onClick={() => showModal(game)}
-              className="cursor-pointer"
-            >
-              <StatusCard
-                tournament={game}
-                name={game.game.name}
-                players={game.number_of_participants}
-                prize={game.amount}
-                time={game.match_time}
-                borderColor={`${
-                  game.game.name === "Chess"
-                    ? "bg-[#FCF8DB]"
-                    : game.game.name === "FIFA"
-                    ? "bg-[#f37f2d]"
-                    : game.game.name === "Mortal Combat"
-                    ? "bg-white"
-                    : game.game.name === "Call Of Duty"
-                    ? "bg-[#922b21]"
-                    : game.game.name === "Card Games"
-                    ? "bg-[#f1c40f]"
-                    : ""
-                }`}
-              />
-            </div>
-          ))}
+        <div className="grid grid-cols-1 gap-4 pb-[130px]">
+          <table className="w-full max-w-3xl table border-separate border-spacing-y-4 -mt-4">
+            <tbody>
+              {filteredGames(selectedCategory).map((game, index: number) => (
+                <StatusCard
+                  key={
+                    filteredGames(selectedCategory).length +
+                    game.id +
+                    index +
+                    2312
+                  }
+                  logo={game.game.game_image}
+                  name={game.game.name}
+                  players={game.number_of_participants}
+                  prize={game.amount}
+                  time={game.match_time}
+                  showModal={showModal}
+                  tournament={game}
+                />
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Show message when no games are available */}

@@ -32,7 +32,7 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
   });
 
   const scrollToSection = () => {
-    window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+    window.scrollTo({ top: window.innerHeight - 100, behavior: "smooth" });
   };
   useEffect(() => {
     if (game?.theme_settings) {
@@ -67,7 +67,9 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
           contentItems={[tournamentDetails?.description || ""]}
           firstButtonText="Accept"
           onClick={() =>
-            (window.location.href = `/dashboard/tournament-lobby/${tournamentDetails?.id}`)
+            (window.location.href = `/dashboard/tournament-lobby/${
+              tournamentDetails?.id
+            }?name=${encodeURIComponent(game?.name || "")}&banner=${game?.banner}`)
           }
         />
       </div>
@@ -104,7 +106,6 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
             Participants left
           </p>
           <div className="flex items-center">
-         
             <p className="text-[#FCF8DB] text-lg">
               {formatCurrency(tournamentDetails?.amount || 0)}
             </p>
