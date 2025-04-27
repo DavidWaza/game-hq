@@ -16,7 +16,6 @@ interface StatusCardProps {
   status?: string;
   prize: string;
   time: string;
-  borderColor?: string;
   players: number; // New prop for number of players
   tournament: TypeSingleTournament;
   showModal?: (val: TypeSingleTournament) => void;
@@ -28,8 +27,6 @@ const StatusCard: React.FC<StatusCardProps> = ({
   status,
   prize,
   time,
-  borderColor,
-  players,
   tournament,
   showModal = () => {},
 }) => {

@@ -12,7 +12,6 @@ import {
   formatCurrency,
   formatNumber,
 } from "@/lib/utils";
-import { useParams } from "next/navigation";
 
 const bungee = Bungee({
   variable: "--bungee",
@@ -30,7 +29,6 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
   const [theme, setTheme] = useState({
     mouse_pointer: "/assets/cod-icon.svg",
   });
-  const params = useParams();
 
   const scrollToSection = () => {
     window.scrollTo({ top: window.innerHeight - 100, behavior: "smooth" });
