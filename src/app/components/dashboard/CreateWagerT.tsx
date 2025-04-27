@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   useState,
   useEffect,
+  useRef,
 } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import EventScheduler from "./TimerSchedule";
 import { Controller } from "react-hook-form";
+import RichTextEditor from "@/components/RichTextEditor";
 
 // Define types
 interface FormData {
@@ -46,6 +48,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { store } = useAuth();
   const router = useRouter();
+  // const quill = new Quill('#editor');
 
   const {
     register,
@@ -54,6 +57,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
     control,
     setValue,
     trigger,
+    watch,
   } = useForm<FormData>({
     mode: "onChange",
     defaultValues: {
@@ -73,10 +77,6 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   const handleCategoryChange = (value: string) => {
     setValue("game_id", value, { shouldValidate: true });
   };
-
-  // const handleDateChange = (match_date: Date): void => {
-  //   setValue("match_date", match_date, { shouldValidate: true });
-  // };
 
   const handleTimeChange = (match_time: string): void => {
     setValue("match_time", match_time, { shouldValidate: true });
@@ -152,14 +152,15 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
         {/* Note to Participants */}
         <div className="space-y-2 items-center gap-4">
           <Label htmlFor="description">Note to Participants</Label>
-          <Textarea
-            {...register("description", {
-              required: "Note description is required",
-            })}
-            id="description"
-            placeholder="Enter the terms and necessary information of this bet"
-            className="w-full p-3 bg-gray-700 text-white rounded-lg shadow-md resize-none h-[150px]"
-          />
+          <div className="editorWrapper">
+            <RichTextEditor
+              value={watch("description")} // Bind the value to react-hook-form
+              onChange={(value) =>
+                setValue("description", value, { shouldValidate: true })
+              } // Update the form value
+              placeholder="Enter the terms and necessary information of this bet"
+            />
+          </div>
           {errors.description && (
             <p className="text-red-500 text-sm">{errors.description.message}</p>
           )}

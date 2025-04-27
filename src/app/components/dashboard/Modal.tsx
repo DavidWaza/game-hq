@@ -2,7 +2,7 @@ import Button from "@/components/Button";
 import { motion } from "framer-motion";
 import { X } from "@phosphor-icons/react";
 // import { Cinzel_Decorative } from "next/font/google";
-import ReactMarkdown from "react-markdown";
+import DOMPurify from "dompurify";
 
 // const cinzel = Cinzel_Decorative({
 //   variable: "--Cinzel_Decorative",
@@ -42,14 +42,16 @@ const Modal = ({
   const generateMarkdownContent = () => {
     if (!contentTitle || !contentItems || contentItems.length === 0) return "";
 
-    let markdown = `### ${contentTitle}  \n`;
-    contentItems.forEach((item, index) => {
-      markdown += `${index + 1}. **${item.split(" – ")[0]}** – ${
-        item.split(" – ")[1]
-      }  \n`;
-    });
+    // let htmlContent = `<h3>${contentTitle}</h3>`;
+    // contentItems.forEach((item, index) => {
+    //   const [title, description] = item.split(" – ");
+    //   htmlContent += `<p><strong>${
+    //     index + 1
+    //   }. ${title}</strong> – ${description}</p>`;
+    // });
 
-    return markdown;
+    // Sanitize the HTML to prevent XSS attacks
+    return DOMPurify.sanitize(contentItems[0]);
   };
 
   return (
@@ -61,7 +63,7 @@ const Modal = ({
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
-        className="relative bg-gray-800 text-white p-6 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-[400px] grid grid-cols-1 gap-4"
+        className="relative bg-gray-800 text-white py-6 rounded-2xl shadow-lg border-4 border-[#fcf8db] w-[400px] justify_auto gap-4 max-h-[85vh] max-w-[500px]"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -70,14 +72,21 @@ const Modal = ({
         >
           <X size={24} />
         </button>
-        <h2 className="text-xl font-normal text-center">{header}</h2>
-        {sub && <p className="text-sm text-gray-300 text-center pb-5">{sub}</p>}
-        {contentItems && (
-          <div className={`text-sm `}>
-            <ReactMarkdown>{generateMarkdownContent()}</ReactMarkdown>
-          </div>
-        )}
-        <div className="flex flex-col space-y-4">
+        <h2 className="max-h-max text-xl font-normal text-center px-6">
+          {header}
+        </h2>
+        <div className="overflow-y-auto px-6 mr-2">
+          {sub && (
+            <p className="text-sm text-gray-300 text-center pb-5">{sub}</p>
+          )}
+          {contentItems && (
+            <div
+              className="rt-view"
+              dangerouslySetInnerHTML={{ __html: generateMarkdownContent() }}
+            ></div>
+          )}
+        </div>
+        <div className="max-h-max flex flex-col space-y-4 px-6">
           <Button className="active" onClick={onClick}>
             {firstButtonText}
           </Button>

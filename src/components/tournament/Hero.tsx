@@ -32,7 +32,7 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
   return (
     <div
       style={{
-        backgroundImage: `url(${game?.game_image})`,
+        backgroundImage: `url(${game?.banner})`,
       }}
       className="time-banner relative overflow-hidden"
     >
@@ -80,7 +80,6 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
           contentTitle={game?.name + " Tournament Rules"}
           contentItems={[tournamentDetails?.description || ""]}
           firstButtonText="Accept"
-          secondButtonText="Reject"
           onClick={() =>
             (window.location.href = `/dashboard/tournament-lobby/${game?.id}`)
           }

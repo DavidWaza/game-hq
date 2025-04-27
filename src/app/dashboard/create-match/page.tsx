@@ -76,7 +76,7 @@ const CreateMatchPage = () => {
       {/* Navbar */}
       <Navbar variant="primary" />
       <div className="create-wager-banner relative h-screen overflow-hidden">
-        <video
+        {/* <video
           ref={videoRef}
           key={videoTrailers[currentVideoIndex].id}
           className="absolute inset-0 w-full h-full object-cover"
@@ -85,7 +85,7 @@ const CreateMatchPage = () => {
           muted
           playsInline
           onEnded={handleVideoEnd}
-        ></video>
+        ></video> */}
 
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
 
