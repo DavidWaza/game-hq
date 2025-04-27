@@ -4,43 +4,16 @@ import { Clock } from "@phosphor-icons/react";
 import Modal from "./Modal";
 import { formatNumber } from "@/lib/utils";
 
-// Existing interfaces for game rules remain unchanged
-// interface GameRuleSet {
-//   title: string;
-//   rules: string[];
-// }
-
-// interface GameRulesCategory {
-//   [gameName: string]: GameRuleSet;
-// }
-
-// interface GameRulesData {
-//   [category: string]: GameRulesCategory;
-// }
-
-// Existing gameRules and defaultRules remain unchanged
-// const gameRules: GameRulesData = {
-// };
-
-// const defaultRules: GameRuleSet = {
-//   title: "Tournament Rules",
-//   rules: [
-//     "Registration – All players must register at least **30 minutes** before tournament start time.",
-//     "Format – Single elimination bracket, matches as described in game-specific rules.",
-//     "Disputes – Tournament organizers have final say in all rule interpretations and disputes.",
-//     "Prizes – Top 3 places receive prizes according to tournament specifications.",
-//     "Code of Conduct – Players must maintain respectful behavior throughout the tournament.",
-//   ],
-// };
 
 interface StatusCardProps {
   logo?: string;
   name: string;
+  odds?: string;
   status?: string;
   prize: string;
   time: string;
   borderColor?: string;
-  players: number; // New prop for number of players
+  players: number; 
 }
 
 const StatusCard: React.FC<StatusCardProps> = ({
@@ -48,6 +21,7 @@ const StatusCard: React.FC<StatusCardProps> = ({
   name,
   status,
   prize,
+  odds,
   time,
   borderColor,
   players,
@@ -110,25 +84,7 @@ const StatusCard: React.FC<StatusCardProps> = ({
     return oddsDetails;
   };
 
-  const odds = calculateOdds();
-
-  // const getGameRules = () => {
-  //   if (gameRules[status]?.[name]) {
-  //     return gameRules[status][name];
-  //   } else if (gameRules[status]) {
-  //     return {
-  //       title: `${status} Tournament Rules`,
-  //       rules: defaultRules.rules
-  //     };
-  //   } else {
-  //     return {
-  //       title: `${name} Tournament Rules`,
-  //       rules: defaultRules.rules
-  //     };
-  //   }
-  // };
-
-  // const selectedRules = getGameRules();
+  const Odds = calculateOdds();
 
   return (
     <>
@@ -170,9 +126,18 @@ const StatusCard: React.FC<StatusCardProps> = ({
           <div className="text-center md:text-left">
             <h4 className="text-gray-400 text-sm">PRIZE</h4>
             <p className="text-[#FCF8DB] flex items-center justify-center md:justify-start gap-1">
-              Odds: {odds.totalOdds.toFixed(2)}
+              {prize}
             </p>
           </div>
+          {odds && (
+            <div className="text-center md:text-left">
+              <h4 className="text-gray-400 text-sm">Odds</h4>
+              <p className="text-[#FCF8DB] flex items-center justify-center md:justify-start gap-1">
+                {Odds.totalOdds.toFixed(2)}
+              </p>
+            </div>
+          )}
+
           <div className="text-center md:text-left">
             <h4 className="text-gray-400 text-sm">TIME</h4>
             <p className="flex items-center justify-center md:justify-start gap-1 text-[#FCF8DB]">
@@ -197,38 +162,14 @@ const StatusCard: React.FC<StatusCardProps> = ({
         isOpen={isModalOpen}
         setIsOpen={setIsModalOpen}
         header={`${name.toUpperCase()} GAME RULES`}
-        sub={`Prize Pool: ₦${prize} • Start Time: ${time} • Players: ${players} • Total Odds: ${odds.totalOdds.toFixed(
+        sub={`Prize Pool: ₦${prize} • Start Time: ${time} • Players: ${players} • Total Odds: ${Odds.totalOdds.toFixed(
           2
         )}×`}
-        // contentTitle={selectedRules.title}
-        // contentItems={[
-        //   ...selectedRules.rules,
-        //   `Prize Distribution:`,
-        //   `- 1st Place: ${odds.first.percentage}% (₦${odds.first.amount.toFixed(
-        //     2
-        //   )}, ${odds.first.odds.toFixed(2)}×)`,
-        //   odds.second.percentage > 0
-        //     ? `- 2nd Place: ${
-        //         odds.second.percentage
-        //       }% (₦${odds.second.amount.toFixed(2)}, ${odds.second.odds.toFixed(
-        //         2
-        //       )}×)`
-        //     : "",
-        //   odds.third.percentage > 0
-        //     ? `- 3rd Place: ${
-        //         odds.third.percentage
-        //       }% (₦${odds.third.amount.toFixed(2)}, ${odds.third.odds.toFixed(
-        //         2
-        //       )}×)`
-        //     : "",
-        //   `Platform Fee: 10%`,
-        // ].filter((item) => item !== "")}
         firstButtonText="Accept & Join"
         secondButtonText="Decline"
         onClick={() => {
           console.log(`Joining ${name} tournament`);
           setIsModalOpen(false);
-          // Add navigation or registration logic here
         }}
         onTab={() => setIsModalOpen(false)}
       />

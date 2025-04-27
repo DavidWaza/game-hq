@@ -16,26 +16,29 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import Chat from "../Components/Message";
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 export default function TournamentLobby() {
   const [micEnabled, setMicEnabled] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(1476); // 24:36 in seconds
+  // const [timeLeft, setTimeLeft] = useState(1476);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
-  const [isReady, setIsReady] = useState(false); // Tracks if game is in session
-  const [countdown, setCountdown] = useState<number | null>(null); // Countdown from 5
+  const [isReady, setIsReady] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const [showTransition, setShowTransition] = useState(false);
+  const [gameResult, setGameResult] = useState<
+    "win" | "lose" | "dispute" | null
+  >(null);
   const router = useRouter();
   const playername = useAuth()?.user?.username || "Challenger";
+  const searchParams = useSearchParams();
+  const name = searchParams.get("name");
+  const banner = searchParams.get("banner");
+  const amount = searchParams.get('amount')
+  const matchTime  = searchParams.get('match_time')
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
-  // Countdown effect with animated transition
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
       const countdownTimer = setInterval(() => {
@@ -43,15 +46,12 @@ export default function TournamentLobby() {
       }, 1000);
       return () => clearInterval(countdownTimer);
     } else if (countdown === 0) {
-      // Show transition animation before switching to "Game in Session"
       setShowTransition(true);
-
-      // After transition animation completes, show game in session
       setTimeout(() => {
         setIsReady(true);
         setShowTransition(false);
         setCountdown(null);
-      }, 2000); // Adjust timing to match animation duration
+      }, 2000);
     }
   }, [countdown]);
 
@@ -65,6 +65,47 @@ export default function TournamentLobby() {
     setCountdown(5);
   };
 
+  const handleWinClick = async () => {
+    // Optional: Play sound effect
+    // const clickSound = new Audio("/sounds/button-click.mp3");
+    // clickSound.play();
+    try {
+      await reportGameResult("win");
+      setGameResult("win");
+      alert("Win reported! Waiting for opponent confirmation...");
+    } catch (error) {
+      console.error("Error reporting win:", error);
+      alert("Failed to report win. Please try again.");
+    }
+  };
+
+  const handleLoseClick = async () => {
+    // Optional: Play sound effect
+    // const clickSound = new Audio("/sounds/button-click.mp3");
+    // clickSound.play();
+    try {
+      await reportGameResult("lose");
+      setGameResult("lose");
+      alert("Loss reported. Prize money transferred to the winner.");
+    } catch (error) {
+      console.error("Error reporting loss:", error);
+      alert("Failed to report loss. Please try again.");
+    }
+  };
+
+  const handleDisputeClick = () => {
+    // Optional: Play sound effect
+    // const clickSound = new Audio("/sounds/button-click.mp3");
+    // clickSound.play();
+    setGameResult("dispute");
+    router.push("/dispute-resolution");
+  };
+
+  const reportGameResult = async (result: "win" | "lose") => {
+    console.log(result);
+    return new Promise((resolve) => setTimeout(resolve, 500));
+  };
+
   const players = [
     { id: 1, name: playername, status: "Ready", captain: true },
     { id: 2, name: "GhostShadow", status: "Ready", captain: false },
@@ -73,7 +114,6 @@ export default function TournamentLobby() {
     { id: 5, name: "", status: "Empty", captain: false },
   ];
 
-  // Animation variants for different elements
   const countdownVariants = {
     initial: { scale: 0.5, opacity: 0 },
     animate: { scale: 1, opacity: 1 },
@@ -113,9 +153,28 @@ export default function TournamentLobby() {
     },
   };
 
+  const buttonVariants = {
+    initial: { scale: 0.8, opacity: 0, rotateX: 20 },
+    animate: {
+      scale: 1,
+      opacity: 1,
+      rotateX: 0,
+      transition: { type: "spring", stiffness: 200, delay: 0.9 },
+    },
+    hover: {
+      scale: 1.1,
+      boxShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
+      transition: { duration: 0.2 },
+    },
+    disabled: {
+      scale: 0.95,
+      opacity: 0.5,
+      transition: { duration: 0.2 },
+    },
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-950 text-gray-100">
-      {/* Header */}
       <header className="bg-gray-900 px-4 py-3 border-b border-gray-800 flex items-center justify-between flex-wrap gap-2 sm:px-6 sm:py-4">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold text-orange-400 sm:text-2xl">
@@ -125,7 +184,7 @@ export default function TournamentLobby() {
           </h1>
           <div className="px-3 py-1 bg-gray-800 rounded-full items-center hidden sm:flex">
             <Trophy size={16} className="text-orange-400 mr-2" />
-            <span className="text-sm">Call of Duty Tournament</span>
+            <span className="text-sm">{name}</span>
           </div>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-6">
@@ -133,13 +192,13 @@ export default function TournamentLobby() {
             <Clock size={14} className="text-orange-400 mr-1 sm:mr-2" />
             <span className="text-xs sm:text-sm">
               Starts in:{" "}
-              <span className="font-bold">{formatTime(timeLeft)}</span>
+              <span className="font-bold">{matchTime ? formatTime(Number(matchTime)) : "N/A"}</span>
             </span>
           </div>
           <div className="flex items-center px-3 py-1 bg-gray-800 rounded-full">
             <Trophy size={14} className="text-orange-400 mr-1 sm:mr-2" />
             <span className="text-xs sm:text-sm">
-              Prize: <span className="font-bold text-green-400">₦5000</span>
+              Prize: <span className="font-bold text-green-400">₦{amount}</span>
             </span>
           </div>
           <div className="flex items-center space-x-2">
@@ -147,9 +206,7 @@ export default function TournamentLobby() {
               <span className="text-xs font-bold sm:text-sm">DW</span>
             </div>
             <span className="font-medium hidden sm:block">{playername}</span>
-            <span className="text-green-400 font-medium text-xs sm:text-sm">
-              1000 CP
-            </span>
+           
           </div>
           <button
             className="lg:hidden"
@@ -160,9 +217,7 @@ export default function TournamentLobby() {
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel - Team Info */}
         <div
           className={`fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 flex flex-col transform transition-transform duration-300 lg:static lg:w-80 lg:translate-x-0 z-20 ${
             isLeftPanelOpen ? "translate-x-0" : "-translate-x-full"
@@ -180,7 +235,6 @@ export default function TournamentLobby() {
               <CaretDoubleRight size={20} className="text-orange-400" />
             </button>
           </div>
-
           <div className="flex-1 overflow-y-auto p-4 space-y-4 sm:p-5">
             <div className="text-sm text-gray-400">
               Status: <span className="text-orange-400">Incomplete</span>
@@ -225,7 +279,6 @@ export default function TournamentLobby() {
                       </div>
                     </div>
                   </div>
-
                   {player.status === "Empty" ? (
                     <button className="px-2 py-1 bg-orange-400 text-gray-900 rounded-full text-xs font-medium hover:bg-orange-500 sm:px-3">
                       Invite
@@ -242,7 +295,6 @@ export default function TournamentLobby() {
               Copy Invite Link
             </button>
           </div>
-
           <div className="p-4 border-t border-gray-800 sm:p-5">
             <h3 className="text-sm font-medium mb-3">Voice Chat</h3>
             <div className="flex items-center justify-between p-2 bg-gray-800 rounded-lg sm:p-3">
@@ -269,12 +321,11 @@ export default function TournamentLobby() {
           </div>
         </div>
 
-        {/* Middle Panel - Tournament Details */}
         <div className="flex-1 flex flex-col bg-gray-950">
           <div className="p-4 flex-1 overflow-y-auto bg-[url('/api/placeholder/800/600')] bg-cover bg-center sm:p-6">
             <div className="bg-gray-900 bg-opacity-90 p-4 rounded-xl backdrop-blur-md sm:p-6">
               <h2 className="text-2xl font-bold text-orange-400 mb-4 sm:text-3xl sm:mb-6">
-                Call of Duty Tournament
+                {name}
               </h2>
 
               <AnimatePresence>
@@ -315,7 +366,6 @@ export default function TournamentLobby() {
                           </li>
                         </ul>
                       </div>
-
                       <div className="bg-gray-800 p-4 rounded-xl sm:p-5">
                         <h3 className="font-semibold mb-3 text-orange-400 text-lg">
                           Requirements
@@ -345,7 +395,15 @@ export default function TournamentLobby() {
                         </ul>
                       </div>
                     </div>
-                    <div className="cod-poster rounded-xl py-4"></div>
+                    <div className="rounded-xl py-4">
+                      <Image
+                        src={`${banner}`}
+                        width={0}
+                        height={0}
+                        alt="tournament-banner"
+                        className="w-full h-0 object-center object-contain"
+                      />
+                    </div>
                     <div className="mt-4 sm:mt-6">
                       <button
                         className="bg-orange-400 hover:bg-orange-500 text-gray-900 font-bold py-2 px-4 rounded-xl w-full transition-colors sm:py-3 sm:px-6"
@@ -353,7 +411,6 @@ export default function TournamentLobby() {
                       >
                         READY UP
                       </button>
-
                       <div className="mt-3 text-xs text-center text-gray-400 sm:mt-4">
                         Notification will be sent when tournament begins
                       </div>
@@ -388,6 +445,89 @@ export default function TournamentLobby() {
                         The tournament is now underway!
                       </p>
                     </motion.div>
+
+                    <motion.div
+                      variants={textVariants}
+                      initial="initial"
+                      animate="animate"
+                      className="mt-8 flex flex-col sm:flex-row gap-6"
+                    >
+                      <motion.button
+                        variants={buttonVariants}
+                        initial="initial"
+                        animate="animate"
+                        whileHover={!gameResult ? "hover" : undefined}
+                        className={`relative px-8 py-3 rounded-xl font-bold text-white uppercase tracking-wider text-sm sm:text-base
+                          bg-gradient-to-r from-green-500 to-green-700
+                          border-2 border-green-400
+                          shadow-[0_0_15px_rgba(34,197,94,0.5)]
+                          hover:shadow-[0_0_25px_rgba(34,197,94,0.8)]
+                          disabled:opacity-50 disabled:cursor-not-allowed
+                          transition-all duration-200
+                          overflow-hidden group`}
+                        onClick={handleWinClick}
+                        disabled={gameResult !== null}
+                      >
+                        <span className="relative z-10">I Won</span>
+                        <span className="absolute inset-0 bg-green-600 opacity-0 group-hover:opacity-30 transition-opacity duration-200"></span>
+                      </motion.button>
+
+                      <motion.button
+                        variants={buttonVariants}
+                        initial="initial"
+                        animate="animate"
+                        whileHover={!gameResult ? "hover" : undefined}
+                        className={`relative px-8 py-3 rounded-xl font-bold text-white uppercase tracking-wider text-sm sm:text-base
+                          bg-gradient-to-r from-red-500 to-red-700
+                          border-2 border-red-400
+                          shadow-[0_0_15px_rgba(239,68,68,0.5)]
+                          hover:shadow-[0_0_25px_rgba(239,68,68,0.8)]
+                          disabled:opacity-50 disabled:cursor-not-allowed
+                          transition-all duration-200
+                          overflow-hidden group`}
+                        onClick={handleLoseClick}
+                        disabled={gameResult !== null}
+                      >
+                        <span className="relative z-10">I Lost</span>
+                        <span className="absolute inset-0 bg-red-600 opacity-0 group-hover:opacity-30 transition-opacity duration-200"></span>
+                      </motion.button>
+
+                      <motion.button
+                        variants={buttonVariants}
+                        initial="initial"
+                        animate="animate"
+                        whileHover={!gameResult ? "hover" : undefined}
+                        className={`relative px-8 py-3 rounded-xl font-bold text-white uppercase tracking-wider text-sm sm:text-base
+                          bg-gradient-to-r from-blue-500 to-blue-700
+                          border-2 border-blue-400
+                          shadow-[0_0_15px_rgba(59,130,246,0.5)]
+                          hover:shadow-[0_0_25px_rgba(59,130,246,0.8)]
+                          disabled:opacity-50 disabled:cursor-not-allowed
+                          transition-all duration-200
+                          overflow-hidden group`}
+                        onClick={handleDisputeClick}
+                        disabled={gameResult !== null}
+                      >
+                        <span className="relative z-10">Dispute Result</span>
+                        <span className="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-30 transition-opacity duration-200"></span>
+                      </motion.button>
+                    </motion.div>
+
+                    {gameResult && (
+                      <motion.p
+                        className="mt-6 text-sm text-gray-400"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        {gameResult === "win" &&
+                          "Win reported. Awaiting opponent confirmation."}
+                        {gameResult === "lose" &&
+                          "Loss reported. Prize money transferred."}
+                        {gameResult === "dispute" &&
+                          "Redirecting to dispute resolution..."}
+                      </motion.p>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -395,7 +535,6 @@ export default function TournamentLobby() {
           </div>
         </div>
 
-        {/* Right Panel - Chat */}
         <div
           className={`fixed inset-y-0 right-0 w-72 bg-gray-900 border-l border-gray-800 flex flex-col transform transition-transform duration-300 lg:static lg:w-80 lg:translate-x-0 z-20 ${
             isRightPanelOpen ? "translate-x-0" : "translate-x-full"
@@ -416,12 +555,10 @@ export default function TournamentLobby() {
               />
             </button>
           </div>
-
           <Chat />
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="bg-gray-900 px-4 py-3 border-t border-gray-800 flex justify-between items-center sm:px-6">
         <div className="text-xs text-gray-400 sm:text-sm">
           GameHQ © 2025. All rights reserved.
@@ -442,7 +579,6 @@ export default function TournamentLobby() {
         </div>
       </footer>
 
-      {/* Countdown Overlay */}
       <AnimatePresence>
         {countdown !== null && countdown > 0 && (
           <motion.div
@@ -491,7 +627,6 @@ export default function TournamentLobby() {
         )}
       </AnimatePresence>
 
-      {/* Game Start Transition Animation */}
       <AnimatePresence>
         {showTransition && (
           <motion.div
@@ -502,7 +637,6 @@ export default function TournamentLobby() {
             exit="exit"
           >
             <motion.div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
-              {/* Animated elements for transition effect */}
               <motion.div
                 className="absolute w-full h-full"
                 initial={{
@@ -515,8 +649,6 @@ export default function TournamentLobby() {
                 }}
                 transition={{ duration: 1 }}
               />
-
-              {/* Logo animation */}
               <motion.div
                 className="relative z-10"
                 initial={{ scale: 0 }}
@@ -531,8 +663,6 @@ export default function TournamentLobby() {
               >
                 <Trophy size={120} className="text-orange-400" />
               </motion.div>
-
-              {/* Text animation */}
               <motion.div
                 className="absolute bottom-1/3 text-center"
                 initial={{ opacity: 0, y: 20 }}
@@ -544,8 +674,6 @@ export default function TournamentLobby() {
                 </h2>
                 <p className="text-lg text-gray-300">Prepare for battle</p>
               </motion.div>
-
-              {/* Particles effect */}
               {[...Array(20)].map((_, i) => (
                 <motion.div
                   key={i}
@@ -575,7 +703,6 @@ export default function TournamentLobby() {
         )}
       </AnimatePresence>
 
-      {/* Overlay for mobile panels */}
       {(isLeftPanelOpen || isRightPanelOpen) && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-10"

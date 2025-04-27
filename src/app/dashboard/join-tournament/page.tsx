@@ -22,6 +22,8 @@ const CreateWager = () => {
   const [selectedData, setSelectedData] = useState<TypeSingleTournament>();
   const [selectedGame, setSelectedGame] = useState<TypeGames>();
   const { store } = useAuth();
+ 
+
 
   const getTournaments = async () => {
     setLoading(true);

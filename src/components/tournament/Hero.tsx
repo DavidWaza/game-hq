@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import Modal from "@/app/components/dashboard/Modal";
 import { TypeGames, TypeSingleTournament } from "../../../types/global";
 import { formatCurrency, formatNumber } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 type TypePropsComponent = {
   game: TypeGames | undefined;
@@ -15,6 +16,8 @@ type TypePropsComponent = {
 
 const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
   const [isOpenTournament, setIsOpenTournament] = useState(false);
+  const router = useRouter();
+
   const [theme, setTheme] = useState({
     mouse_pointer: "/assets/cod-icon.svg",
   });
@@ -48,7 +51,19 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
           contentItems={[tournamentDetails?.description || ""]}
           firstButtonText="Accept"
           onClick={() =>
-            (window.location.href = `/dashboard/tournament-lobby/${game?.id}`)
+            router.push(
+              `/dashboard/tournament-lobby/${
+                game?.id
+              }?name=${encodeURIComponent(
+                game?.name || ""
+              )}&banner=${encodeURIComponent(
+                game?.banner || ""
+              )}&amount${encodeURIComponent(
+                tournamentDetails?.amount || 0
+              )}&match_time${encodeURIComponent(
+                tournamentDetails?.match_time || ""
+              )}`
+            )
           }
         />
       </div>

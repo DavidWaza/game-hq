@@ -144,22 +144,21 @@ const GameCategories = ({
               // logo={game.img}
               name={game.game.name}
               players={game.number_of_participants}
-              // status={game.category}
               prize={game.amount}
               time={game.match_time}
-              // borderColor={`${
-              //   game.category === "Sports Games"
-              //     ? "bg-[#FCF8DB]"
-              //     : game.category === "Action Games"
-              //     ? "bg-[#f37f2d]"
-              //     : game.category === "Board Games"
-              //     ? "bg-white"
-              //     : game.category === "Dice Games"
-              //     ? "bg-[#922b21]"
-              //     : game.category === "Card Games"
-              //     ? "bg-[#f1c40f]"
-              //     : ""
-              // }`}
+              borderColor={`${
+                game.game.name === "Chess"
+                  ? "bg-[#FCF8DB]"
+                  : game.game.name === "FIFA"
+                  ? "bg-[#f37f2d]"
+                  : game.game.name === "Mortal Combat"
+                  ? "bg-white"
+                  : game.game.name === "Call Of Duty"
+                  ? "bg-[#922b21]"
+                  : game.game.name === "Card Games"
+                  ? "bg-[#f1c40f]"
+                  : ""
+              }`}
             />
           ))}
         </div>
