@@ -1,3 +1,4 @@
+
 export type User = {
   id: string;
   username: string;
@@ -42,3 +43,13 @@ export type TypeSingleTournament = {
   created_at: string | null;
   updated_at: string | null;
 };
+
+export type CreatedGames = {
+  banner:string;
+  category_id:string;
+  description:string;
+  name:string;
+  game_image:string;
+  id:string;
+  records:[]
+}

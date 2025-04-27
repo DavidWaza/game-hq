@@ -15,16 +15,16 @@ import {
 const GameStats = () => {
   // Sample user stats - replace with real data from your API
   const [stats, setStats] = useState({
-    wins: 250,
-    losses: 82,
+    wins: 0,
+    losses: 0,
     winRatio: 0,
-    killDeathRatio: 2.7,
-    accuracy: 68,
-    averageScore: 2145,
-    highestStreak: 14,
-    playTime: 342, // hours
-    tournamentWins: 5,
-    rankPosition: 325,
+    killDeathRatio: 0,
+    accuracy: 0,
+    averageScore: 0,
+    highestStreak: 0,
+    playTime: 0, 
+    tournamentWins: 0,
+    rankPosition: 0,
   });
 
   // Calculate win ratio on mount
@@ -151,16 +151,16 @@ const GameStats = () => {
       <div className="mt-12 bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
         <div className="flex justify-between mb-2">
           <span className="text-gray-400">Season Progress</span>
-          <span className="text-white font-bold">Level 42</span>
+          <span className="text-white font-bold">Level 2</span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
           <div
             className="bg-gradient-to-r from-[#f37f2d] to-purple-600 h-full rounded-full transition-all duration-1000 animate-pulse"
-            style={{ width: "78%" }}
+            style={{ width: "1%" }}
           ></div>
         </div>
         <div className="flex justify-between mt-2">
-          <span className="text-xs text-gray-400">389,240 XP</span>
+          <span className="text-xs text-gray-400">1 XP</span>
           <span className="text-xs text-gray-400">500,000 XP</span>
         </div>
       </div>
