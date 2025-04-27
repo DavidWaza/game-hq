@@ -15,44 +15,6 @@ import {
 } from "@/lib/utils";
 import Modal from "./Modal";
 
-interface TournamentRecord {
-  id: string;
-  user_id: number;
-  description: string;
-  amount: string;
-  number_of_participants: number;
-  match_time: string;
-  match_date: string;
-  created_at: string;
-  updated_at: string | null;
-  game_id: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-    email_verified_at: string | null;
-    remember_token: string | null;
-    created_at: string | null;
-    updated_at: string | null;
-  };
-  game: Game | null;
-}
-
-interface Game {
-  id: string;
-  category_id: string;
-  name: string;
-  game_image: string;
-  description: string;
-  banner: string;
-  sub_banner: string[];
-  video_banner: string;
-  sub_video: string[];
-  theme_settings: string;
-  created_at: string | null;
-  updated_at: string | null;
-}
-
 // Main Component
 const GameCategories = ({
   tournaments,
