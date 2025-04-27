@@ -1,7 +1,6 @@
 "use client";
 import CreateWagerBanner from "@/app/components/dashboard/join-wager-banner";
 import Navbar from "@/components/Navbar";
-import TimeBanner from "@/app/components/dashboard/TimeBanner";
 import React, { useEffect, useState } from "react";
 import { getFn } from "@/lib/apiClient";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";

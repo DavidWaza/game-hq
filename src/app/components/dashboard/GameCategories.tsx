@@ -235,7 +235,7 @@ const GameCategories = ({
             ? "All Games"
             : getCategoryById(selectedCategory)?.name + " Games"}
         </h2>
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 pb-[130px]">
           <table className="w-full max-w-3xl table border-separate border-spacing-y-4 -mt-4">
             <tbody>
               {filteredGames(selectedCategory).map((game, index: number) => (

@@ -33,7 +33,7 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
   const params = useParams();
 
   const scrollToSection = () => {
-    window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+    window.scrollTo({ top: window.innerHeight - 100, behavior: "smooth" });
   };
   useEffect(() => {
     if (game?.theme_settings) {

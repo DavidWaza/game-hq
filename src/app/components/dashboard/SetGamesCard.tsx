@@ -3,39 +3,12 @@ import Image from "next/image";
 import { Clock } from "@phosphor-icons/react";
 import {
   calculateTournamentOdds,
+  copyToClipboard,
   formatCurrency,
   formatNumber,
 } from "@/lib/utils";
 import { TypeSingleTournament } from "../../../../types/global";
-
-// Existing interfaces for game rules remain unchanged
-// interface GameRuleSet {
-//   title: string;
-//   rules: string[];
-// }
-
-// interface GameRulesCategory {
-//   [gameName: string]: GameRuleSet;
-// }
-
-// interface GameRulesData {
-//   [category: string]: GameRulesCategory;
-// }
-
-// Existing gameRules and defaultRules remain unchanged
-// const gameRules: GameRulesData = {
-// };
-
-// const defaultRules: GameRuleSet = {
-//   title: "Tournament Rules",
-//   rules: [
-//     "Registration – All players must register at least **30 minutes** before tournament start time.",
-//     "Format – Single elimination bracket, matches as described in game-specific rules.",
-//     "Disputes – Tournament organizers have final say in all rule interpretations and disputes.",
-//     "Prizes – Top 3 places receive prizes according to tournament specifications.",
-//     "Code of Conduct – Players must maintain respectful behavior throughout the tournament.",
-//   ],
-// };
+import DropDown from "@/components/DropDown";
 
 interface StatusCardProps {
   logo?: string;
@@ -61,7 +34,36 @@ const StatusCard: React.FC<StatusCardProps> = ({
   showModal = () => {},
 }) => {
   const odds = calculateTournamentOdds(tournament);
-
+  const settingsCategories = [
+    {
+      label: "View Details",
+      action: () => {
+        window.location.href = `/dashboard/join-tournament/${tournament.id}`;
+      },
+      icon: () => {
+        return "🔗";
+      },
+    },
+    {
+      label: "Join Now",
+      action: () => {
+        showModal(tournament);
+      },
+      icon: () => {
+        return "➜";
+      },
+    },
+    {
+      label: "Copy Link",
+      action: () => {
+        const url = `${window.location.origin}/dashboard/join-tournament/${tournament.id}`;
+        copyToClipboard(url, "Tournament Link Copied!");
+      },
+      icon: () => {
+        return "🔗";
+      },
+    },
+  ];
   // const selectedRules = getGameRules();
   // onClick={() => showModal(tournament)}
   return (
@@ -134,12 +136,61 @@ const StatusCard: React.FC<StatusCardProps> = ({
       {/* Join Now Button */}
       <td className="py-4 pr-4  rounded-tr-2xl rounded-br-2xl">
         <div className="w-full flex_center">
-          <button className="bg-black px-4 py-2 rounded-md text-white text-xs font-bold flex items-center gap-1 mt-3 md:mt-0">
-            {/* onClick={(e) => {
+          <DropDown
+            header={
+              <div className="bg-black px-4 py-2 rounded-md text-white text-xs font-bold flex items-center gap-1 mt-3 md:mt-0">
+                {/* onClick={(e) => {
               e.stopPropagation();
             }} */}
-            JOIN ➜
-          </button>
+                <svg
+                  fill="#fff"
+                  height="20px"
+                  width="20px"
+                  id="Layer_1"
+                  data-name="Layer 1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  stroke="#fff"
+                >
+                  <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                  <g
+                    id="SVGRepo_tracerCarrier"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  ></g>
+                  <g id="SVGRepo_iconCarrier">
+                    <path
+                      className="cls-1"
+                      d="M8,6.5A1.5,1.5,0,1,1,6.5,8,1.5,1.5,0,0,1,8,6.5ZM.5,8A1.5,1.5,0,1,0,2,6.5,1.5,1.5,0,0,0,.5,8Zm12,0A1.5,1.5,0,1,0,14,6.5,1.5,1.5,0,0,0,12.5,8Z"
+                    ></path>
+                  </g>
+                </svg>
+              </div>
+            }
+            toolTip="Action"
+            content={
+              <div className="w-full space-y-2">
+                {settingsCategories.map((category, catIndex) => {
+                  const Icon = category.icon;
+                  return (
+                    <button
+                      key={catIndex + 232323}
+                      onClick={() => {
+                        category.action();
+                      }}
+                      className="group px-4 py-2 flex items-center hover:bg-[#f37f2d] transition-all duration-200 cursor-pointer w-full"
+                    >
+                      <span className="mr-3 text-lg">{<Icon />}</span>
+
+                      <span className="text-[#fcf8db] group-hover:translate-x-1 transition-transform duration-200">
+                        {category.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            }
+          />
         </div>
       </td>
     </tr>
