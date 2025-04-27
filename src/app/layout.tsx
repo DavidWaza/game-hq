@@ -30,9 +30,9 @@ export default function RootLayout({
 
   useEffect(() => {
     startTransition(() => {
-      setIsLoading(true); // Show loader immediately on navigation
+      setIsLoading(true);
       setTimeout(() => {
-        setIsLoading(false); // Keep loader visible for at least 1 second
+        setIsLoading(false);
       }, 1000);
     });
   }, [pathname]);

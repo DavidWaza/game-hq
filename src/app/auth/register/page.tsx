@@ -37,15 +37,13 @@ const evaluateStrength = (password: string) => {
 const RegisterUser: React.FC = () => {
   const { login } = useAuth();
   const router = useRouter();
-  const [registrationType, setRegistrationType] = useState<"email" | "phone">(
-    "email"
-  );
+  const [registrationType] = useState<"email" | "phone">("email");
   const {
     register,
     handleSubmit,
     setError,
     clearErrors,
-    reset,
+    // reset,
     watch,
     formState: { errors },
   } = useForm<{
@@ -62,12 +60,6 @@ const RegisterUser: React.FC = () => {
   const [confirmIsVisible, setConfirmIsVisible] = useState(false);
   const [strength, setStrength] = useState(0);
   const [openCode, setOpenCode] = useState(false);
-
-  const switchRegistrationType = () => {
-    setRegistrationType(registrationType === "email" ? "phone" : "email");
-    reset();
-    setStrength(0);
-  };
 
   // Handle Password Change
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,7 +97,7 @@ const RegisterUser: React.FC = () => {
       toast.success("Registration Successful");
       await login(data);
       setTimeout(() => {
-        router.push("/dashboard/splash-avatar");
+        router.push("/dashboard");
       }, 3000);
     },
     onError: (error) => {
@@ -138,17 +130,22 @@ const RegisterUser: React.FC = () => {
 
   return (
     <div>
-      <Navbar variant="secondary" />
+      <div className="hidden lg:block">
+        <Navbar variant="secondary" />
+      </div>
+      <div className="lg:hidden block">
+        <Navbar variant="primary" />
+      </div>
       <div className="lg:p-24 h-full py-10 relative md:block hidden">
         <div className="card-two max-w-[1300px] bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] mx-auto flex justify-center md:h-full lg:h-[45rem]">
           <div className="grid lg:grid-cols-3">
             <div className="col-span-1">
-              <h1 className="text-[#fcf8db] text-6xl py-32 px-2">
+              <h1 className="text-[#fcf8db] text-3xl lg:text-6xl py-32 lg:px-2 px-5">
                 Start your Journey...
               </h1>
             </div>
             <div className="col-span-2">
-              <div className="absolute">
+              <div className="lg:absolute">
                 <div className="pt-0 px-0">
                   <div className="px-10 space-y-5 border rounded-lg rounded-t-none py-3 glass">
                     <div className="text-center flex flex-col space-y-2 py-4">
@@ -297,27 +294,6 @@ const RegisterUser: React.FC = () => {
                       <div className="divider py-4">
                         <span>Or</span>
                       </div>
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        width="full"
-                        onClick={switchRegistrationType}
-                        icon={
-                          <Image
-                            src={"/assets/icons/mail.svg"}
-                            alt="Email Icon"
-                            width={0}
-                            height={0}
-                            sizes="100vw"
-                            className="w-5 h-5 object-contain object-center"
-                          />
-                        }
-                      >
-                        Register with{" "}
-                        {registrationType === "email"
-                          ? "Phone Number"
-                          : "Email"}
-                      </Button>
                       <Button
                         variant="secondary"
                         size="md"

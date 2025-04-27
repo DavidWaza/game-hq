@@ -49,6 +49,7 @@ const CreateMatchPage = () => {
       prevIndex + 1 < videoTrailers.length ? prevIndex + 1 : 0
     );
   };
+
   // Randomize currentVideoIndex when matchMode changes
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * videoTrailers.length);
@@ -63,7 +64,6 @@ const CreateMatchPage = () => {
         .play()
         .catch((err) => console.warn("Auto-play blocked:", err));
     }
-
     return () => {
       if (videoElement) {
         videoElement.pause();
@@ -75,25 +75,32 @@ const CreateMatchPage = () => {
     <>
       {/* Navbar */}
       <Navbar variant="primary" />
-      <div className="create-wager-banner relative h-screen overflow-hidden">
-        <video
-          ref={videoRef}
-          key={videoTrailers[currentVideoIndex].id}
-          className="absolute inset-0 w-full h-full object-cover"
-          src={videoTrailers[currentVideoIndex].src}
-          autoPlay
-          muted
-          playsInline
-          onEnded={handleVideoEnd}
-        ></video>
+      {/* video */}
+      <div className="create-wager-banner fixed top-0 left-0 bottom-0 w-dvw h-dvh">
+        {process.env.NEXT_PUBLIC_HIDE_VIDEO &&
+        process.env.NEXT_PUBLIC_HIDE_VIDEO !== "false" ? (
+          <video
+            ref={videoRef}
+            key={videoTrailers[currentVideoIndex].id}
+            className="w-full h-full object-cover"
+            src={videoTrailers[currentVideoIndex].src}
+            autoPlay
+            muted
+            playsInline
+            onEnded={handleVideoEnd}
+          ></video>
+        ) : (
+          ""
+        )}
 
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-
+        <div className="absolute top-0 left-0 w-full h-full bottom-0 bg-black bg-opacity-50"></div>
+      </div>
+      {/* gradient */}
+      {/* content */}
+      <div className=" relative min-h-screen overflow-x-hidden">
         {/* Content Centered in the Middle */}
-        <div className="relative z-10 text-white h-full overflow-y-auto">
-          <div className="py-[140px] min-h-full flex items-center justify-center px-4">
-            <CreateMatch matchMode={matchMode} setMatchMode={setMatchMode} />
-          </div>
+        <div className="py-[140px] text-white min-h-screen flex items-center justify-center px-4 max-w-2xl m-auto">
+          <CreateMatch matchMode={matchMode} setMatchMode={setMatchMode} />
         </div>
       </div>
     </>

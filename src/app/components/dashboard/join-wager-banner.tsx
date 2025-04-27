@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import GameCategories from "./GameCategories";
+import { TypeSingleTournament } from "../../../../types/global";
 
 const images = [
   "/assets/m.png",
@@ -9,7 +10,11 @@ const images = [
   "/assets/h2_img2_2.png",
 ];
 
-const CreateWagerBanner = () => {
+const CreateWagerBanner = ({
+  tournaments,
+}: {
+  tournaments: TypeSingleTournament[];
+}) => {
   const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
@@ -31,12 +36,12 @@ const CreateWagerBanner = () => {
       <div className="grid lg:grid-cols-2 items-start">
         {/* Left Side Content */}
         <div>
-          <h1 className="text-[#FCF8DB] uppercase text-6xl py-10 lg:py-20">
+          <h1 className="text-[#FCF8DB] uppercase text-3xl lg:text-6xl py-10 lg:py-20">
             let the tournament begin...
           </h1>
 
           {/* Create Wager */}
-          <GameCategories />
+          <GameCategories tournaments={tournaments} />
         </div>
 
         {/* Right Side Image (Independent) */}

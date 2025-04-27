@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Money } from "@phosphor-icons/react";
 import { CalendarForm } from "@/app/components/dashboard/Calendar";
 import { useRouter } from "next/navigation";
@@ -24,43 +23,51 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import EventScheduler from "./TimerSchedule";
+import { Controller } from "react-hook-form";
+import dynamic from "next/dynamic";
+// import RichTextEditor from "@/components/RichTextEditor";
 
 // Define types
 interface FormData {
-  category_id: string;
+  game_id: string;
   bet_on: string;
   description: string;
-  amount: string;
+  amount: number;
   number_of_participants: number;
-  created_at: Date | null;
+  match_date: Date | null;
   match_time: string;
 }
 interface CreateTournamentProps {
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
+const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
+  ssr: false,
+});
 
 const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   const { setLoading } = props;
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { store } = useAuth();
   const router = useRouter();
+  // const quill = new Quill('#editor');
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    control,
     setValue,
     trigger,
+    watch,
   } = useForm<FormData>({
     mode: "onChange",
     defaultValues: {
-      category_id: "",
-      bet_on: "",
+      game_id: "",
       description: "",
-      amount: "",
+      amount: 0,
       number_of_participants: 0,
-      created_at: null,
+      match_date: null,
       match_time: "",
     },
   });
@@ -70,11 +77,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   }, []);
 
   const handleCategoryChange = (value: string) => {
-    setValue("category_id", value, { shouldValidate: true });
-  };
-
-  const handleDateChange = (created_at: Date): void => {
-    setValue("created_at", created_at, { shouldValidate: true });
+    setValue("game_id", value, { shouldValidate: true });
   };
 
   const handleTimeChange = (match_time: string): void => {
@@ -103,12 +106,12 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   // Expose the submit function to the parent component
   useImperativeHandle(ref, () => ({
     submitForm: async () => {
-      const isValidForm = await trigger(); // Trigger validation for all fields
+      const isValidForm = await trigger();
       if (isValidForm) {
-        handleSubmit(onSubmit)(); // Submit the form if valid
-        return true; // Indicate success
+        handleSubmit(onSubmit)();
+        return true;
       }
-      return false; // Indicate failure
+      return false;
     },
   }));
 
@@ -124,7 +127,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
           <Label>Select Game</Label>
           <Select
             onValueChange={handleCategoryChange}
-            {...register("category_id", {
+            {...register("game_id", {
               required: "Game category is required",
             })}
           >
@@ -136,30 +139,34 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {store?.categories?.map((category) => (
-                  <SelectItem key={category.id} value={category.id.toString()}>
-                    {category.name}
+                {store?.games?.map((game) => (
+                  <SelectItem key={game.id} value={game.id.toString()}>
+                    {game.name}
                   </SelectItem>
                 ))}
               </SelectGroup>
             </SelectContent>
           </Select>
-          {errors.category_id && (
-            <p className="text-red-500 text-sm">{errors.category_id.message}</p>
+          {errors.game_id && (
+            <p className="text-red-500 text-sm">{errors.game_id.message}</p>
           )}
         </div>
-        {/* Bet On */}
         {/* Note to Participants */}
         <div className="space-y-2 items-center gap-4">
           <Label htmlFor="description">Note to Participants</Label>
-          <Textarea
-            {...register("description", {
-              required: "Note description is required",
-            })}
-            id="description"
-            placeholder="Enter the terms and necessary information of this bet"
-            className="w-full p-3 bg-gray-700 text-white rounded-lg shadow-md resize-none h-[150px]"
-          />
+          <div className="editorWrapper">
+            {typeof window !== "undefined" ? (
+              <RichTextEditor
+                value={watch("description")} // Bind the value to react-hook-form
+                onChange={(value) =>
+                  setValue("description", value, { shouldValidate: true })
+                } // Update the form value
+                placeholder="Enter the rules, terms and necessary information for this match"
+              />
+            ) : (
+              ""
+            )}
+          </div>
           {errors.description && (
             <p className="text-red-500 text-sm">{errors.description.message}</p>
           )}
@@ -213,18 +220,20 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
           )}
         </div>
         {/* Date */}
-        <div className="space-y-2">
-          <CalendarForm
-            onDateChange={handleDateChange}
-            {...register("created_at", {
-              required: "Date is required",
-            })}
-            label={"Select a date"}
-          />
-          {errors.created_at && (
-            <p className="text-red-500 text-sm">{errors.created_at.message}</p>
+        <Controller
+          name="match_date"
+          control={control}
+          rules={{ required: "Date is required" }}
+          render={({ field }) => (
+            <CalendarForm
+              onDateChange={(date) => field.onChange(date)}
+              label="Select a date"
+            />
           )}
-        </div>
+        />
+        {errors.match_date && (
+          <p className="text-red-500 text-sm">{errors.match_date.message}</p>
+        )}
         {/* Match Time */}
         <div className="space-y-2">
           <EventScheduler
