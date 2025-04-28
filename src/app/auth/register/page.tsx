@@ -97,7 +97,7 @@ const RegisterUser: React.FC = () => {
       toast.success("Registration Successful");
       await login(data);
       setTimeout(() => {
-        router.push("/dashboard/splash-avatar");
+        router.push("/dashboard");
       }, 3000);
     },
     onError: (error) => {
@@ -294,27 +294,6 @@ const RegisterUser: React.FC = () => {
                       <div className="divider py-4">
                         <span>Or</span>
                       </div>
-                      {/* <Button
-                        variant="secondary"
-                        size="md"
-                        width="full"
-                        onClick={switchRegistrationType}
-                        icon={
-                          <Image
-                            src={"/assets/icons/mail.svg"}
-                            alt="Email Icon"
-                            width={0}
-                            height={0}
-                            sizes="100vw"
-                            className="w-5 h-5 object-contain object-center"
-                          />
-                        }
-                      >
-                        Register with{" "}
-                        {registrationType === "email"
-                          ? "Phone Number"
-                          : "Email"}
-                      </Button> */}
                       <Button
                         variant="secondary"
                         size="md"

@@ -19,17 +19,21 @@ import Chat from "../Components/Message";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
 import { TypeGames } from "../../../../../types/global";
 import { formatCurrency } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
 
 export default function TournamentLobby() {
   const [loading, setLoading] = useState<boolean>(true);
   const [micEnabled, setMicEnabled] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(1476); // 24:36 in seconds
+  // const [timeLeft, setTimeLeft] = useState(1476);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
   const [isReady, setIsReady] = useState(false); // Tracks if game is in session
   const [countdown, setCountdown] = useState<number | null>(null); // Countdown from 5
   const [selectedGame, setSelectedGame] = useState<TypeGames>();
   const [showTransition, setShowTransition] = useState(false);
+  const [gameResult, setGameResult] = useState<
+    "win" | "lose" | "dispute" | null
+  >(null);
   const router = useRouter();
   const params = useParams();
   const slug = params?.slug;
@@ -62,14 +66,7 @@ export default function TournamentLobby() {
     filterGame();
   }, [store.games, store.singleTournament]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Countdown effect with animated transition
+  console.log(name, "xsxsxs");
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
       const countdownTimer = setInterval(() => {
@@ -77,15 +74,12 @@ export default function TournamentLobby() {
       }, 1000);
       return () => clearInterval(countdownTimer);
     } else if (countdown === 0) {
-      // Show transition animation before switching to "Game in Session"
       setShowTransition(true);
-
-      // After transition animation completes, show game in session
       setTimeout(() => {
         setIsReady(true);
         setShowTransition(false);
         setCountdown(null);
-      }, 2000); // Adjust timing to match animation duration
+      }, 2000);
     }
   }, [countdown]);
 
@@ -99,6 +93,47 @@ export default function TournamentLobby() {
     setCountdown(5);
   };
 
+  const handleWinClick = async () => {
+    // Optional: Play sound effect
+    // const clickSound = new Audio("/sounds/button-click.mp3");
+    // clickSound.play();
+    try {
+      await reportGameResult("win");
+      setGameResult("win");
+      alert("Win reported! Waiting for opponent confirmation...");
+    } catch (error) {
+      console.error("Error reporting win:", error);
+      alert("Failed to report win. Please try again.");
+    }
+  };
+
+  const handleLoseClick = async () => {
+    // Optional: Play sound effect
+    // const clickSound = new Audio("/sounds/button-click.mp3");
+    // clickSound.play();
+    try {
+      await reportGameResult("lose");
+      setGameResult("lose");
+      alert("Loss reported. Prize money transferred to the winner.");
+    } catch (error) {
+      console.error("Error reporting loss:", error);
+      alert("Failed to report loss. Please try again.");
+    }
+  };
+
+  const handleDisputeClick = () => {
+    // Optional: Play sound effect
+    // const clickSound = new Audio("/sounds/button-click.mp3");
+    // clickSound.play();
+    setGameResult("dispute");
+    router.push("/dispute-resolution");
+  };
+
+  const reportGameResult = async (result: "win" | "lose") => {
+    console.log(result);
+    return new Promise((resolve) => setTimeout(resolve, 500));
+  };
+
   const players = [
     { id: 1, name: playername, status: "Ready", captain: true },
     { id: 2, name: "GhostShadow", status: "Ready", captain: false },
@@ -107,7 +142,6 @@ export default function TournamentLobby() {
     { id: 5, name: "", status: "Empty", captain: false },
   ];
 
-  // Animation variants for different elements
   const countdownVariants = {
     initial: { scale: 0.5, opacity: 0 },
     animate: { scale: 1, opacity: 1 },
@@ -173,7 +207,9 @@ export default function TournamentLobby() {
                 <Clock size={14} className="text-orange-400 mr-1 sm:mr-2" />
                 <span className="text-xs sm:text-sm">
                   Starts in:{" "}
-                  <span className="font-bold">{formatTime(timeLeft)}</span>
+                  <span className="font-bold">
+                    {formatTime(Number(tournamentDetails?.match_time))}
+                  </span>
                 </span>
               </div>
               <div className="flex items-center px-3 py-1 bg-gray-800 rounded-full">

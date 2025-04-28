@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -10,49 +10,61 @@ import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import Button from "@/components/Button";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { DataFromLogin } from "../../../types/global";
+
+interface LoginFormData {
+  username: string;
+  password: string;
+}
 
 const MobileLogin = () => {
-  const [password, setPassword] = useState("");
+  const { login } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
+  const usernameRef = useRef<HTMLInputElement>(null);
 
-  const { register, handleSubmit } = useForm<{
-    // email: string;
-    password: string;
-    username: string;
-  }>();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const password = e.target.value;
-    setPassword(password);
-  };
-
-  const loginMutation = useMutation({
-    mutationFn: (userData: {
-      // email: string;
-      password: string;
-      username: string;
-    }) => postFn("api/auth/login", userData),
-    onSuccess: (data) => {
-      toast.success("Login Successful", data);
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 3000);
-    },
-    onError: (error) => {
-      toast.error(`Login Failed ${error.message}`);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    mode: "onChange",
+    defaultValues: {
+      username: "",
+      password: "",
     },
   });
 
-  // Form submission handler
-  const onSubmit: SubmitHandler<{
-    // email: string;
-    password: string;
-    username: string;
-  }> = (formData) => {
+  const loginMutation = useMutation({
+    mutationFn: (userData: LoginFormData) => postFn("api/auth/login", userData),
+    onSuccess: async (data: DataFromLogin) => {
+      if (data?.token) {
+        toast.success("Login Successful");
+        await login(data);
+        router.push("/dashboard");
+      }
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Login failed", {
+        position: "top-right",
+        className: "p-4",
+      });
+    },
+  });
+
+  const onSubmit: SubmitHandler<LoginFormData> = (formData) => {
     loginMutation.mutate(formData);
   };
+
+  const handleGoogleLogin = () => {
+    router.push("/api/auth/login?connection=google-oauth2");
+  };
+
+  useEffect(() => {
+    usernameRef.current?.focus();
+  }, []);
 
   return (
     <div>
@@ -84,7 +96,11 @@ const MobileLogin = () => {
                             placeholder="Ex. davidwaza@gmail.com"
                           />
                         </div>
-
+                        {errors.username && (
+                          <p className="text-red-500 text-sm">
+                            {errors.username.message}
+                          </p>
+                        )}
                         {/* password */}
                         <div className="grid w-full items-center gap-1.5">
                           <Label
@@ -95,7 +111,6 @@ const MobileLogin = () => {
                           </Label>
                           <div className="relative">
                             <Input
-                              value={password}
                               type={isVisible ? "text" : "password"}
                               id="password"
                               placeholder="******"
@@ -107,9 +122,7 @@ const MobileLogin = () => {
                                     "Password must be at least 8 characters",
                                 },
                               })}
-                              onChange={handleChange}
                             />
-
                             <button
                               type="button"
                               className="absolute top-1/2 -translate-y-1/2 right-2"
@@ -122,6 +135,11 @@ const MobileLogin = () => {
                               )}
                             </button>
                           </div>
+                          {errors.password && (
+                            <p className="text-red-500 text-sm">
+                              {errors.password.message}
+                            </p>
+                          )}
                           <p className="text-[#233d4d] text-sm !text-left">
                             <Link
                               href="/forgot-password"
@@ -143,6 +161,7 @@ const MobileLogin = () => {
                       </div>
                       <Button
                         variant="secondary"
+                        onClick={handleGoogleLogin}
                         size="md"
                         width="full"
                         icon={

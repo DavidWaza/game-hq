@@ -107,12 +107,6 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
             Participants left
           </p>
           <div className="flex items-center">
-            {/* <CurrencyNgn
-            size={20}
-            weight="duotone"
-            color="#f37f2d"
-            className="font-bold"
-          /> */}
             <p className="text-[#FCF8DB] text-lg">
               {formatCurrency(tournamentDetails?.amount || 0)}
             </p>

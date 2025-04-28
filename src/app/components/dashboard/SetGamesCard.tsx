@@ -19,7 +19,7 @@ interface StatusCardProps {
   status?: string;
   prize: string;
   time: string;
-  players: number; // New prop for number of players
+  players: number;
   tournament: TypeSingleTournament;
   showModal?: (val: TypeSingleTournament) => void;
 }
@@ -44,18 +44,14 @@ const StatusCard: React.FC<StatusCardProps> = ({
         setState(tournament, "singleTournament");
         router.push(`/dashboard/join-tournament/${tournament.id}`);
       },
-      icon: () => {
-        return "🔗";
-      },
+      icon: () => "🔗",
     },
     {
       label: "Join Now",
       action: () => {
         showModal(tournament);
       },
-      icon: () => {
-        return "➜";
-      },
+      icon: () => "➜",
     },
     {
       label: "Copy Link",
@@ -63,111 +59,113 @@ const StatusCard: React.FC<StatusCardProps> = ({
         const url = `${window.location.origin}/dashboard/join-tournament/${tournament.id}`;
         copyToClipboard(url, "Tournament Link Copied!");
       },
-      icon: () => {
-        return "🔗";
-      },
+      icon: () => "🔗",
     },
   ];
-  // const selectedRules = getGameRules();
-  // onClick={() => showModal(tournament)}
+
+  const getTdClasses = (isFirst: boolean = false, isLast: boolean = false) => {
+    let classes = "block md:table-cell w-full md:w-auto";
+    classes += " px-4 py-3";
+    classes += " md:py-4";
+
+    if (isFirst) {
+      classes += " md:pl-4 md:pr-2";
+    } else if (isLast) {
+       // Use slightly more padding for the last cell (actions) on desktop
+      classes += " md:px-4 md:pr-4";
+    } else {
+       // Keep original compact padding for middle cells on desktop
+      classes += " md:px-2";
+    }
+
+    if (!isFirst) {
+      classes += " border-t border-gray-800 md:border-t-0";
+    }
+
+    return classes;
+  };
+
   return (
     <tr
       onClick={() => showModal(tournament)}
-      className="transLeft bg-[#0F1218] shadow-lg cursor-pointer hover:bg-[#161b24] transition-colors z-auto"
+      className="transLeft block md:table-row bg-[#0F1218] shadow-lg cursor-pointer hover:bg-[#161b24] transition-colors mb-4 md:mb-0 rounded-2xl md:rounded-none"
     >
-      {/* Left Section with Logo */}
-      <td className="py-4 pl-4 pr-2 rounded-tl-2xl rounded-bl-2xl ">
-        <div className="flex gap-2 items-center text-white">
+      <td className={`${getTdClasses(true, false)} md:rounded-tl-2xl md:rounded-bl-2xl`}>
+        <div className="flex gap-3 items-center text-white w-full">
           {logo && (
             <Image
               src={logo}
               alt={name}
               width={60}
               height={60}
-              className="w-10 h-10"
+              className="w-10 h-10 flex-shrink-0"
             />
           )}
-
-          <span className="elipsis text-sm font-semibold text-left">
+          <span className="elipsis text-sm md:text-base font-semibold text-left flex-grow text-[#FCF8DB]">
             {name}
           </span>
         </div>
       </td>
-      {/* Status Indicator */}
-      {/* <div
-          className={`absolute top-0 left-0 h-2 w-20 rounded-tl-2xl ${borderColor}`}
-        ></div> */}
-      {/* Middle Section with Info */}
-      {/* <div className="flex-1 flex flex-col md:flex-row justify-between items-center text-white border-l border-gray-700 md:pl-5 w-full space-y-3 md:space-y-0"> */}
-      <td className="py-4 pl-4 pr-2 border-l border-gray-700">
-        <div className="text-center md:text-left">
-          <h4 className="elipsis text-gray-400 text-sm">
-            {"title(static)".toUpperCase()}
-          </h4>
-          {status && (
-            <p className="text-[#FCF8DB] text-xs">● {status.toUpperCase()}</p>
-          )}
-          <p className="text-[#FCF8DB] flex items-center justify-center md:justify-start gap-1">
-            Players: {formatNumber(players)}
-          </p>
-        </div>
+
+      <td className={getTdClasses()}>
+         <div className="flex justify-between items-center md:block md:text-left">
+           <h4 className="text-gray-400 text-xs md:text-sm font-medium uppercase">
+             Players
+           </h4>
+           <div className="text-right md:text-left">
+             {status && (
+               <p className="text-[#FCF8DB] text-xs font-semibold md:hidden">● {status.toUpperCase()}</p>
+             )}
+             <p className="text-[#FCF8DB] text-sm md:text-base font-semibold mt-0.5">
+               {formatNumber(players)}
+               {status && (
+                 <span className="hidden md:inline text-xs font-semibold ml-1">● {status.toUpperCase()}</span>
+               )}
+             </p>
+           </div>
+         </div>
       </td>
-      <td className="py-4 px-2">
-        <div className="text-center md:text-left">
-          <h4 className="text-gray-400 text-sm">PRIZE</h4>
-          <p className="text-[#FCF8DB] flex items-center justify-center md:justify-start gap-1">
+
+      <td className={getTdClasses()}>
+        <div className="flex justify-between items-center md:block md:text-left">
+          <h4 className="text-gray-400 text-sm font-medium md:font-normal md:mb-0.5">PRIZE</h4>
+          <p className="text-[#FCF8DB] text-sm md:text-base font-semibold">
             {formatCurrency(prize)}
           </p>
         </div>
       </td>
-      <td className="py-4 px-2">
-        <div className="text-center md:text-left">
-          <h4 className="text-gray-400 text-sm">ODDS</h4>
-          <p className="text-[#FCF8DB] flex items-center justify-center md:justify-start gap-1">
+
+      <td className={getTdClasses()}>
+        <div className="flex justify-between items-center md:block md:text-left">
+          <h4 className="text-gray-400 text-sm font-medium md:font-normal md:mb-0.5">ODDS</h4>
+          <p className="text-[#FCF8DB] text-sm md:text-base font-semibold">
             {odds.totalOdds.toFixed(2)}
           </p>
         </div>
       </td>
-      <td className="py-4 px-2">
-        <div className="text-center md:text-left">
-          <h4 className="text-gray-400 text-sm">TIME</h4>
-          <p className="flex items-center justify-center md:justify-start gap-1 text-[#FCF8DB]">
-            <Clock size={20} /> {time}
-          </p>
-        </div>
+
+      <td className={getTdClasses()}>
+         <div className="flex justify-between items-center md:block md:text-left">
+           <h4 className="text-gray-400 text-sm font-medium md:font-normal md:mb-0.5">TIME</h4>
+           <p className="flex items-center justify-end md:justify-start gap-1 text-[#FCF8DB] text-sm md:text-base font-semibold">
+             <Clock size={18} className="md:size-5"/> {time}
+           </p>
+         </div>
       </td>
-      {/* </div> */}
-      {/* Join Now Button */}
-      <td className="py-4 pr-4  rounded-tr-2xl rounded-br-2xl">
-        <div className="w-full flex_center">
+
+      <td className={`${getTdClasses(false, true)} md:rounded-tr-2xl md:rounded-br-2xl`}>
+        <div className="w-full flex justify-center items-center h-full">
           <DropDown
             header={
-              <div className="bg-black px-4 py-2 rounded-md text-white text-xs font-bold flex items-center gap-1 mt-3 md:mt-0">
-                {/* onClick={(e) => {
-              e.stopPropagation();
-            }} */}
+              <div className="bg-black w-full md:w-auto px-4 py-2 rounded-md text-white text-xs font-bold flex items-center justify-center gap-1 mt-2 md:mt-0 cursor-pointer">
                 <svg
                   fill="#fff"
                   height="20px"
                   width="20px"
-                  id="Layer_1"
-                  data-name="Layer 1"
-                  xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 16 16"
-                  stroke="#fff"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                  <g
-                    id="SVGRepo_tracerCarrier"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></g>
-                  <g id="SVGRepo_iconCarrier">
-                    <path
-                      className="cls-1"
-                      d="M8,6.5A1.5,1.5,0,1,1,6.5,8,1.5,1.5,0,0,1,8,6.5ZM.5,8A1.5,1.5,0,1,0,2,6.5,1.5,1.5,0,0,0,.5,8Zm12,0A1.5,1.5,0,1,0,14,6.5,1.5,1.5,0,0,0,12.5,8Z"
-                    ></path>
-                  </g>
+                  <path d="M8,6.5A1.5,1.5,0,1,1,6.5,8,1.5,1.5,0,0,1,8,6.5ZM.5,8A1.5,1.5,0,1,0,2,6.5,1.5,1.5,0,0,0,.5,8Zm12,0A1.5,1.5,0,1,0,14,6.5,1.5,1.5,0,0,0,12.5,8Z"></path>
                 </svg>
               </div>
             }
@@ -179,14 +177,14 @@ const StatusCard: React.FC<StatusCardProps> = ({
                   return (
                     <button
                       key={catIndex + 232323}
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent row onClick when clicking dropdown item
                         category.action();
                       }}
-                      className="group px-4 py-2 flex items-center hover:bg-[#f37f2d] transition-all duration-200 cursor-pointer w-full"
+                      className="group px-4 py-2 flex items-center hover:bg-[#f37f2d] transition-all duration-200 cursor-pointer w-full text-left"
                     >
                       <span className="mr-3 text-lg">{<Icon />}</span>
-
-                      <span className="text-[#fcf8db] group-hover:translate-x-1 transition-transform duration-200">
+                      <span className="text-[#fcf8db] group-hover:translate-x-1 transition-transform duration-200 text-sm">
                         {category.label}
                       </span>
                     </button>
