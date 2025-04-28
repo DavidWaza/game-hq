@@ -18,36 +18,34 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const quillInstance = useRef<Quill | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (quillRef.current) {
-        quillInstance.current = new Quill(quillRef.current, {
-          theme: "snow",
-          modules: {
-            toolbar: [
-              [{ header: [1, 2, false] }],
-              ["bold", "italic", "underline", "strike"], // Text formatting
-              [{ list: "ordered" }, { list: "bullet" }], // Lists
-              ["link"], // Links
-              ["clean"], // Remove formatting
-            ],
-          },
-          placeholder,
-        });
+    if (quillRef.current) {
+      quillInstance.current = new Quill(quillRef.current, {
+        theme: "snow",
+        modules: {
+          toolbar: [
+            [{ header: [1, 2, false] }],
+            ["bold", "italic", "underline", "strike"], // Text formatting
+            [{ list: "ordered" }, { list: "bullet" }], // Lists
+            ["link"], // Links
+            ["clean"], // Remove formatting
+          ],
+        },
+        placeholder,
+      });
 
-        // Set initial value
-        quillInstance.current.root.innerHTML = value;
+      // Set initial value
+      quillInstance.current.root.innerHTML = value;
 
-        // Update the value on text change
-        quillInstance.current.on("text-change", () => {
-          const html = quillRef.current?.querySelector(".ql-editor")?.innerHTML;
-          onChange(html || "");
-        });
-      }
-
-      return () => {
-        quillInstance.current = null; // Cleanup
-      };
+      // Update the value on text change
+      quillInstance.current.on("text-change", () => {
+        const html = quillRef.current?.querySelector(".ql-editor")?.innerHTML;
+        onChange(html || "");
+      });
     }
+
+    return () => {
+      quillInstance.current = null; // Cleanup
+    };
   }, []);
 
   return <div ref={quillRef} className="quill-editor"></div>;

@@ -2,9 +2,8 @@
 import Navbar from "@/components/Navbar";
 import TournamentHero from "@/components/tournament/Hero";
 import React, { useEffect, useState } from "react";
-import { TypeGames, TypeSingleTournament } from "../../../../../types/global";
+import { TypeGames } from "../../../../../types/global";
 import { useParams } from "next/navigation";
-import { getFn } from "@/lib/apiClient";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
 import { useAuth } from "@/contexts/AuthContext";
 
