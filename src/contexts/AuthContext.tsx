@@ -6,11 +6,13 @@ import {
   User,
   TypeCategories,
   TypeGames,
+  TypeSingleTournament,
 } from "../../types/global";
 import { getFn, getUser } from "@/lib/apiClient";
 interface StoreData {
   categories: TypeCategories[] | [] | undefined;
   games: TypeGames[] | [] | undefined;
+  singleTournament:TypeSingleTournament | undefined;
 }
 type StoreConFigKeys = keyof StoreData;
 interface AuthContextType {
@@ -19,6 +21,10 @@ interface AuthContextType {
   login: (data: DataFromLogin) => Promise<void>;
   logout: () => Promise<void>;
   store: StoreData;
+  setState: (
+    value: TypeCategories[] | TypeGames[] | TypeSingleTournament | undefined,
+    name: StoreConFigKeys
+  ) => void;
 }
 interface DataHandler {
   storeValue: StoreConFigKeys;
@@ -36,9 +42,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [store, setStore] = useState<StoreData>({
     categories: [],
     games: [],
+    singleTournament: undefined,
   });
   const setState = (
-    value: TypeCategories[] | TypeGames[] | undefined,
+    value: TypeCategories[] | TypeGames[] | TypeSingleTournament | undefined,
     name: StoreConFigKeys
   ) => {
     console.log(value, name);
@@ -99,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const results = await Promise.all(
             useGetRequestDataHandler.map(async (handler: DataHandler) => {
               const data = await getFn(handler.path);
-              return { ...handler, data }; 
+              return { ...handler, data };
             })
           );
 
@@ -118,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, login, logout, store }}
+      value={{ isAuthenticated, user, login, logout, store, setState }}
     >
       {children}
     </AuthContext.Provider>

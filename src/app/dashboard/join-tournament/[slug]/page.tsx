@@ -10,25 +10,28 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const CreateWager = () => {
   const [loading, setLoading] = useState<boolean>(true);
-  const [data, setData] = useState<TypeSingleTournament>();
+  const [data, ] = useState<TypeSingleTournament>();
   const [selectedGame, setSelectedGame] = useState<TypeGames>();
-  const { store } = useAuth();
+  const { store, setState } = useAuth();
   const params = useParams();
   const slug = params?.slug;
 
   const getTournament = async () => {
-    setLoading(true);
-    try {
-      const response: TypeSingleTournament = await getFn(
-        `/api/tournamentstables/view/${slug}`
-      );
-      if (response?.id) {
-        setData(response);
-        filterGame();
+    if (!store.singleTournament) {
+      setLoading(true);
+      try {
+        const response: TypeSingleTournament = await getFn(
+          `/api/tournamentstables/view/${slug}`
+        );
+
+        if (response?.id) {
+          setState(response, 'singleTournament');
+          filterGame();
+        }
+      } catch {
+      } finally {
+        setLoading(false);
       }
-    } catch {
-    } finally {
-      setLoading(false);
     }
   };
   const filterGame = async () => {

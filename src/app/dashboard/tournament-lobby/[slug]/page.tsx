@@ -34,10 +34,7 @@ export default function TournamentLobby() {
   const searchParams = useSearchParams();
   const name = searchParams.get("name");
   const banner = searchParams.get("banner");
-  const amount = searchParams.get("amount");
-  const matchTime = searchParams.get("match_time");
 
-  console.log(name, "xsxsxs");
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
       const countdownTimer = setInterval(() => {
@@ -54,11 +51,11 @@ export default function TournamentLobby() {
     }
   }, [countdown]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" + secs : secs}`;
-  };
+  // const formatTime = (seconds: number) => {
+  //   const mins = Math.floor(seconds / 60);
+  //   const secs = seconds % 60;
+  //   return `${mins}:${secs < 10 ? "0" + secs : secs}`;
+  // };
 
   const handleReadyClick = () => {
     setCountdown(5);
@@ -192,14 +189,14 @@ export default function TournamentLobby() {
             <span className="text-xs sm:text-sm">
               Starts in:{" "}
               <span className="font-bold">
-                {matchTime ? formatTime(Number(matchTime)) : "N/A"}
+                {/* {matchTime ? formatTime(Number(matchTime)) : "N/A"} */}
               </span>
             </span>
           </div>
           <div className="flex items-center px-3 py-1 bg-gray-800 rounded-full">
             <Trophy size={14} className="text-orange-400 mr-1 sm:mr-2" />
             <span className="text-xs sm:text-sm">
-              Prize: <span className="font-bold text-green-400">₦{amount}</span>
+              {/* Prize: <span className="font-bold text-green-400">₦{amount}</span> */}
             </span>
           </div>
           <div className="flex items-center space-x-2">
