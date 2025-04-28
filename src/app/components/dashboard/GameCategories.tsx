@@ -14,6 +14,7 @@ import {
   formatNumber,
 } from "@/lib/utils";
 import Modal from "./Modal";
+import { useRouter } from "next/navigation";
 
 // Main Component
 const GameCategories = ({
@@ -21,12 +22,13 @@ const GameCategories = ({
 }: {
   tournaments: TypeSingleTournament[];
 }) => {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedTournament, setSelectedTournament] = useState<
     TypeSingleTournament | undefined
   >(undefined);
-  const { store } = useAuth();
+  const { store, setState } = useAuth();
 
   const getCategoryById = (id: string): TypeCategories | undefined => {
     return store?.categories?.find((el) => el.id === id);
@@ -160,9 +162,10 @@ const GameCategories = ({
         contentTitle={selectedTournament?.game?.name + " Tournament Rules"}
         contentItems={[selectedTournament?.description || ""]}
         firstButtonText="Accept"
-        onClick={() =>
-          (window.location.href = `/dashboard/tournament-lobby/${selectedTournament?.id}`)
-        }
+        onClick={() => {
+          setState(selectedTournament, "singleTournament");
+          router.push(`/dashboard/tournament-lobby/${selectedTournament?.id}`);
+        }}
         onTab={() => setIsModalOpen(false)}
       />
     </div>

@@ -7,11 +7,13 @@ import Button from "@/components/Button";
 import { motion } from "framer-motion";
 import Modal from "@/app/components/dashboard/Modal";
 import { TypeGames, TypeSingleTournament } from "../../../types/global";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   calculateTournamentOdds,
   formatCurrency,
   formatNumber,
 } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const bungee = Bungee({
   variable: "--bungee",
@@ -26,11 +28,11 @@ type TypePropsComponent = {
 
 const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
   const [isOpenTournament, setIsOpenTournament] = useState(false);
-
+  const router = useRouter();
   const [theme, setTheme] = useState({
     mouse_pointer: "/assets/cod-icon.svg",
   });
-
+  const { setState } = useAuth();
   const scrollToSection = () => {
     window.scrollTo({ top: window.innerHeight - 100, behavior: "smooth" });
   };
@@ -66,11 +68,10 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
           contentTitle={game?.name + " Tournament Rules"}
           contentItems={[tournamentDetails?.description || ""]}
           firstButtonText="Accept"
-          onClick={() =>
-            (window.location.href = `/dashboard/tournament-lobby/${
-              tournamentDetails?.id
-            }?name=${encodeURIComponent(game?.name || "")}&banner=${game?.banner}`)
-          }
+          onClick={() => {
+            setState(tournamentDetails, "singleTournament");
+            router.push(`/dashboard/tournament-lobby/${tournamentDetails?.id}`);
+          }}
         />
       </div>
 

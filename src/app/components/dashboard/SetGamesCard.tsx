@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 import { Clock } from "@phosphor-icons/react";
@@ -9,6 +10,8 @@ import {
 } from "@/lib/utils";
 import { TypeSingleTournament } from "../../../../types/global";
 import DropDown from "@/components/DropDown";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface StatusCardProps {
   logo?: string;
@@ -32,11 +35,14 @@ const StatusCard: React.FC<StatusCardProps> = ({
   showModal = () => {},
 }) => {
   const odds = calculateTournamentOdds(tournament);
+  const { setState } = useAuth();
+  const router = useRouter();
   const settingsCategories = [
     {
       label: "View Details",
       action: () => {
-        window.location.href = `/dashboard/join-tournament/${tournament.id}`;
+        setState(tournament, "singleTournament");
+        router.push(`/dashboard/join-tournament/${tournament.id}`);
       },
       icon: () => "🔗",
     },

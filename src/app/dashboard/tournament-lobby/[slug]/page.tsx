@@ -9,38 +9,122 @@ import {
   Microphone,
   MicrophoneSlash,
   List,
-  Timer,
+  CheckCircle,
+  XCircle,
+  WarningCircle,
+  SpinnerGap,
 } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import Chat from "../Components/Message";
-import { useSearchParams } from "next/navigation";
+import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
+import { TypeGames } from "../../../../../types/global";
+import { formatCurrency } from "@/lib/utils";
+
+type TournamentDetails = {
+  id: string | number;
+  amount?: number;
+  match_time?: string | number;
+  number_of_participants?: number;
+  description?: string;
+  game_id?: string | number;
+  name?: string;
+  banner?: string;
+};
+
+type MockStore = {
+  games: TypeGames[];
+  singleTournament: TournamentDetails | null;
+  dispatch: {
+    getTournament: () => Promise<void>;
+  };
+};
 
 export default function TournamentLobby() {
+  // --- State Variables ---
+  const [loading, setLoading] = useState<boolean>(true);
   const [micEnabled, setMicEnabled] = useState(true);
-  // const [timeLeft, setTimeLeft] = useState(1476);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [selectedGame, setSelectedGame] = useState<TypeGames | undefined>();
   const [showTransition, setShowTransition] = useState(false);
   const [gameResult, setGameResult] = useState<
     "win" | "lose" | "dispute" | null
   >(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // --- Hooks ---
   const router = useRouter();
-  const playername = useAuth()?.user?.username || "Challenger";
-  const searchParams = useSearchParams();
-  const name = searchParams.get("name");
-  const banner = searchParams.get("banner");
+  const params = useParams();
+  const slug = params?.slug as string;
+  const { user, store: mockStore } = useAuth() as unknown as {
+    user: { username?: string; id?: string | number } | null;
+    store: MockStore;
+  };
+
+  const playername = user?.username || "Challenger";
+
+  const tournamentDetails = mockStore?.singleTournament;
+
+  // Filter the specific game based on tournament details
+  const filterGame = () => {
+    if (mockStore.games?.length && mockStore.singleTournament) {
+      const t: TypeGames | undefined = mockStore.games.find(
+        (el) => el.id === mockStore?.singleTournament?.game_id
+      );
+      if (t) {
+        setSelectedGame(t);
+      } else {
+        console.warn(
+          "Game not found for ID:",
+          mockStore.singleTournament.game_id
+        );
+      }
+    }
+  };
 
   useEffect(() => {
+    const getTournament = async () => {
+      if (
+        !mockStore.singleTournament ||
+        mockStore.singleTournament.id !== slug
+      ) {
+        setLoading(true);
+        try {
+          await mockStore.dispatch.getTournament();
+          console.log("Fetched tournament data for slug:", slug);
+        } catch (error) {
+          console.error("Failed to fetch tournament:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+    if (slug) {
+      getTournament();
+    } else {
+      console.error("Tournament slug is missing!");
+      setLoading(false);
+    }
+  }, [slug, mockStore.dispatch, mockStore.singleTournament]);
+
+  useEffect(() => {
+    filterGame();
+  }, [mockStore.games, mockStore.singleTournament]);
+
+  useEffect(() => {
+    let countdownTimer: NodeJS.Timeout | null = null;
+
     if (countdown !== null && countdown > 0) {
-      const countdownTimer = setInterval(() => {
+      countdownTimer = setInterval(() => {
         setCountdown((prev) => (prev !== null ? prev - 1 : null));
       }, 1000);
-      return () => clearInterval(countdownTimer);
     } else if (countdown === 0) {
       setShowTransition(true);
       setTimeout(() => {
@@ -49,57 +133,83 @@ export default function TournamentLobby() {
         setCountdown(null);
       }, 2000);
     }
+
+    return () => {
+      if (countdownTimer) clearInterval(countdownTimer);
+    };
   }, [countdown]);
 
-  // const formatTime = (seconds: number) => {
-  //   const mins = Math.floor(seconds / 60);
-  //   const secs = seconds % 60;
-  //   return `${mins}:${secs < 10 ? "0" + secs : secs}`;
-  // };
+  const formatTime = (timeInput: string | number | undefined): string => {
+    const seconds = Number(timeInput);
+    if (isNaN(seconds) || seconds < 0) {
+      return "0:00";
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
   const handleReadyClick = () => {
-    setCountdown(5);
+    if (countdown === null) {
+      setCountdown(5);
+    }
   };
 
   const handleWinClick = async () => {
-    // Optional: Play sound effect
-    // const clickSound = new Audio("/sounds/button-click.mp3");
-    // clickSound.play();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await reportGameResult("win");
       setGameResult("win");
-      alert("Win reported! Waiting for opponent confirmation...");
     } catch (error) {
       console.error("Error reporting win:", error);
       alert("Failed to report win. Please try again.");
+      setGameResult(null);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  // Handles clicking the "I Lost" button
   const handleLoseClick = async () => {
-    // Optional: Play sound effect
-    // const clickSound = new Audio("/sounds/button-click.mp3");
-    // clickSound.play();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await reportGameResult("lose");
       setGameResult("lose");
-      alert("Loss reported. Prize money transferred to the winner.");
     } catch (error) {
       console.error("Error reporting loss:", error);
       alert("Failed to report loss. Please try again.");
+      setGameResult(null);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDisputeClick = () => {
-    // Optional: Play sound effect
-    // const clickSound = new Audio("/sounds/button-click.mp3");
-    // clickSound.play();
-    setGameResult("dispute");
-    router.push("/dispute-resolution");
+  // Handles clicking the "Dispute / Admin" button
+  const handleDisputeClick = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      setGameResult("dispute");
+
+      setTimeout(() => {
+        router.push("/dispute-resolution");
+      }, 700);
+    } catch (error) {
+      console.error("Error initiating dispute:", error);
+      alert("Failed to initiate dispute. Please try again or contact support.");
+      setGameResult(null);
+      setIsSubmitting(false);
+    }
   };
 
-  const reportGameResult = async (result: "win" | "lose") => {
-    console.log(result);
-    return new Promise((resolve) => setTimeout(resolve, 500));
+  const reportGameResult = async (result: "win" | "lose" | "dispute") => {
+    console.log(
+      `Reporting result: ${result} for user: ${user?.id} in tournament: ${tournamentDetails?.id}`
+    );
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log("Report successful (simulated)");
   };
 
   const players = [
@@ -123,591 +233,754 @@ export default function TournamentLobby() {
   };
 
   const gameSessionVariants = {
-    initial: { y: 50, opacity: 0 },
+    initial: { y: 30, opacity: 0 },
     animate: {
       y: 0,
       opacity: 1,
-      transition: { type: "spring", stiffness: 100, delay: 0.3 },
+      transition: { type: "spring", stiffness: 100, damping: 15, delay: 0.1 },
     },
+    exit: { y: -30, opacity: 0, transition: { duration: 0.2 } },
   };
 
-  const iconVariants = {
-    initial: { scale: 0, rotate: -180 },
-    animate: {
-      scale: 1,
-      rotate: 0,
-      transition: { type: "spring", stiffness: 200, delay: 0.5 },
-    },
-  };
+  if (loading || !tournamentDetails || !selectedGame?.id) {
+    return <FullScreenLoader isLoading={true} text="Loading Lobby..." />;
+  }
 
-  const textVariants = {
-    initial: { y: 20, opacity: 0 },
-    animate: {
-      y: 0,
-      opacity: 1,
-      transition: { delay: 0.7 },
-    },
-  };
-
-  const buttonVariants = {
-    initial: { scale: 0.8, opacity: 0, rotateX: 20 },
-    animate: {
-      scale: 1,
-      opacity: 1,
-      rotateX: 0,
-      transition: { type: "spring", stiffness: 200, delay: 0.9 },
-    },
-    hover: {
-      scale: 1.1,
-      boxShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
-      transition: { duration: 0.2 },
-    },
-    disabled: {
-      scale: 0.95,
-      opacity: 0.5,
-      transition: { duration: 0.2 },
-    },
-  };
-
+  // Main component render
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 text-gray-100">
-      <header className="bg-gray-900 px-4 py-3 border-b border-gray-800 flex items-center justify-between flex-wrap gap-2 sm:px-6 sm:py-4">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-orange-400 sm:text-2xl">
-            <Link href="/" className="hidden lg:flex">
-              GameHQ
-            </Link>
-          </h1>
-          <div className="px-3 py-1 bg-gray-800 rounded-full items-center hidden sm:flex">
-            <Trophy size={16} className="text-orange-400 mr-2" />
-            <span className="text-sm">{name}</span>
+    <>
+      <div className="flex flex-col min-h-screen bg-gray-950 text-gray-100 font-sans">
+        {/* Header Section */}
+        <header className="bg-gray-900 px-4 py-3 border-b border-gray-800 flex items-center justify-between flex-wrap gap-2 sm:px-6 sm:py-4">
+          {/* Left Header Content */}
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-bold text-orange-400 sm:text-2xl">
+              <Link href="/" className="hidden lg:flex items-center gap-2">
+                <Trophy size={24} />
+                GameHQ
+              </Link>
+            </h1>
+            {/* Game Name Tag */}
+            <div className="px-3 py-1 bg-gray-800 rounded-full items-center hidden sm:flex">
+              <Trophy size={16} className="text-orange-400 mr-2" />
+              <span className="text-sm font-medium">{selectedGame?.name}</span>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center space-x-2 sm:space-x-6">
-          <div className="flex items-center px-3 py-1 bg-gray-800 rounded-full">
-            <Clock size={14} className="text-orange-400 mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">
-              Starts in:{" "}
-              <span className="font-bold">
-                {/* {matchTime ? formatTime(Number(matchTime)) : "N/A"} */}
+          {/* Right Header Content */}
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            {/* Start Time Tag */}
+            <div className="flex items-center px-3 py-1 bg-gray-800 rounded-full">
+              <Clock size={14} className="text-orange-400 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">
+                Starts in:{" "}
+                <span className="font-bold">
+                  {formatTime(tournamentDetails?.match_time)}
+                </span>
               </span>
-            </span>
-          </div>
-          <div className="flex items-center px-3 py-1 bg-gray-800 rounded-full">
-            <Trophy size={14} className="text-orange-400 mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">
-              {/* Prize: <span className="font-bold text-green-400">₦{amount}</span> */}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center sm:w-9 sm:h-9">
-              <span className="text-xs font-bold sm:text-sm">DW</span>
             </div>
-            <span className="font-medium hidden sm:block">{playername}</span>
-          </div>
-          <button
-            className="lg:hidden"
-            onClick={() => setIsLeftPanelOpen(true)}
-          >
-            <List size={24} className="text-orange-400" />
-          </button>
-        </div>
-      </header>
-
-      <div className="flex flex-1 overflow-hidden">
-        <div
-          className={`fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 flex flex-col transform transition-transform duration-300 lg:static lg:w-80 lg:translate-x-0 z-20 ${
-            isLeftPanelOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          <div className="p-4 border-b border-gray-800 flex justify-between items-center">
-            <h2 className="text-lg font-semibold flex items-center sm:text-xl">
-              <Users size={20} className="mr-2 text-orange-400" />
-              Team Roster
-            </h2>
-            <button
-              className="lg:hidden"
-              onClick={() => setIsLeftPanelOpen(false)}
-            >
-              <CaretDoubleRight size={20} className="text-orange-400" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 sm:p-5">
-            <div className="text-sm text-gray-400">
-              Status: <span className="text-orange-400">Incomplete</span>
+            {/* Prize Tag */}
+            <div className="flex items-center px-3 py-1 bg-gray-800 rounded-full">
+              <Trophy size={14} className="text-orange-400 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">
+                Prize:{" "}
+                <span className="font-bold text-green-400">
+                  {formatCurrency(tournamentDetails?.amount || 0)}
+                </span>
+              </span>
             </div>
-            {players.map((player) => (
-              <div
-                key={player.id}
-                className={`p-3 rounded-lg ${
-                  player.status === "Ready"
-                    ? "bg-gray-800"
-                    : "bg-gray-850 bg-opacity-50"
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center sm:w-10 sm:h-10">
-                      {player.status !== "Empty" ? (
-                        <span className="font-bold text-orange-400">
-                          {player.name.charAt(0)}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-500">Empty</span>
-                      )}
-                    </div>
-                    <div className="ml-2 sm:ml-3">
-                      <div className="font-medium flex items-center text-sm sm:text-base">
-                        {player.name || "Invite Player"}
-                        {player.captain && (
-                          <span className="ml-2 text-xs px-2 py-0.5 bg-orange-400 bg-opacity-20 text-orange-400 rounded-full">
-                            Captain
-                          </span>
-                        )}
-                      </div>
-                      <div
-                        className={`text-xs sm:text-sm ${
-                          player.status === "Ready"
-                            ? "text-green-400"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {player.status}
-                      </div>
-                    </div>
-                  </div>
-                  {player.status === "Empty" ? (
-                    <button className="px-2 py-1 bg-orange-400 text-gray-900 rounded-full text-xs font-medium hover:bg-orange-500 sm:px-3">
-                      Invite
-                    </button>
-                  ) : player.status === "Not Ready" ? (
-                    <span className="text-xs px-2 py-1 bg-gray-800 rounded-full text-gray-400">
-                      Waiting...
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-            ))}
-            <button className="w-full py-2 border border-gray-800 rounded-lg text-sm text-gray-400 hover:bg-gray-800 transition-colors">
-              Copy Invite Link
-            </button>
-          </div>
-          <div className="p-4 border-t border-gray-800 sm:p-5">
-            <h3 className="text-sm font-medium mb-3">Voice Chat</h3>
-            <div className="flex items-center justify-between p-2 bg-gray-800 rounded-lg sm:p-3">
-              <div className="flex items-center">
-                <button
-                  onClick={() => setMicEnabled(!micEnabled)}
-                  className="p-1 rounded hover:bg-gray-700"
-                >
-                  {micEnabled ? (
-                    <Microphone size={18} className="text-green-400" />
-                  ) : (
-                    <MicrophoneSlash size={18} className="text-red-400" />
-                  )}
-                </button>
-                <span className="ml-2 text-sm">
-                  {micEnabled ? "Mic On" : "Mic Off"}
+            {/* User Info */}
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center ring-2 ring-orange-400 sm:w-9 sm:h-9">
+                <span className="text-xs font-bold text-white sm:text-sm">
+                  {playername.substring(0, 2).toUpperCase()} {/* Initials */}
                 </span>
               </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="ml-1 text-xs text-gray-400">3 Online</span>
-              </div>
+              <span className="font-medium hidden sm:block">{playername}</span>
             </div>
-          </div>
-        </div>
-
-        <div className="flex-1 flex flex-col bg-gray-950">
-          <div className="p-4 flex-1 overflow-y-auto bg-[url('/api/placeholder/800/600')] bg-cover bg-center sm:p-6">
-            <div className="bg-gray-900 bg-opacity-90 p-4 rounded-xl backdrop-blur-md sm:p-6">
-              <h2 className="text-2xl font-bold text-orange-400 mb-4 sm:text-3xl sm:mb-6">
-                {name}
-              </h2>
-
-              <AnimatePresence>
-                {!isReady ? (
-                  <motion.div
-                    key="lobby-content"
-                    initial={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 pb-5">
-                      <div className="bg-gray-800 p-4 rounded-xl sm:p-5">
-                        <h3 className="font-semibold mb-3 text-orange-400 text-lg">
-                          Format
-                        </h3>
-                        <ul className="space-y-2 text-sm sm:space-y-3">
-                          <li className="flex items-start">
-                            <CaretDoubleRight
-                              size={16}
-                              className="mt-1 mr-2 text-orange-400 flex-shrink-0"
-                            />
-                            <span>
-                              Best-of-5 rounds; First to 2 match wins advances
-                            </span>
-                          </li>
-                          <li className="flex items-start">
-                            <CaretDoubleRight
-                              size={16}
-                              className="mt-1 mr-2 text-orange-400 flex-shrink-0"
-                            />
-                            <span>6 rounds per match</span>
-                          </li>
-                          <li className="flex items-start">
-                            <CaretDoubleRight
-                              size={16}
-                              className="mt-1 mr-2 text-orange-400 flex-shrink-0"
-                            />
-                            <span>Search & Destroy mode</span>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="bg-gray-800 p-4 rounded-xl sm:p-5">
-                        <h3 className="font-semibold mb-3 text-orange-400 text-lg">
-                          Requirements
-                        </h3>
-                        <ul className="space-y-2 text-sm sm:space-y-3">
-                          <li className="flex items-start">
-                            <CaretDoubleRight
-                              size={16}
-                              className="mt-1 mr-2 text-orange-400 flex-shrink-0"
-                            />
-                            <span>5 players per team</span>
-                          </li>
-                          <li className="flex items-start">
-                            <CaretDoubleRight
-                              size={16}
-                              className="mt-1 mr-2 text-orange-400 flex-shrink-0"
-                            />
-                            <span>Custom loadouts permitted</span>
-                          </li>
-                          <li className="flex items-start">
-                            <CaretDoubleRight
-                              size={16}
-                              className="mt-1 mr-2 text-orange-400 flex-shrink-0"
-                            />
-                            <span>Ready 5 mins before start</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                    <div
-                      className="rounded-xl py-4 !h-full min-h-[50vh]"
-                      style={{
-                        backgroundImage: `url(${banner})`,
-                        backgroundPosition: 'Center',
-                        backgroundSize:'Cover'
-                      }}
-                    ></div>
-                    <div className="mt-4 sm:mt-6">
-                      <button
-                        className="bg-orange-400 hover:bg-orange-500 text-gray-900 font-bold py-2 px-4 rounded-xl w-full transition-colors sm:py-3 sm:px-6"
-                        onClick={handleReadyClick}
-                      >
-                        READY UP
-                      </button>
-                      <div className="mt-3 text-xs text-center text-gray-400 sm:mt-4">
-                        Notification will be sent when tournament begins
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="game-session"
-                    variants={gameSessionVariants}
-                    initial="initial"
-                    animate="animate"
-                    className="flex flex-col min-h-[50vh] items-center justify-center"
-                  >
-                    <motion.div
-                      variants={iconVariants}
-                      initial="initial"
-                      animate="animate"
-                    >
-                      <Timer size={56} color="#fb923c" />
-                    </motion.div>
-
-                    <motion.div
-                      variants={textVariants}
-                      initial="initial"
-                      animate="animate"
-                      className="text-center"
-                    >
-                      <h2 className="text-3xl font-bold text-orange-400 sm:text-4xl">
-                        Game in Session
-                      </h2>
-                      <p className="mt-4 text-lg text-gray-400 sm:text-xl">
-                        The tournament is now underway!
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      variants={textVariants}
-                      initial="initial"
-                      animate="animate"
-                      className="mt-8 flex flex-col sm:flex-row gap-6"
-                    >
-                      <motion.button
-                        variants={buttonVariants}
-                        initial="initial"
-                        animate="animate"
-                        whileHover={!gameResult ? "hover" : undefined}
-                        className={`relative px-8 py-3 rounded-xl font-bold text-white uppercase tracking-wider text-sm sm:text-base
-                          bg-gradient-to-r from-green-500 to-green-700
-                          border-2 border-green-400
-                          shadow-[0_0_15px_rgba(34,197,94,0.5)]
-                          hover:shadow-[0_0_25px_rgba(34,197,94,0.8)]
-                          disabled:opacity-50 disabled:cursor-not-allowed
-                          transition-all duration-200
-                          overflow-hidden group`}
-                        onClick={handleWinClick}
-                        disabled={gameResult !== null}
-                      >
-                        <span className="relative z-10">I Won</span>
-                        <span className="absolute inset-0 bg-green-600 opacity-0 group-hover:opacity-30 transition-opacity duration-200"></span>
-                      </motion.button>
-
-                      <motion.button
-                        variants={buttonVariants}
-                        initial="initial"
-                        animate="animate"
-                        whileHover={!gameResult ? "hover" : undefined}
-                        className={`relative px-8 py-3 rounded-xl font-bold text-white uppercase tracking-wider text-sm sm:text-base
-                          bg-gradient-to-r from-red-500 to-red-700
-                          border-2 border-red-400
-                          shadow-[0_0_15px_rgba(239,68,68,0.5)]
-                          hover:shadow-[0_0_25px_rgba(239,68,68,0.8)]
-                          disabled:opacity-50 disabled:cursor-not-allowed
-                          transition-all duration-200
-                          overflow-hidden group`}
-                        onClick={handleLoseClick}
-                        disabled={gameResult !== null}
-                      >
-                        <span className="relative z-10">I Lost</span>
-                        <span className="absolute inset-0 bg-red-600 opacity-0 group-hover:opacity-30 transition-opacity duration-200"></span>
-                      </motion.button>
-
-                      <motion.button
-                        variants={buttonVariants}
-                        initial="initial"
-                        animate="animate"
-                        whileHover={!gameResult ? "hover" : undefined}
-                        className={`relative px-8 py-3 rounded-xl font-bold text-white uppercase tracking-wider text-sm sm:text-base
-                          bg-gradient-to-r from-blue-500 to-blue-700
-                          border-2 border-blue-400
-                          shadow-[0_0_15px_rgba(59,130,246,0.5)]
-                          hover:shadow-[0_0_25px_rgba(59,130,246,0.8)]
-                          disabled:opacity-50 disabled:cursor-not-allowed
-                          transition-all duration-200
-                          overflow-hidden group`}
-                        onClick={handleDisputeClick}
-                        disabled={gameResult !== null}
-                      >
-                        <span className="relative z-10">Dispute Result</span>
-                        <span className="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-30 transition-opacity duration-200"></span>
-                      </motion.button>
-                    </motion.div>
-
-                    {gameResult && (
-                      <motion.p
-                        className="mt-6 text-sm text-gray-400"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        {gameResult === "win" &&
-                          "Win reported. Awaiting opponent confirmation."}
-                        {gameResult === "lose" &&
-                          "Loss reported. Prize money transferred."}
-                        {gameResult === "dispute" &&
-                          "Redirecting to dispute resolution..."}
-                      </motion.p>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`fixed inset-y-0 right-0 w-72 bg-gray-900 border-l border-gray-800 flex flex-col transform transition-transform duration-300 lg:static lg:w-80 lg:translate-x-0 z-20 ${
-            isRightPanelOpen ? "translate-x-0" : "translate-x-full"
-          }`}
-        >
-          <div className="p-4 border-b border-gray-800 flex justify-between items-center">
-            <h2 className="text-lg font-semibold flex items-center sm:text-xl">
-              <ChatText size={20} className="mr-2 text-orange-400" />
-              Team Chat
-            </h2>
+            {/* Mobile Menu Toggle (Left Panel) */}
             <button
-              className="lg:hidden"
-              onClick={() => setIsRightPanelOpen(false)}
+              className="lg:hidden p-1 rounded hover:bg-gray-700"
+              onClick={() => setIsLeftPanelOpen(true)}
+              aria-label="Open Team Roster"
             >
-              <CaretDoubleRight
-                size={20}
-                className="text-orange-400 rotate-180"
-              />
+              <List size={24} className="text-orange-400" />
             </button>
           </div>
-          <Chat />
-        </div>
-      </div>
+        </header>
 
-      <footer className="bg-gray-900 px-4 py-3 border-t border-gray-800 flex justify-between items-center sm:px-6">
-        <div className="text-xs text-gray-400 sm:text-sm">
-          GameHQ © 2025. All rights reserved.
-        </div>
-        <div className="text-xs sm:text-sm flex items-center gap-4">
-          <button
-            className="text-orange-400 hover:text-orange-500 lg:hidden"
-            onClick={() => setIsRightPanelOpen(true)}
+        {/* Main Content Area */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Panel - Team Roster */}
+          <aside
+            className={`fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 flex flex-col transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 ${
+              isLeftPanelOpen ? "translate-x-0 shadow-xl" : "-translate-x-full"
+            }`}
+            aria-label="Team Roster Panel"
           >
-            <ChatText size={20} />
-          </button>
-          <button
-            className="text-red-400 hover:text-red-500 transition-colors"
-            onClick={() => router.back()}
-          >
-            Leave Tournament
-          </button>
-        </div>
-      </footer>
+            {/* Panel Header */}
+            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+              <h2 className="text-lg font-semibold flex items-center gap-2 sm:text-xl">
+                <Users size={20} className="text-orange-400" />
+                Team Roster
+              </h2>
+              <button
+                className="lg:hidden p-1 rounded hover:bg-gray-700"
+                onClick={() => setIsLeftPanelOpen(false)}
+                aria-label="Close Team Roster"
+              >
+                <CaretDoubleRight size={20} className="text-orange-400" />
+              </button>
+            </div>
 
-      <AnimatePresence>
-        {countdown !== null && countdown > 0 && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-30"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            {/* Player List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 sm:p-5">
+              <div className="text-sm text-gray-400 mb-3">
+                Status:{" "}
+                <span className="text-orange-400 font-medium">
+                  Waiting for Players...
+                </span>{" "}
+                {/* Example Status */}
+              </div>
+              {players.map((player) => (
+                <div
+                  key={player.id}
+                  className={`p-3 rounded-lg transition-colors ${
+                    player.status === "Ready"
+                      ? "bg-gray-800"
+                      : "bg-gray-850 bg-opacity-60 border border-gray-700"
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      {/* Player Avatar/Initial */}
+                      <div
+                        className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold sm:w-10 sm:h-10 ${
+                          player.status !== "Empty"
+                            ? "bg-gray-700"
+                            : "bg-gray-600"
+                        }`}
+                      >
+                        {player.status !== "Empty" ? (
+                          <span className="text-orange-400">
+                            {player.name.charAt(0).toUpperCase()}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">?</span>
+                        )}
+                      </div>
+                      {/* Player Name & Status */}
+                      <div className="ml-2 sm:ml-3">
+                        <div className="font-medium flex items-center text-sm sm:text-base">
+                          {player.name || "Invite Player"}
+                          {player.captain && (
+                            <span className="ml-2 text-xs px-2 py-0.5 bg-orange-400 bg-opacity-20 text-orange-400 rounded-full font-semibold">
+                              Captain
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          className={`text-xs sm:text-sm font-medium ${
+                            player.status === "Ready"
+                              ? "text-green-400"
+                              : player.status === "Not Ready"
+                              ? "text-yellow-400"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {player.status}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action based on Status */}
+                    {player.status === "Empty" ? (
+                      <button className="px-2 py-1 bg-orange-400 text-gray-900 rounded-full text-xs font-medium hover:bg-orange-500 transition-colors sm:px-3">
+                        Invite
+                      </button>
+                    ) : player.status === "Not Ready" ? (
+                      <span className="text-xs px-2 py-1 bg-gray-700 rounded-full text-gray-400">
+                        Waiting...
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+              {/* Invite Link Button */}
+              <button className="w-full mt-4 py-2 border border-gray-700 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:border-gray-600 transition-colors">
+                Copy Invite Link
+              </button>
+            </div>
+
+            {/* Voice Chat Section */}
+            <div className="p-4 border-t border-gray-800 sm:p-5">
+              <h3 className="text-sm font-medium mb-3 text-gray-300">
+                Voice Chat
+              </h3>
+              <div className="flex items-center justify-between p-2 bg-gray-800 rounded-lg sm:p-3">
+                <div className="flex items-center">
+                  {/* Mic Toggle Button */}
+                  <button
+                    onClick={() => setMicEnabled(!micEnabled)}
+                    className="p-1 rounded hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-orange-400"
+                    aria-label={
+                      micEnabled ? "Mute Microphone" : "Unmute Microphone"
+                    }
+                  >
+                    {micEnabled ? (
+                      <Microphone size={18} className="text-green-400" />
+                    ) : (
+                      <MicrophoneSlash size={18} className="text-red-400" />
+                    )}
+                  </button>
+                  <span className="ml-2 text-sm text-gray-300">
+                    {micEnabled ? "Mic On" : "Mic Off"}
+                  </span>
+                </div>
+                {/* Voice Status Indicator */}
+                <div className="flex items-center">
+                  <div className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse mr-1.5"></div>
+                  <span className="text-xs text-gray-400">3 Online</span>{" "}
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Middle Panel - Main Content */}
+          <main className="flex-1 flex flex-col bg-gray-950 overflow-y-auto">
+            {/* Background Image Container */}
+            <div
+              className="p-4 flex-1 bg-cover bg-center sm:p-6"
+              style={{
+                backgroundImage: `url(${
+                  selectedGame?.banner || "/api/placeholder/800/600"
+                })`,
+                backgroundBlendMode: "overlay",
+                backgroundColor: "rgba(17, 24, 39, 0.6)",
+              }}
+            >
+              {" "}
+              {/* Content Overlay */}
+              <div className="bg-gray-900 bg-opacity-80 p-4 rounded-xl backdrop-blur-sm sm:p-6 min-h-[70vh] flex flex-col">
+                {" "}
+                {/* Added min-height and flex */}
+                <h2 className="text-2xl font-bold text-orange-400 mb-4 sm:text-3xl sm:mb-6 flex-shrink-0">
+                  {" "}
+                  {selectedGame?.name} Game Lobby
+                </h2>
+                <div className="flex-grow flex items-center justify-center">
+                  {" "}
+                  <AnimatePresence mode="wait">
+                    {" "}
+                    {!isReady ? (
+                      // --- LOBBY VIEW (Before Game Start) ---
+                      <motion.div
+                        key="lobby-content"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full"
+                      >
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 pb-5">
+                          {/* Format Details */}
+                          <div className="bg-gray-800 p-4 rounded-xl sm:p-5">
+                            <h3 className="font-semibold mb-3 text-orange-400 text-lg">
+                              Format
+                            </h3>
+                            <ul className="space-y-2 text-sm text-gray-300 sm:space-y-3">
+                              <li className="flex items-start">
+                                <CaretDoubleRight
+                                  size={16}
+                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
+                                />
+                                <span>Best-of-5 rounds; First to 3 wins</span>
+                              </li>
+                              <li className="flex items-start">
+                                <CaretDoubleRight
+                                  size={16}
+                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
+                                />
+                                <span>6 rounds per match</span>
+                              </li>
+                              <li className="flex items-start">
+                                <CaretDoubleRight
+                                  size={16}
+                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
+                                />
+                                <span>Search & Destroy mode</span>
+                              </li>
+                            </ul>
+                          </div>
+                          {/* Requirements */}
+                          <div className="bg-gray-800 p-4 rounded-xl sm:p-5">
+                            <h3 className="font-semibold mb-3 text-orange-400 text-lg">
+                              Requirements
+                            </h3>
+                            <ul className="space-y-2 text-sm text-gray-300 sm:space-y-3">
+                              <li className="flex items-start">
+                                <CaretDoubleRight
+                                  size={16}
+                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
+                                />
+                                <span>5 players per team</span>
+                              </li>
+                              <li className="flex items-start">
+                                <CaretDoubleRight
+                                  size={16}
+                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
+                                />
+                                <span>Custom loadouts permitted</span>
+                              </li>
+                              <li className="flex items-start">
+                                <CaretDoubleRight
+                                  size={16}
+                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
+                                />
+                                <span>Ready 5 mins before start</span>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                        {/* Ready Up Button Area */}
+                        <div className="mt-4 sm:mt-6">
+                          <button
+                            className="bg-orange-400 hover:bg-orange-500 text-gray-900 font-bold py-2 px-4 rounded-xl w-1/2 mx-auto transition-colors duration-200 ease-in-out sm:py-3 sm:px-6 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                            onClick={handleReadyClick}
+                            disabled={countdown !== null}
+                          >
+                            {countdown !== null ? (
+                              <>
+                                <SpinnerGap
+                                  size={20}
+                                  className="animate-spin"
+                                />
+                                Starting in {countdown}...
+                              </>
+                            ) : (
+                              "READY UP"
+                            )}
+                          </button>
+                          <div className="mt-3 text-xs text-center text-gray-400 sm:mt-4">
+                            Match starts automatically when all players are
+                            ready or at the scheduled time.
+                          </div>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      // --- GAME STARTED / REPORTING VIEW ---
+                      <motion.div
+                        key="game-session-or-reporting"
+                        variants={gameSessionVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit" // Use exit variant
+                        className="flex flex-col items-center justify-center w-full max-w-xl text-center px-4" // Added max-width
+                      >
+                        {gameResult === null && (
+                          <>
+                            <motion.h3
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.2 }}
+                              className="text-2xl font-bold text-orange-400 mb-6 sm:text-3xl"
+                            >
+                              Game Finished? Report Your Result:
+                            </motion.h3>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.4 }}
+                              className="flex flex-col sm:flex-row gap-3 w-full"
+                            >
+                              {/* --- I Won Button --- */}
+                              <button
+                                onClick={handleWinClick}
+                                disabled={isSubmitting}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-600 disabled:to-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 shadow-md hover:shadow-lg disabled:shadow-none transform hover:-translate-y-0.5"
+                              >
+                                {isSubmitting ? (
+                                  <SpinnerGap
+                                    size={20}
+                                    className="animate-spin"
+                                  />
+                                ) : (
+                                  <CheckCircle size={20} weight="bold" />
+                                )}
+                                <span>I Won</span>
+                              </button>
+
+                              {/* --- I Lost Button --- */}
+                              <button
+                                onClick={handleLoseClick}
+                                disabled={isSubmitting}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:from-gray-600 disabled:to-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 shadow-md hover:shadow-lg disabled:shadow-none transform hover:-translate-y-0.5"
+                              >
+                                {isSubmitting ? (
+                                  <SpinnerGap
+                                    size={20}
+                                    className="animate-spin"
+                                  />
+                                ) : (
+                                  <XCircle size={20} weight="bold" />
+                                )}
+                                <span>I Lost</span>
+                              </button>
+
+                              {/* --- Dispute Button --- */}
+                              <button
+                                onClick={handleDisputeClick}
+                                disabled={isSubmitting}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 disabled:from-gray-600 disabled:to-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed text-gray-900 font-semibold rounded-lg transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 shadow-md hover:shadow-lg disabled:shadow-none transform hover:-translate-y-0.5"
+                              >
+                                {isSubmitting ? (
+                                  <SpinnerGap
+                                    size={20}
+                                    className="animate-spin"
+                                  />
+                                ) : (
+                                  <WarningCircle size={20} weight="bold" />
+                                )}
+                                <span className="text-nowrap">
+                                  Dispute / Admin
+                                </span>
+                              </button>
+                            </motion.div>
+                          </>
+                        )}
+
+                        {/* State: User Reported WIN */}
+                        {gameResult === "win" && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center p-6 bg-gray-800 rounded-lg shadow-lg"
+                          >
+                            <CheckCircle
+                              size={56}
+                              weight="fill"
+                              className="text-green-400 mx-auto mb-4"
+                            />
+                            <h3 className="text-2xl font-semibold text-green-400 mb-2">
+                              You Reported: WIN!
+                            </h3>
+                            <p className="text-gray-300 max-w-sm mx-auto">
+                              Awesome! Waiting for opponent confirmation or
+                              admin review.
+                            </p>
+                            {/* Optional: Dispute after reporting */}
+                            <button
+                              onClick={handleDisputeClick}
+                              disabled={isSubmitting}
+                              className="mt-6 inline-flex items-center justify-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-700 disabled:text-gray-400 text-gray-900 text-sm font-medium rounded-md transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 shadow"
+                            >
+                              {isSubmitting ? (
+                                <SpinnerGap
+                                  size={18}
+                                  className="animate-spin"
+                                />
+                              ) : (
+                                <WarningCircle size={18} weight="bold" />
+                              )}
+                              <span>Dispute This Result</span>
+                            </button>
+                          </motion.div>
+                        )}
+
+                        {/* State: User Reported LOSS */}
+                        {gameResult === "lose" && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center p-6 bg-gray-800 rounded-lg shadow-lg"
+                          >
+                            <XCircle
+                              size={56}
+                              weight="fill"
+                              className="text-red-400 mx-auto mb-4"
+                            />
+                            <h3 className="text-2xl font-semibold text-red-400 mb-2">
+                              You Reported: Loss
+                            </h3>
+                            <p className="text-gray-300 max-w-sm mx-auto">
+                              Thanks for confirming. Better luck next time! The
+                              result is being processed.
+                            </p>
+                            {/* Optional: Dispute after reporting */}
+                            <button
+                              onClick={handleDisputeClick}
+                              disabled={isSubmitting}
+                              className="mt-6 inline-flex items-center justify-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-700 disabled:text-gray-400 text-gray-900 text-sm font-medium rounded-md transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 shadow"
+                            >
+                              {isSubmitting ? (
+                                <SpinnerGap
+                                  size={18}
+                                  className="animate-spin"
+                                />
+                              ) : (
+                                <WarningCircle size={18} weight="bold" />
+                              )}
+                              <span>Dispute This Result</span>
+                            </button>
+                          </motion.div>
+                        )}
+
+                        {/* State: User Clicked DISPUTE (Brief message before redirect) */}
+                        {gameResult === "dispute" && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center p-6 bg-gray-800 rounded-lg shadow-lg"
+                          >
+                            <WarningCircle
+                              size={56}
+                              weight="fill"
+                              className="text-yellow-400 mx-auto mb-4"
+                            />
+                            <h3 className="text-2xl font-semibold text-yellow-400 mb-2">
+                              Dispute Initiated
+                            </h3>
+                            <p className="text-gray-300 max-w-sm mx-auto flex items-center justify-center gap-2">
+                              <SpinnerGap size={20} className="animate-spin" />
+                              Redirecting to dispute resolution...
+                            </p>
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+          </main>
+
+          {/* Right Panel - Chat */}
+          <aside
+            className={`fixed inset-y-0 right-0 w-72 bg-gray-900 border-l border-gray-800 flex flex-col transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 ${
+              isRightPanelOpen ? "translate-x-0 shadow-xl" : "translate-x-full"
+            }`}
+            aria-label="Team Chat Panel"
           >
+            {/* Panel Header */}
+            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+              <h2 className="text-lg font-semibold flex items-center gap-2 sm:text-xl">
+                <ChatText size={20} className="text-orange-400" />
+                Team Chat
+              </h2>
+              <button
+                className="lg:hidden p-1 rounded hover:bg-gray-700"
+                onClick={() => setIsRightPanelOpen(false)}
+                aria-label="Close Team Chat"
+              >
+                <CaretDoubleRight
+                  size={20}
+                  className="text-orange-400 rotate-180"
+                />
+              </button>
+            </div>
+            {/* Chat Component */}
+            <Chat />{" "}
+          </aside>
+        </div>
+
+        {/* Footer Section */}
+        <footer className="bg-gray-900 px-4 py-3 border-t border-gray-800 flex justify-between items-center sm:px-6">
+          <div className="text-xs text-gray-400 sm:text-sm">
+            GameHQ © {new Date().getFullYear()}. All rights reserved.
+          </div>
+          <div className="flex items-center gap-4">
+            {/* Mobile Chat Toggle */}
+            <button
+              className="text-orange-400 hover:text-orange-500 lg:hidden p-1 rounded hover:bg-gray-700"
+              onClick={() => setIsRightPanelOpen(true)}
+              aria-label="Open Team Chat"
+            >
+              <ChatText size={20} />
+            </button>
+            {/* Leave Button */}
+            <button
+              className="text-red-400 hover:text-red-500 transition-colors text-xs sm:text-sm font-medium"
+              onClick={() => router.back()} // Or navigate to a dashboard/exit page
+            >
+              Leave Tournament
+            </button>
+          </div>
+        </footer>
+
+        {/* --- Overlays and Modals --- */}
+
+        {/* Countdown Overlay */}
+        <AnimatePresence>
+          {countdown !== null && countdown > 0 && (
             <motion.div
-              className="flex flex-col items-center"
-              variants={countdownVariants}
+              className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-30 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              aria-modal="true"
+              role="dialog"
+            >
+              <motion.div
+                className="flex flex-col items-center"
+                variants={countdownVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                key={countdown} // Re-trigger animation on number change
+              >
+                <motion.div
+                  className="bg-gray-800 flex items-center justify-center p-8 rounded-full w-32 h-32 shadow-lg shadow-orange-500/30 ring-4 ring-orange-500/50"
+                  animate={{
+                    boxShadow: [
+                      "0 0 0px rgba(251, 146, 60, 0)", // fb923c in rgba
+                      "0 0 30px rgba(251, 146, 60, 0.6)",
+                      "0 0 0px rgba(251, 146, 60, 0)",
+                    ],
+                  }}
+                  transition={{
+                    duration: 1,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    repeatType: "loop",
+                  }}
+                >
+                  <h2 className="text-7xl font-bold text-orange-400 tabular-nums">
+                    {countdown}
+                  </h2>
+                </motion.div>
+                <motion.p
+                  className="text-white text-lg mt-6 font-semibold"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  Game starting soon...
+                </motion.p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Game Start Transition Animation - RESTORED */}
+        <AnimatePresence>
+          {showTransition && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black overflow-hidden" // Added overflow-hidden
+              variants={transitionVariants}
               initial="initial"
               animate="animate"
               exit="exit"
-              key={countdown}
+              transition={{ duration: 0.5 }} // Control overall fade in/out
+              aria-hidden="true"
             >
-              <motion.div
-                className="bg-gray-800 flex items-center justify-center p-8 rounded-full w-32 h-32 shadow-lg shadow-orange-500/30"
-                animate={{
-                  boxShadow: [
-                    "0 0 0px #fb923c",
-                    "0 0 20px #fb923c",
-                    "0 0 0px #fb923c",
-                  ],
-                }}
-                transition={{
-                  duration: 1,
-                  ease: "easeInOut",
-                  repeat: 0,
-                }}
-              >
-                <h2 className="text-7xl font-bold text-orange-400">
-                  {countdown}
-                </h2>
-              </motion.div>
-              <motion.p
-                className="text-white text-lg mt-4"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                Game starting soon
-              </motion.p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showTransition && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            variants={transitionVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            <motion.div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
-              <motion.div
-                className="absolute w-full h-full"
-                initial={{
-                  background:
-                    "radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 100%)",
-                }}
-                animate={{
-                  background:
-                    "radial-gradient(circle, rgba(251,146,60,0.3) 0%, rgba(0,0,0,1) 70%)",
-                }}
-                transition={{ duration: 1 }}
-              />
-              <motion.div
-                className="relative z-10"
-                initial={{ scale: 0 }}
-                animate={{
-                  scale: [0, 1.2, 1],
-                  rotate: [0, 0, 0],
-                }}
-                transition={{
-                  duration: 1,
-                  times: [0, 0.6, 1],
-                }}
-              >
-                <Trophy size={120} className="text-orange-400" />
-              </motion.div>
-              <motion.div
-                className="absolute bottom-1/3 text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-              >
-                <h2 className="text-4xl font-bold text-orange-400 mb-2">
-                  GAME ON!
-                </h2>
-                <p className="text-lg text-gray-300">Prepare for battle</p>
-              </motion.div>
-              {[...Array(20)].map((_, i) => (
+              {/* Container for all transition elements */}
+              <motion.div className="relative w-full h-full flex items-center justify-center">
+                {/* Animated Background Gradient */}
                 <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 rounded-full bg-orange-400"
+                  className="absolute inset-0 w-full h-full" // Use inset-0
                   initial={{
-                    x: 0,
-                    y: 0,
-                    opacity: 1,
+                    background:
+                      "radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 100%)",
                   }}
                   animate={{
-                    x:
-                      Math.random() > 0.5
-                        ? Math.random() * 500
-                        : Math.random() * -500,
-                    y:
-                      Math.random() > 0.5
-                        ? Math.random() * 500
-                        : Math.random() * -500,
-                    opacity: 0,
-                    scale: Math.random() * 3,
+                    background:
+                      "radial-gradient(circle, rgba(251, 146, 60, 0.4) 0%, rgba(0,0,0,1) 75%)", // Adjusted gradient
                   }}
-                  transition={{ duration: 1.5, delay: Math.random() * 0.5 }}
+                  transition={{ duration: 1, delay: 0.1 }} // Slightly delayed gradient animation
                 />
-              ))}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {(isLeftPanelOpen || isRightPanelOpen) && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-10"
-          onClick={() => {
-            setIsLeftPanelOpen(false);
-            setIsRightPanelOpen(false);
-          }}
-        />
-      )}
-    </div>
+                {/* Logo animation */}
+                <motion.div
+                  className="relative z-10" // Ensure logo is above background
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{
+                    scale: [0, 1.2, 1], // Bounce effect
+                    opacity: [0, 1, 1],
+                    rotate: [0, 10, -5, 0], // Slight rotation effect
+                  }}
+                  transition={{
+                    duration: 1,
+                    times: [0, 0.6, 1], // Timing for scale/opacity
+                    delay: 0.2, // Delay logo appearance
+                    ease: "backInOut",
+                  }}
+                >
+                  <Trophy
+                    size={120}
+                    className="text-orange-400 drop-shadow-lg"
+                  />{" "}
+                  {/* Added drop shadow */}
+                </motion.div>
+
+                {/* Text animation */}
+                <motion.div
+                  className="absolute bottom-[30%] text-center z-10" // Position text lower, ensure above background
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.6, ease: "easeOut" }} // Text fades in later
+                >
+                  <h2 className="text-4xl font-bold text-orange-400 mb-2 drop-shadow-md">
+                    GAME ON!
+                  </h2>
+                  <p className="text-lg text-gray-200 drop-shadow-sm">
+                    Prepare for battle
+                  </p>
+                </motion.div>
+
+                {/* Particles effect */}
+                {[...Array(30)].map(
+                  (
+                    _,
+                    i // Increased particle count
+                  ) => (
+                    <motion.div
+                      key={i}
+                      className="absolute rounded-full bg-orange-400 z-0" // Ensure particles are behind logo/text
+                      style={{
+                        // Randomize size
+                        width: `${Math.random() * 6 + 2}px`,
+                        height: `${Math.random() * 6 + 2}px`,
+                        // Start particles near the center
+                        top: "50%",
+                        left: "50%",
+                      }}
+                      initial={{
+                        x: "-50%", // Center particle initially
+                        y: "-50%",
+                        opacity: 1,
+                        scale: Math.random() * 0.5 + 0.5, // Random initial scale
+                      }}
+                      animate={{
+                        // Move particles outwards randomly
+                        x: `${(Math.random() - 0.5) * 1000}%`, // Wider spread
+                        y: `${(Math.random() - 0.5) * 1000}%`,
+                        opacity: 0,
+                        scale: 0, // Shrink to nothing
+                      }}
+                      transition={{
+                        duration: 1.5 + Math.random() * 1, // Random duration
+                        delay: 0.1 + Math.random() * 0.4, // Staggered start
+                        ease: "easeOut",
+                      }}
+                    />
+                  )
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Overlay for mobile panels */}
+        {(isLeftPanelOpen || isRightPanelOpen) && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-60 lg:hidden z-10 backdrop-blur-sm"
+            onClick={() => {
+              setIsLeftPanelOpen(false);
+              setIsRightPanelOpen(false);
+            }}
+            aria-hidden="true" // Click away closes panels
+          />
+        )}
+      </div>
+    </>
   );
 }

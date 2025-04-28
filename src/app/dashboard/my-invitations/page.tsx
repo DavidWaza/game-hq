@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import InviteCard from "@/app/components/dashboard/InviteCard";
+// import InviteCard from "@/app/components/dashboard/InviteCard";
 
 const CreateWagerBanner = () => {
   const username = useAuth()?.user?.username || "Challenger";
@@ -56,14 +56,14 @@ const CreateWagerBanner = () => {
             </motion.h1>
 
             <div>
-              <InviteCard
+              {/* <InviteCard
                 name="Call of Duty"
                 status="Now"
                 prize={2000}
                 time="2pm"
                 date='12th Aug'
                 borderColor="bg-green-500"
-              />
+              /> */}
             </div>
           </div>
 

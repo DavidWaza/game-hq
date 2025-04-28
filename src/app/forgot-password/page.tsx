@@ -28,9 +28,6 @@ const ForgotPassword = () => {
       setTimeout(() => {
         setIsLoading(false);
       }, 3000);
-      //   if (email) {
-      //     window.location.href = "/forgot-password/set-password";
-      //   }
     } catch (error) {
       console.error(error);
     }
