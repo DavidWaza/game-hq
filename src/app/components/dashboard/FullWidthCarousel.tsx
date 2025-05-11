@@ -36,12 +36,11 @@ const Carousel = () => {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Buttons Container */}
       <div className="absolute z-20 bottom-4 sm:bottom-6 md:bottom-10 lg:bottom-20 w-full px-4 sm:px-6 md:px-8 lg:px-10">
         <div className="flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto lg:ml-auto lg:mr-10">
           {/* Create Wager */}
           <button
-            onClick={() => navigateRouter("/dashboard/create-match")}
+            onClick={() => navigateRouter("/dashboard/splash-avatar")}
             className="w-full bg-[#233d4d] text-[#fcf8db] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center items-center gap-2">
@@ -85,13 +84,10 @@ const Carousel = () => {
             isOpen={isOpenInvite}
             setIsOpen={setIsOpenInvite}
             firstButtonText="Join Tournament"
-            secondButtonText="My Invitations"
+            secondButtonText="My Games"
             onClick={() => router.push("/dashboard/join-tournament")}
             onTab={() => navigateRouter("/dashboard/my-invitations")}
           />
-
-          {/* My History */}
-
           <button
             onClick={() => router.push("/dashboard/my-games")}
             className="w-full bg-[#233d4d] text-[#fcf8db] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
@@ -102,7 +98,7 @@ const Carousel = () => {
                 className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
               />
               <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                My Games
+                My Created Games
               </p>
             </div>
           </button>

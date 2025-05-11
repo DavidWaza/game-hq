@@ -2,7 +2,6 @@
 import CreateMatch from "@/components/CreateMatch";
 import Navbar from "@/components/Navbar";
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
 
 interface Video {
   id: number;
@@ -39,8 +38,6 @@ const CreateMatchPage = () => {
   const [matchMode, setMatchMode] = useState<number>(0);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const searchParams = useSearchParams();
-  const gameName = searchParams.get("gameName");
   const videoTrailers: Video[] = AllVideoTrailers.slice(
     !matchMode ? 0 : 3,
     !matchMode ? 3 : AllVideoTrailers.length
@@ -97,9 +94,12 @@ const CreateMatchPage = () => {
 
         <div className="absolute top-0 left-0 w-full h-full bottom-0 bg-black bg-opacity-50"></div>
       </div>
+      {/* gradient */}
+      {/* content */}
       <div className=" relative min-h-screen overflow-x-hidden">
+        {/* Content Centered in the Middle */}
         <div className="py-[140px] text-white min-h-screen flex items-center justify-center px-4 max-w-2xl m-auto">
-          <CreateMatch matchMode={matchMode} setMatchMode={setMatchMode} gameName={gameName} />
+          <CreateMatch matchMode={matchMode} setMatchMode={setMatchMode} />
         </div>
       </div>
     </>

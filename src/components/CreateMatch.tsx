@@ -7,6 +7,7 @@ import CreateTournament from "@/app/components/dashboard/CreateWagerT";
 type CreateMatch = {
   matchMode: number;
   setMatchMode: (val: number) => void;
+  gameName?: string | null;
 };
 const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
   const [loading, setLoading] = useState<boolean>(false);

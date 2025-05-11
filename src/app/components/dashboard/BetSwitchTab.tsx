@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 interface CreateTournamentProps {
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  gameName?: string | null;
 }
 interface FormData {
   game_id: string;
