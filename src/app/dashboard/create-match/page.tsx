@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 interface Video {
   id: number;
   src: string;

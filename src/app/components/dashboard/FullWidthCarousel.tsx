@@ -49,7 +49,7 @@ const Carousel = () => {
                 className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
               />
               <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                Create Wager
+                Select your Games
               </p>
             </div>
           </button>
