@@ -20,10 +20,13 @@ export function formatCurrency(
   return formatter.format(Number(num));
 }
 
-export function formatNumber(arg: string | number) {
+export function formatNumber(arg: string | number, decimals: number = 0) {
   const number = Number(arg ? arg : 0);
   // Convert the number to a string and use toLocaleString to add commas
-  return number.toLocaleString();
+  return number.toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 }
 export function calculateTournamentOdds(data: TypeSingleTournament | undefined) {
 

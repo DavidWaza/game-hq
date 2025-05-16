@@ -1,12 +1,30 @@
 
 export type User = {
+  id: number;
+  email: string;
+  email_verified_at: string | null;
+  remember_token: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  username: string;
+  wallet: {
+    id: string;
+    user_id: string;
+    balance: string;
+    created_at: string | null;
+    updated_at: string | null;
+  };
+  public_wagers: [];
+  private_wagers: [];
+};
+export type UserFromAuth = {
   id: string;
   username: string;
   email: string;
 };
 export type DataFromLogin = {
   token: string;
-  user: User;
+  user: UserFromAuth;
 };
 export type TypeCategories = {
   id: string;
@@ -47,6 +65,15 @@ export type TypeSingleTournament = {
 };
 
 export type CreatedGames = {
+  banner: string;
+  category_id: string;
+  description: string;
+  name: string;
+  game_image: string;
+  id: string;
+  records: []
+}
+export type TypeWallet = {
   banner: string;
   category_id: string;
   description: string;

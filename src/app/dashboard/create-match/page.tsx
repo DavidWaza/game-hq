@@ -1,7 +1,7 @@
 "use client";
 import CreateMatch from "@/components/CreateMatch";
 import Navbar from "@/components/Navbar";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +37,7 @@ const AllVideoTrailers: Video[] = [
   },
 ];
 
-const CreateMatchPage = () => {
+const CreateMatchContent = () => {
   const [matchMode, setMatchMode] = useState<number>(0);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -101,10 +101,28 @@ const CreateMatchPage = () => {
       </div>
       <div className=" relative min-h-screen overflow-x-hidden">
         <div className="py-[140px] text-white min-h-screen flex items-center justify-center px-4 max-w-2xl m-auto">
-          <CreateMatch matchMode={matchMode} setMatchMode={setMatchMode} gameName={gameName} />
+          <CreateMatch
+            matchMode={matchMode}
+            setMatchMode={setMatchMode}
+            gameName={gameName}
+          />
         </div>
       </div>
     </>
+  );
+};
+
+const CreateMatchPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <CreateMatchContent />
+    </Suspense>
   );
 };
 

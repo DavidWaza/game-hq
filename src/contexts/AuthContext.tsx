@@ -12,6 +12,7 @@ import {
   TypeCategories,
   TypeGames,
   TypeSingleTournament,
+  // TypeWallet,
 } from "../../types/global";
 import { useParams } from "next/navigation";
 
@@ -22,6 +23,7 @@ interface StoreData {
   categories: TypeCategories[] | undefined;
   games: TypeGames[] | undefined;
   singleTournament: TypeSingleTournament | undefined;
+  // wallet: TypeWallet | undefined;
   dispatch: StoreActions;
 }
 
@@ -50,6 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     categories: undefined,
     games: undefined,
     singleTournament: undefined,
+    // wallet: undefined,
     // actions
     dispatch: {
       getTournament: async (dataSlug: string = slug) => {
@@ -93,9 +96,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Login function
   const login = async (data: DataFromLogin) => {
-    await storeUserData(data);
-    setUser(data.user);
-    setIsAuthenticated(true);
+    const dataResponse: User | undefined = await storeUserData(data);
+    if (dataResponse) {
+      setUser(dataResponse);
+      setIsAuthenticated(true);
+    }
   };
 
   // Logout function
@@ -113,6 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
         { storeKey: "categories", path: "api/gamecategories" },
         { storeKey: "games", path: "api/games" },
+        // { storeKey: "wallet", path: "api/wallets" },
       ];
 
       try {
