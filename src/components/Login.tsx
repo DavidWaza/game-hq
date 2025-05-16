@@ -150,12 +150,7 @@ const Login = () => {
         <p className="text-[#64748B] text-center">
           Do not have an account?{" "}
           <span className="text-[#f37f2d] hover:font-black font-medium p-1 transition-all ease-in-out duration-300">
-            <Link
-              href={"/auth/register"}
-              onClick={() => (window.location.href = "/auth/register")}
-            >
-              Register
-            </Link>
+            <Link href={"/auth/register"}>Register</Link>
           </span>
         </p>
       </div>

@@ -8,6 +8,7 @@ import "swiper/css/effect-fade";
 import { GameController, Intersect, Trophy } from "@phosphor-icons/react";
 import { useState } from "react";
 import Modal from "./Modal";
+import { useRouter } from "next/navigation";
 
 const slides = [
   { image: "/assets/board.jpg", name: "Roll the dice", link: "/page1" },
@@ -24,22 +25,22 @@ const slides = [
 ];
 
 const Carousel = () => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenInvite, setIsOpenInvite] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const navigateRouter = (path: string): void => {
-    window.location.href = path;
+    router.push(path);
   };
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Buttons Container */}
       <div className="absolute z-20 bottom-4 sm:bottom-6 md:bottom-10 lg:bottom-20 w-full px-4 sm:px-6 md:px-8 lg:px-10">
         <div className="flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto lg:ml-auto lg:mr-10">
           {/* Create Wager */}
           <button
-            onClick={() => navigateRouter("/dashboard/create-match")}
+            onClick={() => navigateRouter("/dashboard/game/select-game")}
             className="w-full bg-[#233d4d] text-[#fcf8db] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center items-center gap-2">
@@ -48,7 +49,7 @@ const Carousel = () => {
                 className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
               />
               <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                Create Wager
+                Select your Games
               </p>
             </div>
           </button>
@@ -83,17 +84,12 @@ const Carousel = () => {
             isOpen={isOpenInvite}
             setIsOpen={setIsOpenInvite}
             firstButtonText="Join Tournament"
-            secondButtonText="My Invitations"
-            onClick={() =>
-              (window.location.href = "/dashboard/join-tournament")
-            }
+            secondButtonText="My Games"
+            onClick={() => router.push("/dashboard/join-tournament")}
             onTab={() => navigateRouter("/dashboard/my-invitations")}
           />
-
-          {/* My History */}
-
           <button
-            onClick={() => window.location.href = '/dashboard/my-games'}
+            onClick={() => router.push("/dashboard/my-games")}
             className="w-full bg-[#233d4d] text-[#fcf8db] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
           >
             <div className="flex justify-center gap-2">
@@ -102,13 +98,12 @@ const Carousel = () => {
                 className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
               />
               <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                My Games
+                My Created Games
               </p>
             </div>
           </button>
         </div>
       </div>
-     
 
       {/* Swiper Container */}
       <Swiper

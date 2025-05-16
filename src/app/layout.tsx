@@ -29,13 +29,14 @@ export default function RootLayout({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    if (pathname.includes("/join-tournament")) return;
     startTransition(() => {
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
       }, 1000);
     });
-  }, [pathname]);
+  }, []);
 
   return (
     <html lang="en">

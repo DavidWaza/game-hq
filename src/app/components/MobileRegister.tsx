@@ -30,7 +30,7 @@ const MobileRegister = () => {
   } = useForm<{
     email: string;
     password: string;
-    username:string;
+    username: string;
     phone: number;
     confirm_password: string;
   }>();
@@ -89,7 +89,7 @@ const MobileRegister = () => {
   const onSubmit: SubmitHandler<{
     email?: string;
     phone?: number;
-    username:string;
+    username: string;
     password: string;
     confirm_password: string;
   }> = (formData) => {

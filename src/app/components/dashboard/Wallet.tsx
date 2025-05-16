@@ -1,15 +1,15 @@
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { CurrencyNgn } from "@phosphor-icons/react";
+// import { CurrencyNgn } from "@phosphor-icons/react";
+import { formatCurrency } from "@/lib/utils";
 
 const Wallet = () => {
-  const [balance] = useState(10000);
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   // const [transactionType, setTransactionType] = useState("deposit");
   // const [amount, setAmount] = useState("");
   const modalRef = useRef(null);
-  const { user } = useAuth();
 
   // Close modal when clicking outside
   useEffect(() => {
@@ -29,19 +29,6 @@ const Wallet = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
-
-  // const handleTransaction = () => {
-  //   const numAmount = parseInt(amount);
-  //   if (!numAmount || numAmount <= 0) return;
-
-  //   if (transactionType === "deposit") {
-  //     setBalance(balance + numAmount);
-  //   } else if (transactionType === "withdraw" && numAmount <= balance) {
-  //     setBalance(balance - numAmount);
-  //   }
-  //   setAmount("");
-  //   setIsOpen(false);
-  // };
 
   return (
     <div className="relative w-full sm:w-auto">
@@ -70,14 +57,13 @@ const Wallet = () => {
               </p>
               <p className="text-sm sm:text-base md:text-lg flex items-center gap-1">
                 <span className="text-[#f37f2d]">✧</span>
-                <CurrencyNgn size={20} />
-                {balance}
+                {/* <CurrencyNgn size={20} /> */}
+                {formatCurrency(Number(user?.wallet?.balance || 0))}
               </p>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 };

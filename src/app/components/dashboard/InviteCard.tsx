@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
-import { Clock, Trophy, Calendar } from "@phosphor-icons/react";
+// Added Lightning icon import
+import { Clock, Trophy, Calendar, Lightning } from "@phosphor-icons/react";
 import Modal from "./Modal";
 
 interface GameRuleSet {
@@ -17,6 +18,7 @@ interface GameRulesData {
 }
 
 const gameRules: GameRulesData = {
+  // --- Existing gameRules data remains the same ---
   "Action Games": {
     "Call of Duty": {
       title: "Call of Duty Tournament Rules",
@@ -123,12 +125,13 @@ const defaultRules: GameRuleSet = {
 
 interface StatusCardProps {
   logo?: string;
-  date?: React.ReactNode
+  date?: React.ReactNode;
   name: string;
   status: string;
-  prize: number;
+  prize: string | number;
   time: string;
   borderColor: string;
+  odds: number; // Added odds prop
 }
 
 const InviteCard: React.FC<StatusCardProps> = ({
@@ -139,21 +142,19 @@ const InviteCard: React.FC<StatusCardProps> = ({
   prize,
   time,
   borderColor,
+  odds,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Get game-specific rules or fall back to category rules or default rules
   const getGameRules = () => {
     if (gameRules[status]?.[name]) {
       return gameRules[status][name];
     } else if (gameRules[status]) {
-      // If we have category rules but not specific game rules
       return {
         title: `${status} Tournament Rules`,
         rules: defaultRules.rules,
       };
     } else {
-      // Default fallback
       return {
         title: `${name} Tournament Rules`,
         rules: defaultRules.rules,
@@ -170,17 +171,16 @@ const InviteCard: React.FC<StatusCardProps> = ({
         onClick={() => setIsModalOpen(true)}
       >
         {/* Left Section with Logo */}
-        <div className="flex flex-col items-center text-white">
+        <div className="flex flex-col items-center text-white min-w-[80px]">
           {logo && (
             <Image
               src={logo}
               alt={name}
               width={60}
               height={60}
-              className="w-10 h-10"
+              className="w-10 h-10 mb-1" // Added margin-bottom
             />
           )}
-
           <span className="text-sm font-semibold text-center">{name}</span>
         </div>
 
@@ -191,19 +191,28 @@ const InviteCard: React.FC<StatusCardProps> = ({
 
         {/* Middle Section with Info */}
         <div className="flex-1 flex flex-col md:flex-row justify-between items-center text-white border-l border-gray-700 md:pl-5 w-full space-y-3 md:space-y-0">
-          
+           {/* Odds Section */}
           <div className="text-center md:text-left">
-            <h4 className="text-gray-400 text-sm">PRIZE</h4>
+            <h4 className="text-gray-400 text-sm">ODDS</h4>
             <p className="text-[#FCF8DB] flex items-center justify-center md:justify-start gap-1">
-              <Trophy size={20} /> ₦{prize}
+              <Lightning size={20} /> {odds.toFixed(1)}
             </p>
           </div>
+          {/* Prize Section */}
+          <div className="text-center md:text-left">
+            <h4 className="text-gray-400 text-sm">POTENTIAL WIN</h4>
+            <p className="text-[#FCF8DB] flex items-center justify-center md:justify-start gap-1">
+              <Trophy size={20} /> ₦{Number(prize) * parseFloat(odds.toFixed(1))}
+            </p>
+          </div>
+          {/* Time Section */}
           <div className="text-center md:text-left">
             <h4 className="text-gray-400 text-sm">TIME</h4>
             <p className="flex items-center justify-center md:justify-start gap-1 text-[#FCF8DB]">
               <Clock size={20} /> {time}
             </p>
           </div>
+          {/* Date Section */}
           <div className="text-center md:text-left">
             <h4 className="text-gray-400 text-sm">DATE</h4>
             <p className="flex items-center justify-center md:justify-start gap-1 text-[#FCF8DB]">
@@ -214,7 +223,7 @@ const InviteCard: React.FC<StatusCardProps> = ({
 
         {/* Join Now Button */}
         <button
-          className="bg-black px-4 py-2 rounded-md text-white text-xs font-bold flex items-center gap-1 mt-3 md:mt-0"
+          className="bg-black px-4 py-2 rounded-md text-white text-xs font-bold flex items-center gap-1 mt-3 md:mt-0 whitespace-nowrap" // Added whitespace-nowrap
           onClick={(e) => {
             e.stopPropagation();
             setIsModalOpen(true);
@@ -228,7 +237,7 @@ const InviteCard: React.FC<StatusCardProps> = ({
         isOpen={isModalOpen}
         setIsOpen={setIsModalOpen}
         header={`${name.toUpperCase()} GAME RULES`}
-        sub={`Prize Pool: ₦${prize} • Start Time: ${time}`}
+        sub={`Prize Pool: ₦${Number(prize) * parseFloat(odds.toFixed(1))} • Start Time: ${time} • Odds: ${odds.toFixed(1)}`}
         contentTitle={selectedRules.title}
         contentItems={selectedRules.rules}
         firstButtonText="Accept & Join"

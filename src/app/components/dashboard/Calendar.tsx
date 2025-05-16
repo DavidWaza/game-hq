@@ -32,9 +32,14 @@ const FormSchema = z.object({
 interface CalendarFormProps {
   onDateChange?: (date: string) => void;
   label?: string;
+  disabled?: boolean;
 }
 
-export function CalendarForm({ onDateChange, label }: CalendarFormProps) {
+export function CalendarForm({
+  onDateChange,
+  label,
+  disabled = false,
+}: CalendarFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -46,53 +51,52 @@ export function CalendarForm({ onDateChange, label }: CalendarFormProps) {
       onDateChange(formattedDate);
     }
   };
-  
 
   return (
     <Form {...form}>
-        <FormField
-          control={form.control}
-          name="dob"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel className="!text-left text-white">
-                {!label ? "Date of Birth" : label}
-              </FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[240px] pl-3 text-left font-normal bg-gray-700 text-white border-gray-500 hover:bg-gray-900 hover:text-white",
-                        !field.value && "text-gray-400"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>{!label ? "Date of Birth" : label}</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={(date) => {
-                      field.onChange(date);
-                      handleDateSelect(date);
-                    }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <FormField
+        control={form.control}
+        name="dob"
+        render={({ field }) => (
+          <FormItem className="flex flex-col">
+            <FormLabel className="!text-left text-white">
+              {!label ? "Date of Birth" : label}
+            </FormLabel>
+            <Popover>
+              <PopoverTrigger disabled={disabled} asChild>
+                <FormControl>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[240px] pl-3 text-left font-normal bg-gray-700 text-white border-gray-500 hover:bg-gray-900 hover:text-white",
+                      !field.value && "text-gray-400"
+                    )}
+                  >
+                    {field.value ? (
+                      format(field.value, "PPP")
+                    ) : (
+                      <span>{!label ? "Date of Birth" : label}</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={field.value}
+                  onSelect={(date) => {
+                    field.onChange(date);
+                    handleDateSelect(date);
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </Form>
   );
 }

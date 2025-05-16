@@ -18,6 +18,7 @@ import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -60,6 +61,7 @@ const RegistrationForm: React.FC<{
     confirm_password: string;
   }>();
 
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
   const [confirmIsVisible, setConfirmIsVisible] = useState(false);
   const [password, setPassword] = useState("");
@@ -102,7 +104,7 @@ const RegistrationForm: React.FC<{
     onSuccess: (data) => {
       toast.success("Registration successful", data);
       setTimeout(() => {
-        window.location.href = "/login";
+        router.push("/login");
       }, 3000);
     },
     onError: (error) => {

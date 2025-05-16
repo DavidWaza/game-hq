@@ -1,7 +1,10 @@
 "use client";
 import CreateMatch from "@/components/CreateMatch";
 import Navbar from "@/components/Navbar";
-import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import React, { useState, useEffect, useRef, Suspense } from "react";
+
+export const dynamic = "force-dynamic";
 
 interface Video {
   id: number;
@@ -34,8 +37,11 @@ const AllVideoTrailers: Video[] = [
   },
 ];
 
-const CreateMatchPage = () => {
-  const [matchMode, setMatchMode] = useState<number>(0);
+const CreateMatchContent = () => {
+  const { store } = useAuth();
+  const [matchMode, setMatchMode] = useState<number>(
+    store.createMatch.matchMode
+  );
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoTrailers: Video[] = AllVideoTrailers.slice(
@@ -50,7 +56,6 @@ const CreateMatchPage = () => {
     );
   };
 
-  // Randomize currentVideoIndex when matchMode changes
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * videoTrailers.length);
     setCurrentVideoIndex(randomIndex);
@@ -95,15 +100,26 @@ const CreateMatchPage = () => {
 
         <div className="absolute top-0 left-0 w-full h-full bottom-0 bg-black bg-opacity-50"></div>
       </div>
-      {/* gradient */}
-      {/* content */}
       <div className=" relative min-h-screen overflow-x-hidden">
-        {/* Content Centered in the Middle */}
         <div className="py-[140px] text-white min-h-screen flex items-center justify-center px-4 max-w-2xl m-auto">
           <CreateMatch matchMode={matchMode} setMatchMode={setMatchMode} />
         </div>
       </div>
     </>
+  );
+};
+
+const CreateMatchPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <CreateMatchContent />
+    </Suspense>
   );
 };
 

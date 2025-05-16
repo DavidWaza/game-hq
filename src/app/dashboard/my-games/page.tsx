@@ -6,12 +6,32 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import InviteCard from "@/app/components/dashboard/InviteCard";
 import { getFn } from "@/lib/apiClient";
-import { CreatedGames} from "../../../../types/global";
+import { CreatedGames, TypeGames} from "../../../../types/global";
+
 
 const CreateWagerBanner = () => {
+  // const [isPrivate, setIsPrivate] = useState(false);
   const username = useAuth()?.user?.username || "Challenger";
   const [data, setData] = useState<CreatedGames[]>([]);
   const [loading, setLoading] = useState(false);
+  const [, setSelectedGame] = useState<TypeGames>()
+    const { store } = useAuth();
+  
+ const filterGame = () => {
+    if (store.games?.length && store.singleTournament) {
+      const t: TypeGames | undefined = store.games.find(
+        (el) => el.id === store?.singleTournament?.game_id
+      );
+      if (t) {
+        setSelectedGame(t);
+      }
+    }
+  };
+  useEffect(() => {
+    filterGame();
+  }, [store.games, store.singleTournament]);
+
+const myGames = store?.singleTournament;
 
   // Animation variants for smooth entrance
   const containerVariants = {
@@ -66,6 +86,7 @@ const CreateWagerBanner = () => {
         >
           {/* Left Side Content */}
           <div className="space-y-10">
+            
             <motion.h1
               variants={itemVariants}
               className="text-5xl md:text-6xl lg:text-7xl font-bold text-white uppercase tracking-tighter leading-tight"
@@ -83,8 +104,9 @@ const CreateWagerBanner = () => {
                     <div key={index}>
                       <InviteCard
                         name={game.name}
+                        odds={1.9}
                         status="Now"
-                        prize={2000}
+                        prize={myGames?.amount || ""}
                         time="2pm"
                         date="12th Aug"
                         borderColor="bg-green-500"

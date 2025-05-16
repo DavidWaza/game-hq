@@ -10,7 +10,6 @@ interface Navbar {
 }
 
 const DashboardNavbar: React.FC<Navbar> = ({ bgColor, color }) => {
-
   return (
     <div
       className={`bg-transparent border-[#CBD5E1] py-5 px-5 w-full fixed top-0 z-50 ${bgColor}`}
@@ -21,8 +20,6 @@ const DashboardNavbar: React.FC<Navbar> = ({ bgColor, color }) => {
             <p className={`text-4xl font-medium ${color}`}>GameHQ</p>
           </Link>
         </div>
-
-        {/* Right Side: Wallet & Dropdown */}
         <CodDogTag />
       </nav>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 import axios from "axios";
 import { toast } from "sonner";
-import { DataFromLogin } from "../../types/global";
+import { DataFromLogin, User } from "../../types/global";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_SERVICE_BASE_URL;
 
@@ -101,12 +101,13 @@ export const storeUserData = async (data: DataFromLogin) => {
   try {
     // Store in HTTP-only cookie (optional, requires backend endpoint)
     sessionStorage.setItem("token", data.token);
+    const user: User = await getFn(`api/users/view/${data.user.id}`);
     const response = await fetch("/api/auth/set-user", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, user }),
       // body: JSON.stringify({ token: data.token }),
     });
 
@@ -114,6 +115,7 @@ export const storeUserData = async (data: DataFromLogin) => {
       throw new Error("Failed to set token cookie");
     }
     getUser();
+    return user
   } catch (error) {
     console.error("Failed to store token:", error);
   }
