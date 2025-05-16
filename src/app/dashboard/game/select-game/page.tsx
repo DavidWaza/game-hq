@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import Button from "@/components/Button"; 
+import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 
 // SVG icon for the back arrow
@@ -157,7 +157,7 @@ const SplashAvartar = () => {
   const handleCreateTournament = () => {
     if (selectedGameData) {
       router.push(
-        `/dashboard/create-match/${
+        `/dashboard/game/create-match/${
           selectedGameData.id
         }?gameName=${encodeURIComponent(
           selectedGameData.name
@@ -170,7 +170,7 @@ const SplashAvartar = () => {
   const handleCreate1v1 = () => {
     if (selectedGameData) {
       router.push(
-        `/dashboard/create-match/${
+        `/dashboard/game/create-match/${
           selectedGameData.id
         }?gameName=${encodeURIComponent(selectedGameData.name)}&matchType=1v1`
       );
@@ -269,16 +269,20 @@ const SplashAvartar = () => {
               </motion.div>
             ))}
           </motion.div>
-          
+
           <div className="my-12 md:my-20 flex gap-6 md:gap-10 flex-col sm:flex-row items-center justify-center">
             <Button
-              onClick={() => router.push("/dashboard/create-match?matchType=tournament")}
+              onClick={() =>
+                router.push("/dashboard/game/create-match?matchType=tournament")
+              }
               className="w-full sm:w-auto"
             >
               Create Custom Tournament
             </Button>
             <Button
-              onClick={() => router.push("/dashboard/create-match?matchType=1v1")} 
+              onClick={() =>
+                router.push("/dashboard/game/create-match?matchType=1v1")
+              }
               className="w-full sm:w-auto"
               variant="primary"
             >
