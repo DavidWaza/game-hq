@@ -47,7 +47,7 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
 });
 
 const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
-  const { setLoading } = props;
+  const { setLoading, loading } = props;
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { store, setState } = useAuth();
   const router = useRouter();
@@ -144,6 +144,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             })}
             onValueChange={handleCategoryChange}
             value={watch("game_id")}
+            disabled={loading}
           >
             <SelectTrigger className="w-full p-3 !h-[50px] bg-gray-700 text-white text-base rounded-lg shadow-md">
               <SelectValue
@@ -175,6 +176,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
                   required: "Description is required",
                 })}
                 value={watch("description")} // Bind the value to react-hook-form
+                disabled={loading}
                 onChange={(value) => {
                   setValue(
                     "description",
@@ -213,6 +215,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
               min={500}
               type="number"
               id="amount-single"
+              disabled={loading}
               placeholder="Min of 500"
               onChange={(e) => {
                 const num = Number(e.target.value);
@@ -240,6 +243,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             type="number"
             id="number_of_participants"
             placeholder="ex. 20"
+            disabled={loading}
             className="w-full p-3 bg-gray-700 text-white rounded-lg shadow-md !h-[50px]"
           />
           {errors.number_of_participants && (
@@ -257,6 +261,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             <CalendarForm
               onDateChange={(date) => field.onChange(date)}
               label="Select a date"
+              disabled={loading}
             />
           )}
         />
@@ -270,6 +275,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             {...register("match_time", {
               required: "Match time is required",
             })}
+            disabled={loading}
           />
           {errors.match_time && (
             <p className="text-red-500 text-sm">{errors.match_time.message}</p>

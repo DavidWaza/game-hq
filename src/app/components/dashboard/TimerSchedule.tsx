@@ -9,11 +9,15 @@ interface Event {
 
 const EventScheduler = ({
   onTimeChange,
+  disabled = false,
+  value = "",
 }: {
   onTimeChange: (date: string) => void;
+  disabled?: boolean;
+  value?: string;
 }) => {
   const [newEvent, setNewEvent] = useState<Event>({
-    time: "",
+    time: value || "",
   });
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -33,6 +37,7 @@ const EventScheduler = ({
           name="time"
           value={newEvent.time}
           onChange={handleInputChange}
+          disabled={disabled}
           // className="border rounded-lg p-2 w-full bg-transparent text-white "
           className="w-full p-3 bg-gray-700 text-white rounded-lg shadow-md !h-[50px]"
         />

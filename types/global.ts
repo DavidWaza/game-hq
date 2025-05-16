@@ -17,6 +17,15 @@ export type User = {
   public_wagers: [];
   private_wagers: [];
 };
+export type TypeUserSearch = {
+  id: number;
+  username: string;
+  email: string;
+  email_verified_at: string;
+  remember_token: string;
+  created_at: string;
+  updated_at: string;
+};
 export type UserFromAuth = {
   id: string;
   username: string;

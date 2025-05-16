@@ -7,12 +7,14 @@ interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value,
   onChange,
   placeholder = "Start typing...",
+  disabled = false,
 }) => {
   const quillRef = useRef<HTMLDivElement | null>(null);
   const quillInstance = useRef<Quill | null>(null);
@@ -48,7 +50,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     };
   }, []);
 
-  return <div ref={quillRef} className="quill-editor"></div>;
+  return (
+    <div ref={quillRef} className="quill-editor">
+      {disabled && <div className="absolute inset-0 bg-black opacity-50"></div>}
+    </div>
+  );
 };
 
 export default RichTextEditor;
