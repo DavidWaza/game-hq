@@ -23,6 +23,10 @@ interface StoreData {
   categories: TypeCategories[] | undefined;
   games: TypeGames[] | undefined;
   singleTournament: TypeSingleTournament | undefined;
+  createMatch: {
+    game_id: string;
+    matchMode: number;
+  };
   // wallet: TypeWallet | undefined;
   dispatch: StoreActions;
 }
@@ -52,6 +56,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     categories: undefined,
     games: undefined,
     singleTournament: undefined,
+    createMatch: {
+      game_id: "",
+      matchMode: 0,
+    },
     // wallet: undefined,
     // actions
     dispatch: {

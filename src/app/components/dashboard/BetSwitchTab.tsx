@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   useState,
   FormEvent,
+  useEffect,
 } from "react";
 import { Money } from "@phosphor-icons/react";
 import { Label } from "@/components/ui/label";
@@ -69,6 +70,14 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
       amount: null,
     },
   });
+
+  useEffect(() => {
+    if (store.createMatch.game_id) {
+      setValue("game_id", store.createMatch.game_id.toString(), {
+        shouldValidate: true,
+      });
+    }
+  }, [store.createMatch.game_id, setValue]);
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
@@ -189,10 +198,11 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
         <div className="space-y-2">
           <Label>Select Game</Label>
           <Select
-            onValueChange={handleCategoryChange}
             {...register("game_id", {
-              required: "Game category is required",
+              required: "A game is required",
             })}
+            onValueChange={handleCategoryChange}
+            value={watch("game_id")}
           >
             <SelectTrigger className="w-full p-3 !h-[50px] bg-gray-700 text-white text-base rounded-lg shadow-md">
               <SelectValue

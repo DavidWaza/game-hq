@@ -1,8 +1,8 @@
 "use client";
 import CreateMatch from "@/components/CreateMatch";
 import Navbar from "@/components/Navbar";
+import { useAuth } from "@/contexts/AuthContext";
 import React, { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -38,11 +38,12 @@ const AllVideoTrailers: Video[] = [
 ];
 
 const CreateMatchContent = () => {
-  const [matchMode, setMatchMode] = useState<number>(0);
+  const { store } = useAuth();
+  const [matchMode, setMatchMode] = useState<number>(
+    store.createMatch.matchMode
+  );
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const searchParams = useSearchParams();
-  const gameName = searchParams.get("gameName");
   const videoTrailers: Video[] = AllVideoTrailers.slice(
     !matchMode ? 0 : 3,
     !matchMode ? 3 : AllVideoTrailers.length
@@ -101,11 +102,7 @@ const CreateMatchContent = () => {
       </div>
       <div className=" relative min-h-screen overflow-x-hidden">
         <div className="py-[140px] text-white min-h-screen flex items-center justify-center px-4 max-w-2xl m-auto">
-          <CreateMatch
-            matchMode={matchMode}
-            setMatchMode={setMatchMode}
-            gameName={gameName}
-          />
+          <CreateMatch matchMode={matchMode} setMatchMode={setMatchMode} />
         </div>
       </div>
     </>

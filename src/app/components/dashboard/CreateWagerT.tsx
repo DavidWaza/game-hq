@@ -77,6 +77,14 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (store.createMatch.game_id) {
+      setValue("game_id", store.createMatch.game_id.toString(), {
+        shouldValidate: true,
+      });
+    }
+  }, [store.createMatch.game_id, setValue]);
+
   const handleCategoryChange = (value: string) => {
     setValue("game_id", value, { shouldValidate: true });
   };
@@ -131,10 +139,11 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
         <div className="space-y-2">
           <Label>Select Game</Label>
           <Select
-            onValueChange={handleCategoryChange}
             {...register("game_id", {
-              required: "Game category is required",
+              required: "A game is required",
             })}
+            onValueChange={handleCategoryChange}
+            value={watch("game_id")}
           >
             <SelectTrigger className="w-full p-3 !h-[50px] bg-gray-700 text-white text-base rounded-lg shadow-md">
               <SelectValue

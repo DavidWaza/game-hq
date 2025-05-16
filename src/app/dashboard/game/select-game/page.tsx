@@ -4,6 +4,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { TypeGames } from "../../../../../types/global";
 
 // SVG icon for the back arrow
 const BackArrowIcon = () => (
@@ -58,16 +60,9 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   );
 };
 
-type Game = {
-  id: string;
-  name: string;
-  src: string;
-  borderColor: string;
-  shadowColor: string;
-  isFull: boolean;
-};
-
 const SplashAvartar = () => {
+  const { store, setState } = useAuth();
+  const games: TypeGames[] = store.games || [];
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const router = useRouter();
@@ -100,48 +95,48 @@ const SplashAvartar = () => {
     },
   };
 
-  const games: Game[] = [
-    {
-      id: "mk",
-      name: "Mortal Kombat",
-      src: "/assets/mk-av.svg",
-      borderColor: "#b7950b",
-      shadowColor: "#b7950b",
-      isFull: true,
-    },
-    {
-      id: "cod",
-      name: "Call of Duty",
-      src: "/assets/cod-av.svg",
-      borderColor: "#FFFFFF",
-      shadowColor: "#CCCCCC",
-      isFull: false,
-    },
-    {
-      id: "fifa",
-      name: "EA Sports FC",
-      src: "/assets/cards-av.svg",
-      borderColor: "#979a9a",
-      shadowColor: "#979a9a",
-      isFull: false,
-    },
-    {
-      id: "nba2k",
-      name: "NBA 2K",
-      src: "/assets/basketball-av.svg",
-      borderColor: "#f37f2d",
-      shadowColor: "#f37f2d",
-      isFull: false,
-    },
-    {
-      id: "ludo",
-      name: "Ludo",
-      src: "/assets/pawn-av.svg",
-      borderColor: "#4CAF50",
-      shadowColor: "#4CAF50",
-      isFull: false,
-    },
-  ];
+  // const games: Game[] = [
+  //   {
+  //     id: "mk",
+  //     name: "Mortal Kombat",
+  //     src: "/assets/mk-av.svg",
+  //     borderColor: "#b7950b",
+  //     shadowColor: "#b7950b",
+  //     isFull: true,
+  //   },
+  //   {
+  //     id: "cod",
+  //     name: "Call of Duty",
+  //     src: "/assets/cod-av.svg",
+  //     borderColor: "#FFFFFF",
+  //     shadowColor: "#CCCCCC",
+  //     isFull: false,
+  //   },
+  //   {
+  //     id: "fifa",
+  //     name: "EA Sports FC",
+  //     src: "/assets/cards-av.svg",
+  //     borderColor: "#979a9a",
+  //     shadowColor: "#979a9a",
+  //     isFull: false,
+  //   },
+  //   {
+  //     id: "nba2k",
+  //     name: "NBA 2K",
+  //     src: "/assets/basketball-av.svg",
+  //     borderColor: "#f37f2d",
+  //     shadowColor: "#f37f2d",
+  //     isFull: false,
+  //   },
+  //   {
+  //     id: "ludo",
+  //     name: "Ludo",
+  //     src: "/assets/pawn-av.svg",
+  //     borderColor: "#4CAF50",
+  //     shadowColor: "#4CAF50",
+  //     isFull: false,
+  //   },
+  // ];
 
   const selectedGameData = games.find((game) => game.id === selectedGame);
 
@@ -154,31 +149,21 @@ const SplashAvartar = () => {
     setIsModalOpen(false);
   };
 
-  const handleCreateTournament = () => {
+  const handleCreate = (type: number) => {
     if (selectedGameData) {
-      router.push(
-        `/dashboard/game/create-match/${
-          selectedGameData.id
-        }?gameName=${encodeURIComponent(
-          selectedGameData.name
-        )}&matchType=tournament`
+      setState(
+        {
+          game_id: selectedGameData.id,
+          matchMode: type,
+        },
+        "createMatch"
       );
       handleCloseModal();
+      router.push("/dashboard/game/create-match");
     }
   };
 
-  const handleCreate1v1 = () => {
-    if (selectedGameData) {
-      router.push(
-        `/dashboard/game/create-match/${
-          selectedGameData.id
-        }?gameName=${encodeURIComponent(selectedGameData.name)}&matchType=1v1`
-      );
-      handleCloseModal();
-    }
-  };
-
-  const getAvatarClasses = (game: Game) => {
+  const getAvatarClasses = (game: TypeGames) => {
     const isSelected = selectedGame === game.id;
     let classes = `border-2 bg-[#233d4d] rounded-full flex items-center justify-center overflow-hidden transition-all duration-300 ease-in-out group cursor-pointer hover:scale-105`;
 
@@ -231,35 +216,29 @@ const SplashAvartar = () => {
                     game
                   )}`}
                   style={{
-                    borderColor: game.borderColor,
+                    borderColor: "#FFFFFF",
                     boxShadow:
                       selectedGame === game.id
-                        ? `0 0 20px 5px ${game.shadowColor}60`
-                        : `0 0 10px 2px ${game.shadowColor}30`,
+                        ? `0 0 20px 5px ${"#CCCCCC"}60`
+                        : `0 0 10px 2px ${"#CCCCCC"}30`,
                   }}
                   onClick={() => handleGameSelect(game.id)}
                   onMouseEnter={(e) => {
                     if (selectedGame !== game.id)
-                      e.currentTarget.style.boxShadow = `0 0 15px 3px ${game.shadowColor}50`;
+                      e.currentTarget.style.boxShadow = `0 0 15px 3px ${"#CCCCCC"}50`;
                   }}
                   onMouseLeave={(e) => {
                     if (selectedGame !== game.id)
-                      e.currentTarget.style.boxShadow = `0 0 10px 2px ${game.shadowColor}30`;
+                      e.currentTarget.style.boxShadow = `0 0 10px 2px ${"#CCCCCC"}30`;
                   }}
                 >
                   <div className="relative flex items-center justify-center w-full h-full">
                     <Image
-                      width={game.isFull ? 208 : 112}
-                      height={game.isFull ? 208 : 112}
-                      src={game.src}
-                      alt={`${game.name} Avatar`}
-                      className={`${
-                        game.isFull
-                          ? "w-full h-full"
-                          : "w-[60%] h-[60%] sm:w-[65%] sm:h-[65%]"
-                      } object-${
-                        game.isFull ? "cover" : "contain"
-                      } transition-transform duration-300 group-hover:scale-110`}
+                      width={112}
+                      height={112}
+                      src={game.game_image}
+                      alt={game.name}
+                      className={`w-[60%] h-[60%] sm:w-[65%] sm:h-[65%] object-contain transition-transform duration-300 group-hover:scale-110`}
                     />
                   </div>
                 </div>
@@ -301,12 +280,19 @@ const SplashAvartar = () => {
           <p className="text-center text-lg text-[#d4d0b4] mb-3">
             Choose how you want to play:
           </p>
-          <Button onClick={handleCreateTournament} className="w-full sm:w-auto">
+          <Button
+            onClick={() => {
+              handleCreate(1);
+            }}
+            className="w-full sm:w-auto"
+          >
             Create Tournament
           </Button>
           <Button
             variant="primary"
-            onClick={handleCreate1v1}
+            onClick={() => {
+              handleCreate(0);
+            }}
             className="w-full sm:w-auto"
           >
             Create 1v1 Match
