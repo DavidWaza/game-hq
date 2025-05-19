@@ -159,7 +159,7 @@ const SplashAvartar = () => {
         "createMatch"
       );
       handleCloseModal();
-      router.push("/dashboard/game/create-match");
+      router.push("/dashboard/match/create");
     }
   };
 
@@ -252,7 +252,7 @@ const SplashAvartar = () => {
           <div className="my-12 md:my-20 flex gap-6 md:gap-10 flex-col sm:flex-row items-center justify-center">
             <Button
               onClick={() =>
-                router.push("/dashboard/game/create-match?matchType=tournament")
+                router.push("/dashboard/match/create?matchType=tournament")
               }
               className="w-full sm:w-auto"
             >
@@ -260,7 +260,7 @@ const SplashAvartar = () => {
             </Button>
             <Button
               onClick={() =>
-                router.push("/dashboard/game/create-match?matchType=1v1")
+                router.push("/dashboard/match/create?matchType=1v1")
               }
               className="w-full sm:w-auto"
               variant="primary"

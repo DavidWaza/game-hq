@@ -394,7 +394,7 @@ const CreateWagerBanner = () => {
         </motion.div>
       </section>
 
-      <div className="absolute inset-0 pointer-events-none z-0">
+      <div className="absolute inset-0 pointer-events-none z-0 w-full h-full overflow-hidden">
         <motion.div
           className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,#ff4500_2%,transparent_40%)] opacity-15"
           animate={{ opacity: [0.15, 0.25, 0.15] }}
