@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Roll Challenge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="notifications"></div>
+        <div id="game-info">
+            <h1 id="game-title">Dice Roll Challenge</h1>
+            <p id="game-status">Connecting...</p>
+            <p id="your-score-display">Your Score: 0</p>
+        </div>
+
+        <div id="pre-game-controls" style="display: none;">
+            <input type="text" id="playerName" placeholder="Enter your name">
+            <input type="number" id="betAmount" placeholder="Enter bet amount (fixed for all)">
+            <button id="joinGameButton">Join Game</button>
+            <button id="readyNowButton" style="display: none;">Ready Now</button>
+            <p id="readyStatus"></p>
+        </div>
+
+        <div id="game-area" style="display: none;">
+            <h2 id="round-info"></h2>
+            <p id="roll-timer-display">Time to Roll: 12s</p>
+            <button id="rollDiceButton">Roll Dice</button>
+            <div id="dice-results">
+                <p>Die 1: <span id="die1-value">-</span></p>
+                <p>Die 2: <span id="die2-value">-</span></p>
+                <p>Round Score: <span id="round-score">-</span></p>
+            </div>
+            <p id="player-outcome-message"></p>
+        </div>
+
+        <div id="leaderboard-area" style="display: none;">
+            <h2>Leaderboard (Top 5)</h2>
+            <ul id="leaderboard-list"></ul>
+        </div>
+
+        <div id="post-game-info" style="display: none;">
+            <h2>Game Over!</h2>
+            <p id="final-rank-display"></p>
+            <div id="final-leaderboard">
+                <h3>Final Leaderboard (Top 5)</h3>
+                <ul id="final-leaderboard-list"></ul>
+            </div>
+            <p id="tiebreaker-note"></p>
+            <div id="payout-info">
+                <h3>Payouts</h3>
+                <p id="total-pot-display"></p>
+                <p id="house-commission-display"></p>
+                <p id="distributable-pot-display"></p>
+                <p id="your-winnings-display"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>

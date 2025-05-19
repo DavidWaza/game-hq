@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 2025",
+    "dev": "npx ts-node --project tsconfig.server.json server.ts",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production npx ts-node --project tsconfig.server.json server.ts",
     "lint": "next lint"
   },
   "dependencies": {
@@ -30,6 +30,7 @@
     "dompurify": "^3.2.5",
     "draft-js": "^0.11.7",
     "embla-carousel-react": "^8.5.2",
+    "express": "^5.1.0",
     "framer-motion": "^12.4.10",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.476.0",
@@ -46,6 +47,8 @@
     "react-time-picker": "^7.0.0",
     "sass": "^1.86.1",
     "slick-carousel": "^1.8.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "sonner": "^2.0.1",
     "swiper": "^11.2.5",
     "tailwind-merge": "^3.0.2",
@@ -64,6 +67,7 @@
     "eslint-config-next": "15.1.7",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

@@ -1,0 +1,240 @@
+/* public/style.css */
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+#game-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 700px;
+}
+
+h1, h2, h3 {
+    color: #2c3e50;
+}
+
+#game-title {
+    margin-top: 0;
+    color: #3498db;
+}
+
+#notifications {
+    background-color: #eaf2f8;
+    border-left: 5px solid #3498db;
+    padding: 10px;
+    margin-bottom: 15px;
+    text-align: left;
+    max-height: 100px;
+    overflow-y: auto;
+    border-radius: 4px;
+}
+
+#notifications p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+#game-info p, #readyStatus, #player-outcome-message {
+    margin: 8px 0;
+    font-size: 1.1em;
+}
+
+#your-score-display {
+    font-weight: bold;
+    font-size: 1.3em;
+    color: #27ae60;
+    margin-bottom: 20px;
+}
+
+/* --- Controls & Buttons --- */
+input[type="text"],
+input[type="number"],
+button {
+    padding: 10px 15px;
+    margin: 8px 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+}
+
+input[type="text"],
+input[type="number"] {
+    width: calc(50% - 22px); /* Adjust based on padding and margin */
+}
+
+
+button {
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+#pre-game-controls, #game-area, #leaderboard-area, #post-game-info {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+/* --- Game Area --- */
+#round-info {
+    color: #e67e22;
+}
+
+#roll-timer-display {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #c0392b;
+}
+
+#dice-results {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #ecf0f1;
+    border-radius: 4px;
+}
+
+#dice-results p {
+    margin: 5px 0;
+    font-size: 1.1em;
+}
+
+#dice-results span {
+    font-weight: bold;
+    color: #2980b9;
+    display: inline-block;
+    min-width: 20px; /* For visual consistency before numbers appear */
+    text-align: center;
+}
+
+/* --- Leaderboard --- */
+#leaderboard-area h2, #post-game-info h3 {
+    margin-top: 0;
+}
+
+#leaderboard-list, #final-leaderboard-list {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+#leaderboard-list li, #final-leaderboard-list li {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 1.1em;
+}
+
+#leaderboard-list li:last-child, #final-leaderboard-list li:last-child {
+    border-bottom: none;
+}
+
+#leaderboard-list li:nth-child(odd), #final-leaderboard-list li:nth-child(odd) {
+    background-color: #fdfdfd;
+}
+
+/* Highlighting for top players - example */
+#leaderboard-list li:nth-child(1), #final-leaderboard-list li:nth-child(1) {
+    font-weight: bold;
+    color: #e67e22; /* Gold */
+}
+#leaderboard-list li:nth-child(2), #final-leaderboard-list li:nth-child(2) {
+    color: #7f8c8d; /* Silver */
+}
+#leaderboard-list li:nth-child(3), #final-leaderboard-list li:nth-child(3) {
+    color: #cd7f32; /* Bronze */
+}
+
+
+/* --- Post-Game Info --- */
+#final-rank-display {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+#tiebreaker-note {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    border-radius: 4px;
+    font-style: italic;
+}
+
+#payout-info {
+    margin-top: 20px;
+    text-align: left;
+    padding: 15px;
+    background-color: #e8f5e9; /* Light green for payout */
+    border-radius: 4px;
+}
+
+#payout-info p {
+    margin: 5px 0;
+    font-size: 1em;
+}
+
+#your-winnings-display {
+    font-weight: bold;
+    color: #1e8e3e;
+}
+
+/* --- Simple Dice Animation Placeholder --- */
+/* You can expand this with actual dice face SVGs or images and more complex animations */
+.dice-animation-placeholder {
+    width: 50px;
+    height: 50px;
+    background-color: #fff;
+    border: 2px solid #333;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 5px;
+    line-height: 50px; /* Center text vertically */
+    text-align: center; /* Center text horizontally */
+    font-size: 24px;
+    font-weight: bold;
+    /* Add animation CSS here if desired */
+}
+
+/* Example of a simple roll animation for the button text or dice display */
+@keyframes roll-effect {
+    0% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(15deg) scale(1.1); }
+    50% { transform: rotate(-15deg) scale(1.1); }
+    75% { transform: rotate(10deg) scale(1.1); }
+    100% { transform: rotate(0deg) scale(1); }
+}
+
+.rolling {
+    animation: roll-effect 0.5s infinite ease-in-out;
+}
+
+/* --- Visibility Control --- */
+/* The JS already handles display: none/block, but you might have global classes */
+.hidden {
+    display: none !important;
+}
