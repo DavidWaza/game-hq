@@ -1,216 +1,172 @@
 "use client";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Autoplay, EffectFade } from "swiper/modules";
-import { motion, AnimatePresence } from "framer-motion";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import "swiper/css";
-import "swiper/css/effect-fade";
-import { GameController, Intersect, Trophy } from "@phosphor-icons/react";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Intersect, Trophy } from "@phosphor-icons/react";
 import Modal from "./Modal";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { TypeGames } from "../../../../types/global";
 
-const slides = [
-  { image: "/assets/board.jpg", name: "Roll the dice", link: "/page1" },
-  {
-    image: "/assets/card.jpg",
-    name: "One Ace, Two Kings, Three Queens, Four Jacks, Five Tens. Royal flush!",
-    link: "/page2",
-  },
-  {
-    image: "/assets/cod-3.jpg",
-    name: "We won't be firing any warning shots",
-    link: "/page3",
-  },
-];
-
-const Carousel = () => {
+const MainDashboard = () => {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isOpenInvite, setIsOpenInvite] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const { store } = useAuth();
 
-  const navigateRouter = (path: string): void => {
-    router.push(path);
+  const [games, setGames] = useState<TypeGames[]>([]);
+  const [isOpenInvite, setIsOpenInvite] = useState(false);
+  const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
+  const [hoveredButtonLabel, setHoveredButtonLabel] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (store?.games) {
+      setGames(store.games);
+    }
+  }, [store]);
+
+  const handleGameClick = (gameId: string) => {
+    setExpandedGameId((prev) => (prev === gameId ? null : gameId));
   };
 
+  // const navigateRouter = (path: string) => router.push(path);
+
+  const fixedActionButtons = [
+    {
+      id: "joinWager",
+      label: "Join Wager",
+      icon: Intersect,
+      action: () => router.push("/dashboard/join-tournament"),
+    },
+    {
+      id: "myGames",
+      label: "My Games",
+      icon: Trophy,
+      action: () => router.push("/dashboard/my-games"),
+    },
+  ];
+
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      <div className="absolute z-20 bottom-4 sm:bottom-6 md:bottom-10 lg:bottom-20 w-full px-4 sm:px-6 md:px-8 lg:px-10">
-        <div className="flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto lg:ml-auto lg:mr-10">
-          {/* Create Wager */}
-          <button
-            onClick={() => navigateRouter("/dashboard/match/select")}
-            className="w-full bg-[#233d4d] text-[#fcf8db] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
-          >
-            <div className="flex justify-center items-center gap-2">
-              <GameController
-                size={24}
-                className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
-              />
-              <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                Select your Games
-              </p>
-            </div>
-          </button>
-          <Modal
-            isOpen={isOpen}
-            setIsOpen={setIsOpen}
-            firstButtonText="Create Tournament"
-            secondButtonText="Create One-on-One"
-            onClick={() => navigateRouter("/dashboard/create-tournament")}
-            onTab={() => navigateRouter("/dashboard/create-one-v-one")}
-          />
+    <div className="relative w-full min-h-screen bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] px-4 pt-32 md:pt-52 overflow-y-auto">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-4xl font-bold text-center text-[#fcf8db] mb-10"
+      >
+       Select Your Game
+      </motion.h1>
 
-          {/* My Invitations */}
-          <button
-            onClick={() => (setIsOpenInvite(true), setIsOpen(false))}
-            className="w-full bg-[#233d4d] text-[#f37f2d] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
-          >
-            <div className="flex justify-center gap-2">
-              <Intersect
-                size={24}
-                weight="duotone"
-                className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
-              />
+      <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto">
+        {games.map((game) => {
+          const isExpanded = expandedGameId === game.id;
 
-              <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                Join Wager
-              </p>
-            </div>
-          </button>
+          return (
+            <motion.div
+              key={game.id}
+              className="relative bg-[#1e3a4c] rounded-2xl overflow-hidden shadow-xl w-48 sm:w-56 cursor-pointer hover:scale-105 transition-all duration-300 group"
+              onClick={() => handleGameClick(game.id)}
+              whileHover={{ y: -5 }}
+            >
+              <div className="p-4 flex flex-col items-center">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#233d4d] flex items-center justify-center shadow-md">
+                  <Image
+                    src={game.game_image}
+                    alt={game.name}
+                    width={100}
+                    height={100}
+                    className="object-contain w-[60%] h-[60%]"
+                  />
+                </div>
+                <h3 className="mt-4 text-sm sm:text-base font-semibold text-[#fcf8db] text-center">
+                  {game.name}
+                </h3>
+              </div>
 
-          <Modal
-            isOpen={isOpenInvite}
-            setIsOpen={setIsOpenInvite}
-            firstButtonText="Join Tournament"
-            secondButtonText="My Games"
-            onClick={() => router.push("/dashboard/join-tournament")}
-            onTab={() => navigateRouter("/dashboard/my-invitations")}
-          />
-          <button
-            onClick={() => router.push("/dashboard/my-games")}
-            className="w-full bg-[#233d4d] text-[#fcf8db] py-3 sm:py-4 text-center group hover:bg-[#f37f2d] transition-all duration-300 ease-in-out border-2 border-[#f37f2d] rounded-lg"
-          >
-            <div className="flex justify-center gap-2">
-              <Trophy
-                size={24}
-                className="text-[#FCF8DB] group-hover:text-[#233d4d] transition-all duration-300 ease-in-out group-hover:animate-bounce"
-              />
-              <p className="text-sm sm:text-base md:text-lg font-bold uppercase group-hover:text-[#233d4d]">
-                My Created Games
-              </p>
-            </div>
-          </button>
-        </div>
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-[#2e5366] border-t border-[#fcf8db]/10"
+                  >
+                    <div className="flex flex-col p-4 space-y-2 text-sm text-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/dashboard/games/${game.id}/info`);
+                        }}
+                        className="text-[#c1dce8] hover:text-[#f37f2d] hover:underline transition"
+                      >
+                        Info
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(
+                            `/dashboard/match/select?gameId=${game.id}`
+                          );
+                        }}
+                        className="text-[#c1dce8] hover:text-[#f37f2d] hover:underline transition"
+                      >
+                        Create Game
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          );
+        })}
       </div>
 
-      {/* Swiper Container */}
-      <Swiper
-        modules={[Pagination, Autoplay, EffectFade]}
-        spaceBetween={0}
-        slidesPerView={1}
-        pagination={{
-          clickable: true,
-          bulletClass: "swiper-pagination-bullet",
-          bulletActiveClass: "swiper-pagination-bullet-active",
-        }}
-        autoplay={{ delay: 5000, disableOnInteraction: false }}
-        effect="fade"
-        fadeEffect={{ crossFade: true }}
-        className="w-full h-full"
-        onSlideChange={(swiper) => setCurrentIndex(swiper.activeIndex)}
-      >
-        {slides.map((slide, index) => (
-          <SwiperSlide key={index}>
-            <div className="relative w-full h-full flex items-center justify-center">
-              {/* Background Image with Zoom Effect */}
-              <motion.div
-                key={currentIndex}
-                initial={{ scale: 1, opacity: 1 }}
-                animate={{ scale: 1.2 }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  duration: 5,
-                  ease: "easeOut",
-                  opacity: { duration: 0.3 },
-                }}
-                className="absolute inset-0"
-              >
-                <Image
-                  src={slide.image}
-                  fill
-                  alt={slide.name}
-                  className="w-full h-full object-cover object-center"
-                  priority
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
-                />
-              </motion.div>
-
-              {/* Overlay with Animations */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 px-4 sm:px-6 md:px-8 text-center">
-                <AnimatePresence mode="popLayout">
-                  <motion.div
-                    key={`${currentIndex}-${slide.name}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0 }}
-                    className="relative flex items-center justify-center"
-                  >
-                    <motion.h2
-                      key={currentIndex}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className="max-w-[90%] sm:max-w-[85%] md:max-w-[1400px] text-[#fcf8db] text-lg sm:text-2xl md:text-4xl lg:text-5xl font-bold uppercase flex flex-wrap justify-center gap-1"
-                    >
-                      {slide.name.split("").map((char, i) => (
-                        <motion.span
-                          key={`${currentIndex}-${i}`}
-                          initial={{
-                            opacity: 0,
-                            y: 0,
-                            x: (i % 2 === 0 ? 1 : -1) * 50,
-                            rotate: i * 45,
-                            scale: 0,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            y: 0,
-                            x: 0,
-                            rotate: 0,
-                            scale: 1,
-                          }}
-                          exit={{
-                            opacity: 0,
-                            y: 0,
-                            x: (i % 2 === 0 ? 1 : -1) * 50,
-                            rotate: i * 45,
-                            scale: 0,
-                          }}
-                          transition={{
-                            duration: 0.3,
-                            delay: i * 0.02,
-                            type: "spring",
-                            stiffness: 200,
-                            damping: 20,
-                          }}
-                          className="inline-block min-w-[0.5em]"
-                        >
-                          {char}
-                        </motion.span>
-                      ))}
-                    </motion.h2>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-          </SwiperSlide>
+      {/* Floating Buttons Bottom Left */}
+      <div className="fixed bottom-4 right-4 flex flex-col gap-3 z-50">
+        {fixedActionButtons.map((btn) => (
+          <motion.button
+            key={btn.id}
+            onClick={btn.action}
+            onMouseEnter={() => setHoveredButtonLabel(btn.label)}
+            onMouseLeave={() => setHoveredButtonLabel(null)}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-[#233d4d] hover:bg-[#f37f2d] text-[#fcf8db] hover:text-[#233d4d] p-3 rounded-full shadow-md focus:outline-none transition-all"
+          >
+            <btn.icon size={20} weight="bold" />
+          </motion.button>
         ))}
-      </Swiper>
+      </div>
+
+      {/* Hover Label Bottom Right */}
+      <div className="fixed bottom-4 right-20 z-50">
+        <AnimatePresence>
+          {hoveredButtonLabel && (
+            <motion.div
+              key={hoveredButtonLabel}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="bg-[#233d4d] text-[#fcf8db] text-sm px-4 py-2 rounded-md shadow-xl border border-[#4a7c8c]/50"
+            >
+              {hoveredButtonLabel}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <Modal
+        isOpen={isOpenInvite}
+        setIsOpen={setIsOpenInvite}
+        title="Join an Existing Wager"
+        firstButtonText="Join Tournament"
+        secondButtonText="My Invitations"
+        // onClick={() => router.push("/dashboard/join-tournament")}
+      />
     </div>
   );
 };
 
-export default Carousel;
+export default MainDashboard;
