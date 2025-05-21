@@ -1,33 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Intersect, Trophy } from "@phosphor-icons/react";
 import Modal from "./Modal";
+import MainModal from "@/components/Modal";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { TypeGames } from "../../../../types/global";
+import Button from "@/components/Button";
 
 const MainDashboard = () => {
   const router = useRouter();
-  const { store } = useAuth();
+  const { store, setState } = useAuth();
 
-  const [games, setGames] = useState<TypeGames[]>([]);
+  const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isOpenInvite, setIsOpenInvite] = useState(false);
   const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
   const [hoveredButtonLabel, setHoveredButtonLabel] = useState<string | null>(
     null
   );
-
-  useEffect(() => {
-    if (store?.games) {
-      setGames(store.games);
-    }
-  }, [store]);
+  const games: TypeGames[] = store?.games || [];
+  const selectedGameData = games.find((game) => game.id === selectedGame);
 
   const handleGameClick = (gameId: string) => {
     setExpandedGameId((prev) => (prev === gameId ? null : gameId));
+  };
+  const handleGameSelect = (gameId: string) => {
+    setSelectedGame(gameId);
+    setIsModalOpen(true);
+  };
+
+  const handleCreate = (type: number) => {
+    if (selectedGameData) {
+      setState(
+        {
+          game_id: selectedGameData.id,
+          matchMode: type,
+        },
+        "createMatch"
+      );
+      setIsModalOpen(false);
+      router.push("/dashboard/match/create");
+    }
   };
 
   // const navigateRouter = (path: string) => router.push(path);
@@ -55,7 +72,7 @@ const MainDashboard = () => {
         transition={{ duration: 0.5 }}
         className="text-4xl font-bold text-center text-[#fcf8db] mb-10"
       >
-       Select Your Game
+        Select Your Game
       </motion.h1>
 
       <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto">
@@ -104,12 +121,7 @@ const MainDashboard = () => {
                         Info
                       </button>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(
-                            `/dashboard/match/select?gameId=${game.id}`
-                          );
-                        }}
+                        onClick={() => handleGameSelect(game.id)}
                         className="text-[#c1dce8] hover:text-[#f37f2d] hover:underline transition"
                       >
                         Create Game
@@ -165,6 +177,50 @@ const MainDashboard = () => {
         secondButtonText="My Invitations"
         // onClick={() => router.push("/dashboard/join-tournament")}
       />
+      <MainModal isOpen={isModalOpen}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="bg-[#2c586b] p-6 rounded-xl shadow-2xl w-full max-w-lg border border-[#4a7c8c]"
+        >
+          <div className="flex justify-between items-center mb-5">
+            <h3 className="text-2xl text-[#fcf8db] font-semibold">{`Create Match for: ${
+              selectedGameData?.name || "Selected Game"
+            }`}</h3>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="text-[#fcf8db] hover:text-[#f37f2d] text-3xl leading-none"
+              aria-label="Close modal"
+            >
+              &times;
+            </button>
+          </div>
+          <div className="flex flex-col space-y-5 items-center pt-2 pb-4">
+            <p className="text-center text-lg text-[#d4d0b4] mb-3">
+              Choose how you want to play:
+            </p>
+            <Button
+              onClick={() => {
+                handleCreate(1);
+              }}
+              className="w-full sm:w-auto"
+            >
+              Create Tournament
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                handleCreate(0);
+              }}
+              className="w-full sm:w-auto"
+            >
+              Invite Players
+            </Button>
+          </div>
+        </motion.div>
+      </MainModal>
     </div>
   );
 };

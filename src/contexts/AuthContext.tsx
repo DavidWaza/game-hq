@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsAuthenticated(false);
   };
 
-  // Fetch global data (categories, games, etc.)
+  // Fetch global data (categories, games, etc.) after user login
   useEffect(() => {
     const fetchGlobalData = async () => {
       if (!user) return;
@@ -147,6 +147,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     fetchGlobalData();
   }, [user]);
+  // Fetch global data (categories, games, etc.)
+  // useEffect(() => {
+  //   const fetchGlobalData = async () => {
+  //     const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
+  //       { storeKey: "games", path: "api/games" },
+  //     ];
+
+  //     try {
+  //       const results = await Promise.all(
+  //         dataHandlers.map(async ({ storeKey, path }) => {
+  //           const data = await getFn(path);
+  //           return { storeKey, data: data?.records };
+  //         })
+  //       );
+
+  //       results.forEach(({ storeKey, data }) => {
+  //         setState(data, storeKey);
+  //       });
+  //     } catch (error) {
+  //       console.error("Error fetching global data:", error);
+  //     }
+  //   };
+
+  //   fetchGlobalData();
+  // }, []);
 
   return (
     <AuthContext.Provider
