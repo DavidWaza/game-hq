@@ -1,134 +1,191 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { storeUserData, logout as logoutFn } from "@/lib/apiClient";
+import {
+  storeUserData,
+  logout as logoutFn,
+  getFn,
+  getUser,
+} from "@/lib/apiClient";
 import {
   DataFromLogin,
   User,
   TypeCategories,
   TypeGames,
+  TypeSingleTournament,
+  // TypeWallet,
 } from "../../types/global";
-import { getFn, getUser } from "@/lib/apiClient";
-interface StoreData {
-  categories: TypeCategories[] | [] | undefined;
-  games: TypeGames[] | [] | undefined;
+import { useParams } from "next/navigation";
+
+interface StoreActions {
+  getTournament: () => void;
 }
-type StoreConFigKeys = keyof StoreData;
+interface StoreData {
+  categories: TypeCategories[] | undefined;
+  games: TypeGames[] | undefined;
+  singleTournament: TypeSingleTournament | undefined;
+  createMatch: {
+    game_id: string;
+    matchMode: number;
+  };
+  // wallet: TypeWallet | undefined;
+  dispatch: StoreActions;
+}
+
+type StoreConfigKeys = keyof StoreData;
+
 interface AuthContextType {
   isAuthenticated: boolean | undefined;
   user: User | null;
   login: (data: DataFromLogin) => Promise<void>;
   logout: () => Promise<void>;
   store: StoreData;
-}
-interface DataHandler {
-  storeValue: StoreConFigKeys;
-  data: TypeCategories[] | TypeGames[] | undefined;
-  path: string;
+  setState: (value: StoreData[StoreConfigKeys], name: StoreConfigKeys) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | undefined>(
     undefined
   );
+  const params = useParams();
+  const slug = `${params?.slug}`;
   const [user, setUser] = useState<User | null>(null);
   const [store, setStore] = useState<StoreData>({
-    categories: [],
-    games: [],
+    // data
+    categories: undefined,
+    games: undefined,
+    singleTournament: undefined,
+    createMatch: {
+      game_id: "",
+      matchMode: 0,
+    },
+    // wallet: undefined,
+    // actions
+    dispatch: {
+      getTournament: async (dataSlug: string = slug) => {
+        try {
+          const response: TypeSingleTournament = await getFn(
+            `/api/tournamentstables/view/${dataSlug}`
+          );
+          if (response?.id) {
+            setState(response, "singleTournament");
+          }
+        } catch {}
+      },
+    },
   });
+
+  // Update store state
   const setState = (
-    value: TypeCategories[] | TypeGames[] | undefined,
-    name: StoreConFigKeys
+    value: StoreData[StoreConfigKeys],
+    name: StoreConfigKeys
   ) => {
-    console.log(value, name);
-    setStore((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setStore((prev) => ({ ...prev, [name]: value }));
   };
 
-  // set user and token from sesion storage
+  // Fetch user data on mount
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const dataResponse = await getUser();
         if (dataResponse?.user) {
-          console.log({ user: dataResponse?.user });
           setUser(dataResponse.user);
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
         }
-      } catch {}
+      } catch {
+        setIsAuthenticated(false);
+      }
     };
     fetchUser();
   }, []);
 
+  // Login function
   const login = async (data: DataFromLogin) => {
-    await storeUserData(data);
-    setIsAuthenticated(true);
-    setUser(data.user);
+    const dataResponse: User | undefined = await storeUserData(data);
+    if (dataResponse) {
+      setUser(dataResponse);
+      setIsAuthenticated(true);
+    }
   };
+
+  // Logout function
   const logout = async () => {
     await logoutFn();
-    setIsAuthenticated(false);
     setUser(null);
+    setIsAuthenticated(false);
   };
 
-  // handle global use requests
+  // Fetch global data (categories, games, etc.) after user login
   useEffect(() => {
-    const fetchData = async () => {
-      if (user !== null) {
-        // set the array
-        const useGetRequestDataHandler: DataHandler[] = [
-          {
-            storeValue: "categories",
-            data: undefined,
-            path: "api/gamecategories",
-          },
-          {
-            storeValue: "games",
-            data: undefined,
-            path: "api/games",
-          },
-        ];
+    const fetchGlobalData = async () => {
+      if (!user) return;
 
-        try {
-          // Map over the array and call getFn for each path
-          const results = await Promise.all(
-            useGetRequestDataHandler.map(async (handler: DataHandler) => {
-              const data = await getFn(handler.path);
-              return { ...handler, data }; 
-            })
-          );
+      const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
+        { storeKey: "categories", path: "api/gamecategories" },
+        { storeKey: "games", path: "api/games" },
+        // { storeKey: "wallet", path: "api/wallets" },
+      ];
 
-          // Process the results as needed
-          results.forEach((result) => {
-            setState(result.data?.records, result.storeValue);
-          });
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
+      try {
+        const results = await Promise.all(
+          dataHandlers.map(async ({ storeKey, path }) => {
+            const data = await getFn(path);
+            return { storeKey, data: data?.records };
+          })
+        );
+
+        results.forEach(({ storeKey, data }) => {
+          setState(data, storeKey);
+        });
+      } catch (error) {
+        console.error("Error fetching global data:", error);
       }
     };
 
-    fetchData();
+    fetchGlobalData();
   }, [user]);
+  // Fetch global data (categories, games, etc.)
+  // useEffect(() => {
+  //   const fetchGlobalData = async () => {
+  //     const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
+  //       { storeKey: "games", path: "api/games" },
+  //     ];
+
+  //     try {
+  //       const results = await Promise.all(
+  //         dataHandlers.map(async ({ storeKey, path }) => {
+  //           const data = await getFn(path);
+  //           return { storeKey, data: data?.records };
+  //         })
+  //       );
+
+  //       results.forEach(({ storeKey, data }) => {
+  //         setState(data, storeKey);
+  //       });
+  //     } catch (error) {
+  //       console.error("Error fetching global data:", error);
+  //     }
+  //   };
+
+  //   fetchGlobalData();
+  // }, []);
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, login, logout, store }}
+      value={{ isAuthenticated, user, login, logout, store, setState }}
     >
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
+};

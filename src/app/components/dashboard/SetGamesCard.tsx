@@ -1,37 +1,17 @@
-import React, { useState } from "react";
+"use client";
+import React from "react";
 import Image from "next/image";
 import { Clock } from "@phosphor-icons/react";
-import Modal from "./Modal";
-import { formatNumber } from "@/lib/utils";
-
-// Existing interfaces for game rules remain unchanged
-// interface GameRuleSet {
-//   title: string;
-//   rules: string[];
-// }
-
-// interface GameRulesCategory {
-//   [gameName: string]: GameRuleSet;
-// }
-
-// interface GameRulesData {
-//   [category: string]: GameRulesCategory;
-// }
-
-// Existing gameRules and defaultRules remain unchanged
-// const gameRules: GameRulesData = {
-// };
-
-// const defaultRules: GameRuleSet = {
-//   title: "Tournament Rules",
-//   rules: [
-//     "Registration – All players must register at least **30 minutes** before tournament start time.",
-//     "Format – Single elimination bracket, matches as described in game-specific rules.",
-//     "Disputes – Tournament organizers have final say in all rule interpretations and disputes.",
-//     "Prizes – Top 3 places receive prizes according to tournament specifications.",
-//     "Code of Conduct – Players must maintain respectful behavior throughout the tournament.",
-//   ],
-// };
+import {
+  calculateTournamentOdds,
+  copyToClipboard,
+  formatCurrency,
+  formatNumber,
+} from "@/lib/utils";
+import { TypeSingleTournament } from "../../../../types/global";
+import DropDown from "@/components/DropDown";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface StatusCardProps {
   logo?: string;
@@ -39,200 +19,183 @@ interface StatusCardProps {
   status?: string;
   prize: string;
   time: string;
-  borderColor?: string;
-  players: number; // New prop for number of players
+  players: number;
+  tournament: TypeSingleTournament;
+  showModal?: (val: TypeSingleTournament) => void;
 }
 
 const StatusCard: React.FC<StatusCardProps> = ({
   logo,
   name,
   status,
+  players,
   prize,
   time,
-  borderColor,
-  players,
+  tournament,
+  showModal = () => {},
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const odds = calculateTournamentOdds(tournament);
+  const { setState } = useAuth();
+  const router = useRouter();
+  const settingsCategories = [
+    {
+      label: "View Details",
+      action: () => {
+        setState(tournament, "singleTournament");
+        router.push(`/dashboard/join-tournament/${tournament.id}`);
+      },
+      icon: () => "🔗",
+    },
+    {
+      label: "Join Now",
+      action: () => {
+        showModal(tournament);
+      },
+      icon: () => "➜",
+    },
+    {
+      label: "Copy Link",
+      action: () => {
+        const url = `${window.location.origin}/dashboard/join-tournament/${tournament.id}`;
+        copyToClipboard(url, "Tournament Link Copied!");
+      },
+      icon: () => "🔗",
+    },
+  ];
 
-  // Calculate odds based on number of players
-  const calculateOdds = () => {
-    const availablePool = Number(prize) * 0.9;
-    const oddsDetails = {
-      first: { percentage: 0, odds: 0, amount: 0 },
-      second: { percentage: 0, odds: 0, amount: 0 },
-      third: { percentage: 0, odds: 0, amount: 0 },
-      totalOdds: 0,
-    };
+  const getTdClasses = (isFirst: boolean = false, isLast: boolean = false) => {
+    let classes = "block md:table-cell w-full md:w-auto";
+    classes += " px-4 py-3";
+    classes += " md:py-4";
 
-    if (players === 2) {
-      oddsDetails.first = { percentage: 100, odds: 1.8, amount: availablePool };
-      oddsDetails.totalOdds = 1.8;
-    } else if (players === 3) {
-      oddsDetails.first = { percentage: 100, odds: 2.7, amount: availablePool };
-      oddsDetails.totalOdds = 2.7;
-    } else if (players === 4) {
-      oddsDetails.first = {
-        percentage: 75,
-        odds: 2.7,
-        amount: availablePool * 0.75,
-      };
-      oddsDetails.second = {
-        percentage: 25,
-        odds: 0.9,
-        amount: availablePool * 0.25,
-      };
-      oddsDetails.totalOdds = 2.7 + 0.9;
-    } else if (players >= 5 && players <= 10) {
-      // Linear scaling for odds
-      const t = (players - 5) / 5;
-      const oddsFirst = 2.7 + t * (5.4 - 2.7);
-      const oddsSecond = 1.35 + t * (2.7 - 1.35);
-      const oddsThird = 0.45 + t * (0.9 - 0.45);
-
-      oddsDetails.first = {
-        percentage: 60,
-        odds: oddsFirst,
-        amount: availablePool * 0.6,
-      };
-      oddsDetails.second = {
-        percentage: 30,
-        odds: oddsSecond,
-        amount: availablePool * 0.3,
-      };
-      oddsDetails.third = {
-        percentage: 10,
-        odds: oddsThird,
-        amount: availablePool * 0.1,
-      };
-      oddsDetails.totalOdds = oddsFirst + oddsSecond + oddsThird;
+    if (isFirst) {
+      classes += " md:pl-4 md:pr-2";
+    } else if (isLast) {
+       // Use slightly more padding for the last cell (actions) on desktop
+      classes += " md:px-4 md:pr-4";
+    } else {
+       // Keep original compact padding for middle cells on desktop
+      classes += " md:px-2";
     }
 
-    return oddsDetails;
+    if (!isFirst) {
+      classes += " border-t border-gray-800 md:border-t-0";
+    }
+
+    return classes;
   };
 
-  const odds = calculateOdds();
-
-  // const getGameRules = () => {
-  //   if (gameRules[status]?.[name]) {
-  //     return gameRules[status][name];
-  //   } else if (gameRules[status]) {
-  //     return {
-  //       title: `${status} Tournament Rules`,
-  //       rules: defaultRules.rules
-  //     };
-  //   } else {
-  //     return {
-  //       title: `${name} Tournament Rules`,
-  //       rules: defaultRules.rules
-  //     };
-  //   }
-  // };
-
-  // const selectedRules = getGameRules();
-
   return (
-    <>
-      <div
-        className="transLeft bg-[#0F1218] p-5 rounded-xl flex flex-col md:flex-row items-center gap-5 w-full max-w-3xl relative shadow-lg cursor-pointer hover:bg-[#161b24] transition-colors z-auto"
-        onClick={() => setIsModalOpen(true)}
-      >
-        {/* Left Section with Logo */}
-        <div className="flex flex-col items-center text-white">
+    <tr
+      onClick={() => showModal(tournament)}
+      className="transLeft block md:table-row bg-[#0F1218] shadow-lg cursor-pointer hover:bg-[#161b24] transition-colors mb-4 md:mb-0 rounded-2xl md:rounded-none"
+    >
+      <td className={`${getTdClasses(true, false)} md:rounded-tl-2xl md:rounded-bl-2xl`}>
+        <div className="flex gap-3 items-center text-white w-full">
           {logo && (
             <Image
               src={logo}
               alt={name}
               width={60}
               height={60}
-              className="w-10 h-10"
+              className="w-10 h-10 flex-shrink-0"
             />
           )}
-
-          <span className="text-sm font-semibold text-center">{name}</span>
+          <span className="elipsis text-sm md:text-base font-semibold text-left flex-grow text-[#FCF8DB]">
+            {name}
+          </span>
         </div>
+      </td>
 
-        {/* Status Indicator */}
-        <div
-          className={`absolute top-0 left-0 h-2 w-20 rounded-tl-xl ${borderColor}`}
-        ></div>
+      <td className={getTdClasses()}>
+         <div className="flex justify-between items-center md:block md:text-left">
+           <h4 className="text-gray-400 text-xs md:text-sm font-medium uppercase">
+             Players
+           </h4>
+           <div className="text-right md:text-left">
+             {status && (
+               <p className="text-[#FCF8DB] text-xs font-semibold md:hidden">● {status.toUpperCase()}</p>
+             )}
+             <p className="text-[#FCF8DB] text-sm md:text-base font-semibold mt-0.5">
+               {formatNumber(players)}
+               {status && (
+                 <span className="hidden md:inline text-xs font-semibold ml-1">● {status.toUpperCase()}</span>
+               )}
+             </p>
+           </div>
+         </div>
+      </td>
 
-        {/* Middle Section with Info */}
-        <div className="flex-1 flex flex-col md:flex-row justify-between items-center text-white border-l border-gray-700 md:pl-5 w-full space-y-3 md:space-y-0">
-          <div className="text-center md:text-left">
-            <h4 className="text-gray-400 text-sm">{name.toUpperCase()}</h4>
-            {status && (
-              <p className="text-[#FCF8DB] text-xs">● {status.toUpperCase()}</p>
-            )}
-            <p className="text-[#FCF8DB] text-xs">
-              Players: {formatNumber(players)}
-            </p>
-          </div>
-          <div className="text-center md:text-left">
-            <h4 className="text-gray-400 text-sm">PRIZE</h4>
-            <p className="text-[#FCF8DB] flex items-center justify-center md:justify-start gap-1">
-              Odds: {odds.totalOdds.toFixed(2)}
-            </p>
-          </div>
-          <div className="text-center md:text-left">
-            <h4 className="text-gray-400 text-sm">TIME</h4>
-            <p className="flex items-center justify-center md:justify-start gap-1 text-[#FCF8DB]">
-              <Clock size={20} /> {time}
-            </p>
-          </div>
+      <td className={getTdClasses()}>
+        <div className="flex justify-between items-center md:block md:text-left">
+          <h4 className="text-gray-400 text-sm font-medium md:font-normal md:mb-0.5">PRIZE</h4>
+          <p className="text-[#FCF8DB] text-sm md:text-base font-semibold">
+            {formatCurrency(prize)}
+          </p>
         </div>
+      </td>
 
-        {/* Join Now Button */}
-        <button
-          className="bg-black px-4 py-2 rounded-md text-white text-xs font-bold flex items-center gap-1 mt-3 md:mt-0"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsModalOpen(true);
-          }}
-        >
-          JOIN NOW ➜
-        </button>
-      </div>
+      <td className={getTdClasses()}>
+        <div className="flex justify-between items-center md:block md:text-left">
+          <h4 className="text-gray-400 text-sm font-medium md:font-normal md:mb-0.5">ODDS</h4>
+          <p className="text-[#FCF8DB] text-sm md:text-base font-semibold">
+            {odds.totalOdds.toFixed(2)}
+          </p>
+        </div>
+      </td>
 
-      <Modal
-        isOpen={isModalOpen}
-        setIsOpen={setIsModalOpen}
-        header={`${name.toUpperCase()} GAME RULES`}
-        sub={`Prize Pool: ₦${prize} • Start Time: ${time} • Players: ${players} • Total Odds: ${odds.totalOdds.toFixed(
-          2
-        )}×`}
-        // contentTitle={selectedRules.title}
-        // contentItems={[
-        //   ...selectedRules.rules,
-        //   `Prize Distribution:`,
-        //   `- 1st Place: ${odds.first.percentage}% (₦${odds.first.amount.toFixed(
-        //     2
-        //   )}, ${odds.first.odds.toFixed(2)}×)`,
-        //   odds.second.percentage > 0
-        //     ? `- 2nd Place: ${
-        //         odds.second.percentage
-        //       }% (₦${odds.second.amount.toFixed(2)}, ${odds.second.odds.toFixed(
-        //         2
-        //       )}×)`
-        //     : "",
-        //   odds.third.percentage > 0
-        //     ? `- 3rd Place: ${
-        //         odds.third.percentage
-        //       }% (₦${odds.third.amount.toFixed(2)}, ${odds.third.odds.toFixed(
-        //         2
-        //       )}×)`
-        //     : "",
-        //   `Platform Fee: 10%`,
-        // ].filter((item) => item !== "")}
-        firstButtonText="Accept & Join"
-        secondButtonText="Decline"
-        onClick={() => {
-          console.log(`Joining ${name} tournament`);
-          setIsModalOpen(false);
-          // Add navigation or registration logic here
-        }}
-        onTab={() => setIsModalOpen(false)}
-      />
-    </>
+      <td className={getTdClasses()}>
+         <div className="flex justify-between items-center md:block md:text-left">
+           <h4 className="text-gray-400 text-sm font-medium md:font-normal md:mb-0.5">TIME</h4>
+           <p className="flex items-center justify-end md:justify-start gap-1 text-[#FCF8DB] text-sm md:text-base font-semibold">
+             <Clock size={18} className="md:size-5"/> {time}
+           </p>
+         </div>
+      </td>
+
+      <td className={`${getTdClasses(false, true)} md:rounded-tr-2xl md:rounded-br-2xl`}>
+        <div className="w-full flex justify-center items-center h-full">
+          <DropDown
+            header={
+              <div className="bg-black w-full md:w-auto px-4 py-2 rounded-md text-white text-xs font-bold flex items-center justify-center gap-1 mt-2 md:mt-0 cursor-pointer">
+                <svg
+                  fill="#fff"
+                  height="20px"
+                  width="20px"
+                  viewBox="0 0 16 16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M8,6.5A1.5,1.5,0,1,1,6.5,8,1.5,1.5,0,0,1,8,6.5ZM.5,8A1.5,1.5,0,1,0,2,6.5,1.5,1.5,0,0,0,.5,8Zm12,0A1.5,1.5,0,1,0,14,6.5,1.5,1.5,0,0,0,12.5,8Z"></path>
+                </svg>
+              </div>
+            }
+            toolTip="Action"
+            content={
+              <div className="w-full space-y-2">
+                {settingsCategories.map((category, catIndex) => {
+                  const Icon = category.icon;
+                  return (
+                    <button
+                      key={catIndex + 232323}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent row onClick when clicking dropdown item
+                        category.action();
+                      }}
+                      className="group px-4 py-2 flex items-center hover:bg-[#f37f2d] transition-all duration-200 cursor-pointer w-full text-left"
+                    >
+                      <span className="mr-3 text-lg">{<Icon />}</span>
+                      <span className="text-[#fcf8db] group-hover:translate-x-1 transition-transform duration-200 text-sm">
+                        {category.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            }
+          />
+        </div>
+      </td>
+    </tr>
   );
 };
 

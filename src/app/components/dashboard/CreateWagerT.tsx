@@ -25,6 +25,7 @@ import {
 import EventScheduler from "./TimerSchedule";
 import { Controller } from "react-hook-form";
 import dynamic from "next/dynamic";
+import { TypeSingleTournament } from "../../../../types/global";
 // import RichTextEditor from "@/components/RichTextEditor";
 
 // Define types
@@ -32,7 +33,7 @@ interface FormData {
   game_id: string;
   bet_on: string;
   description: string;
-  amount: number;
+  amount: number | null;
   number_of_participants: number;
   match_date: Date | null;
   match_time: string;
@@ -46,9 +47,9 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
 });
 
 const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
-  const { setLoading } = props;
+  const { setLoading, loading } = props;
   const [isMounted, setIsMounted] = useState<boolean>(false);
-  const { store } = useAuth();
+  const { store, setState } = useAuth();
   const router = useRouter();
   // const quill = new Quill('#editor');
 
@@ -65,7 +66,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
     defaultValues: {
       game_id: "",
       description: "",
-      amount: 0,
+      amount: null,
       number_of_participants: 0,
       match_date: null,
       match_time: "",
@@ -75,6 +76,14 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (store.createMatch.game_id) {
+      setValue("game_id", store.createMatch.game_id.toString(), {
+        shouldValidate: true,
+      });
+    }
+  }, [store.createMatch.game_id, setValue]);
 
   const handleCategoryChange = (value: string) => {
     setValue("game_id", value, { shouldValidate: true });
@@ -87,11 +96,15 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
       setLoading(true);
-      const response = await postFn("api/tournamentstables/add", data);
+      const response: TypeSingleTournament = await postFn(
+        "api/tournamentstables/add",
+        data
+      );
       toast.success("Tournament Created Successfully", {
         position: "top-right",
         className: "p-4",
       });
+      setState(response, "singleTournament");
       router.push(`/dashboard/join-tournament/${response.id}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Please try again", {
@@ -126,10 +139,12 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
         <div className="space-y-2">
           <Label>Select Game</Label>
           <Select
-            onValueChange={handleCategoryChange}
             {...register("game_id", {
-              required: "Game category is required",
+              required: "A game is required",
             })}
+            onValueChange={handleCategoryChange}
+            value={watch("game_id")}
+            disabled={loading}
           >
             <SelectTrigger className="w-full p-3 !h-[50px] bg-gray-700 text-white text-base rounded-lg shadow-md">
               <SelectValue
@@ -152,15 +167,23 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
           )}
         </div>
         {/* Note to Participants */}
-        <div className="space-y-2 items-center gap-4">
+        <div className="space-y-2">
           <Label htmlFor="description">Note to Participants</Label>
           <div className="editorWrapper">
             {typeof window !== "undefined" ? (
               <RichTextEditor
+                {...register("description", {
+                  required: "Description is required",
+                })}
                 value={watch("description")} // Bind the value to react-hook-form
-                onChange={(value) =>
-                  setValue("description", value, { shouldValidate: true })
-                } // Update the form value
+                disabled={loading}
+                onChange={(value) => {
+                  setValue(
+                    "description",
+                    value === "<p><br></p>" ? "" : value,
+                    { shouldValidate: true }
+                  );
+                }} // Update the form value
                 placeholder="Enter the rules, terms and necessary information for this match"
               />
             ) : (
@@ -173,8 +196,10 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
         </div>
         {/* Wager Amount */}
         <div className="space-y-2">
-          <Label htmlFor="amount">Wager Amount</Label>
-          <div className="relative w-32">
+          <Label htmlFor="amount-single" className="text-right">
+            Wager Amount
+          </Label>
+          <div className="relative w-full">
             <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
               <Money size={20} weight="duotone" />
             </div>
@@ -189,8 +214,15 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
               step={500}
               min={500}
               type="number"
-              id="amount"
-              placeholder="0.00"
+              id="amount-single"
+              disabled={loading}
+              placeholder="Min of 500"
+              onChange={(e) => {
+                const num = Number(e.target.value);
+                setValue("amount", !num ? null : num && num < 500 ? 500 : num, {
+                  shouldValidate: true,
+                });
+              }}
               className="p-3 pl-9 w-full bg-gray-700 text-white rounded-lg shadow-md !h-[50px]"
             />
           </div>
@@ -211,6 +243,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             type="number"
             id="number_of_participants"
             placeholder="ex. 20"
+            disabled={loading}
             className="w-full p-3 bg-gray-700 text-white rounded-lg shadow-md !h-[50px]"
           />
           {errors.number_of_participants && (
@@ -228,6 +261,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             <CalendarForm
               onDateChange={(date) => field.onChange(date)}
               label="Select a date"
+              disabled={loading}
             />
           )}
         />
@@ -241,6 +275,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             {...register("match_time", {
               required: "Match time is required",
             })}
+            disabled={loading}
           />
           {errors.match_time && (
             <p className="text-red-500 text-sm">{errors.match_time.message}</p>

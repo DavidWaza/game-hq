@@ -8,9 +8,11 @@ import {
 import Button from "@/components/Button";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const EmailOtp = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const { handleSubmit, setValue, watch } = useForm<{
     otp: string[];
@@ -31,7 +33,7 @@ const EmailOtp = () => {
     setTimeout(() => {
       setIsLoading(false);
       if (otpValues.join("").length === 6) {
-        window.location.href = "/otp/otp-confirm";
+        router.push("/otp/otp-confirm");
       } else {
         alert("Invalid OTP, please enter a 6-digit code.");
       }

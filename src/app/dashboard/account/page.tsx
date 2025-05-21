@@ -8,15 +8,17 @@ import {
   Clock,
   ArrowsClockwise,
   Coins,
-  CurrencyNgn
+  CurrencyNgn,
 } from "@phosphor-icons/react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatCurrency } from "@/lib/utils";
 
 export default function DigitalWallet() {
-    const accountname = useAuth()?.user?.username ?? 'Game User';
+  const { user } = useAuth();
+  const accountname = user?.username ?? "Game User";
 
-  const [balance, setBalance] = useState(10000);
+  const [balance, setBalance] = useState(Number(user?.wallet?.balance || 0));
   const [savingsBalance, setSavingsBalance] = useState(5000);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -56,7 +58,11 @@ export default function DigitalWallet() {
   ]);
 
   const handleDeposit = () => {
-    if (!transferAmount || isNaN(Number(transferAmount)) || Number(transferAmount) <= 0)
+    if (
+      !transferAmount ||
+      isNaN(Number(transferAmount)) ||
+      Number(transferAmount) <= 0
+    )
       return;
 
     const amount = Number(transferAmount);
@@ -101,7 +107,11 @@ export default function DigitalWallet() {
   };
 
   const handleTransfer = () => {
-    if (!transferAmount || isNaN(Number(transferAmount)) || Number(transferAmount) <= 0)
+    if (
+      !transferAmount ||
+      isNaN(Number(transferAmount)) ||
+      Number(transferAmount) <= 0
+    )
       return;
 
     const amount = Number(transferAmount);
@@ -140,8 +150,8 @@ export default function DigitalWallet() {
 
   // Add state for card toggles
   const [cardLocked, setCardLocked] = useState(false);
-//   const [onlinePurchasesEnabled, setOnlinePurchasesEnabled] = useState(true);
-//   const [atmWithdrawalsEnabled, setAtmWithdrawalsEnabled] = useState(true);
+  //   const [onlinePurchasesEnabled, setOnlinePurchasesEnabled] = useState(true);
+  //   const [atmWithdrawalsEnabled, setAtmWithdrawalsEnabled] = useState(true);
 
   // Add state for transaction filtering
   const [filterType, setFilterType] = useState("all");
@@ -163,7 +173,7 @@ export default function DigitalWallet() {
 
   return (
     <>
-    <Navbar variant="primary"/>
+      <Navbar variant="primary" />
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 p-4 md:p-8 text-white !pt-52">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -209,7 +219,7 @@ export default function DigitalWallet() {
           {activeTab === "dashboard" && (
             <>
               {/* Account Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="transIn grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-gradient-to-br from-gray-800 to-gray-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                   <p className="text-gray-300 text-sm font-medium mb-2">
                     Current Balance
@@ -217,10 +227,7 @@ export default function DigitalWallet() {
                   <div className="flex items-center">
                     <Coins size={28} className="text-teal-400" />
                     <h2 className="text-3xl font-bold text-white ml-3 flex items-center">
-                      <CurrencyNgn />
-                      {balance.toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                      })}
+                      {formatCurrency(balance)}
                     </h2>
                   </div>
                   <div className="mt-4 flex space-x-2">
@@ -299,7 +306,7 @@ export default function DigitalWallet() {
               </div>
 
               {/* Quick Actions */}
-              <div className="mb-8">
+              <div className="transIn mb-8">
                 <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
                   <button
@@ -316,8 +323,7 @@ export default function DigitalWallet() {
                     <CreditCard size={24} className="text-blue-400 mb-2" />
                     <span className="text-sm">Cards</span>
                   </button>
-                 
-                  
+
                   <button
                     onClick={() => setActiveTab("transactions")}
                     className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex flex-col items-center justify-center transition-all"
@@ -329,7 +335,7 @@ export default function DigitalWallet() {
               </div>
 
               {/* Recent Transactions */}
-              <div>
+              <div className="transIn">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold">Recent Transactions</h2>
                   <button
@@ -398,10 +404,7 @@ export default function DigitalWallet() {
                         transaction.type === "transfer from savings"
                           ? "+"
                           : "-"}
-                        <CurrencyNgn />
-                        {transaction.amount.toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatCurrency(Number(transaction.amount))}
                       </div>
                     </div>
                   ))}
@@ -411,7 +414,10 @@ export default function DigitalWallet() {
           )}
 
           {activeTab === "transactions" && (
-            <div className="bg-gray-800 rounded-xl p-6">
+            <div
+              key="transactions"
+              className="transIn bg-gray-800 rounded-xl p-6"
+            >
               <h2 className="text-xl font-semibold mb-6">
                 Transaction History
               </h2>
@@ -448,7 +454,6 @@ export default function DigitalWallet() {
                     Expenses
                   </button>
                 </div>
-               
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -463,9 +468,7 @@ export default function DigitalWallet() {
                   <tbody>
                     {filteredTransactions.length === 0 && (
                       <tr>
-                        <td
-                          className="text-center py-8 text-gray-400"
-                        >
+                        <td className="text-center py-8 text-gray-400">
                           No transactions match the current filter.
                         </td>
                       </tr>
@@ -527,10 +530,7 @@ export default function DigitalWallet() {
                           transaction.type === "transfer from savings"
                             ? "+"
                             : "-"}
-                          <CurrencyNgn />
-                          {transaction.amount.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                          })}
+                          {formatCurrency(Number(transaction.amount))}
                         </td>
                         <td className="pr-2">
                           <span
@@ -554,7 +554,7 @@ export default function DigitalWallet() {
           )}
 
           {activeTab === "cards" && (
-            <div className="bg-gray-800 rounded-xl p-6">
+            <div key="cards" className="transIn bg-gray-800 rounded-xl p-6">
               <h2 className="text-xl font-semibold mb-6">Your Cards</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Card 1 */}
@@ -614,9 +614,7 @@ export default function DigitalWallet() {
 
               {/* Card Settings */}
               <div className="mt-8">
-                <h3 className="text-lg font-medium mb-4">
-                  Card Settings
-                </h3>
+                <h3 className="text-lg font-medium mb-4">Card Settings</h3>
                 <div className="bg-gray-700/50 rounded-lg p-4">
                   {/* Lock Card Toggle */}
                   <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-600">
@@ -703,7 +701,10 @@ export default function DigitalWallet() {
           )}
 
           {activeTab === "transfer" && (
-            <div className="bg-gray-800 rounded-xl p-6 max-w-lg mx-auto">
+            <div
+              key="transfer"
+              className="transIn bg-gray-800 rounded-xl p-6 max-w-lg mx-auto"
+            >
               <h2 className="text-xl font-semibold mb-6">Transfer Funds</h2>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -756,18 +757,14 @@ export default function DigitalWallet() {
                 </div>
                 {transferType === "toSavings" && (
                   <p className="text-sm text-gray-400 mt-2 flex items-center">
-                    Available balance: <CurrencyNgn />
-                    {balance.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}
+                    Available balance:
+                    {formatCurrency(balance)}
                   </p>
                 )}
                 {transferType === "fromSavings" && (
                   <p className="text-sm text-gray-400 mt-2 flex items-center">
-                    Available in savings: <CurrencyNgn />
-                    {savingsBalance.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}
+                    Available in savings:
+                    {formatCurrency(savingsBalance)}
                   </p>
                 )}
               </div>
@@ -885,11 +882,8 @@ export default function DigitalWallet() {
                     />
                   </div>
                   <p className="text-sm text-gray-400 mt-2 flex items-center">
-                      
-                      Available balance: <CurrencyNgn />
-                    {balance.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}
+                    Available balance:
+                    {formatCurrency(balance)}
                   </p>
                 </div>
                 <div className="flex space-x-4">
