@@ -49,7 +49,7 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
 
 const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   const { setLoading, loading } = props;
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(true);
   // const router = useRouter();
   const [maxInvitees] = useState(5);
   const [invitees, setInvitees] = useState<string[]>([]);
@@ -223,7 +223,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   return (
     <section className="transIn">
       {/* Switch Button: Public/Private Bet */}
-      <div className="flex justify-center items-center space-x-4">
+      {/* <div className="flex justify-center items-center space-x-4">
         <button
           onClick={() => setIsPrivate(false)}
           disabled={loading}
@@ -242,7 +242,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
         >
           Private Bet
         </button>
-      </div>
+      </div> */}
 
       {/* Form: Public/Private Bet */}
       <div className="w-full mt-6 grid gap-4">

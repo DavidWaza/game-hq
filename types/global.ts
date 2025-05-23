@@ -72,15 +72,20 @@ export type TypeSingleTournament = {
   created_at: string | null;
   updated_at: string | null;
 };
-
-export type CreatedGames = {
-  banner: string;
-  category_id: string;
-  description: string;
-  name: string;
-  game_image: string;
+export type TypePrivateWager = {
   id: string;
-  records: []
+  game_id: string;
+  users: string;
+  created_at: string | null;
+  updated_at: string | null;
+  user_id: string;
+  users_username: string;
+  title: string;
+  description: string;
+  amount: string;
+  match_date: string;
+  match_time: string;
+  user: User
 }
 export type TypeWallet = {
   banner: string;

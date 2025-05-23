@@ -16,14 +16,10 @@ import {
   UserPlus,
   Eye,
 } from "@phosphor-icons/react"; // Added new icons
+import { TypePrivateWager } from "../../../../types/global";
+import { formatCurrency } from "@/lib/utils";
 
 // Define mock structures if not available in global types
-interface CreatedGameRecord {
-  id: string;
-  name: string;
-  amount: string | number;
-  status: string;
-}
 
 interface InvitationRecord {
   id: string;
@@ -45,7 +41,7 @@ const CreateWagerBanner = () => {
   const { user } = useAuth();
   const username = user?.username || "Challenger";
 
-  const [createdGamesData, setCreatedGamesData] = useState<CreatedGameRecord[]>(
+  const [createdGamesData, setCreatedGamesData] = useState<TypePrivateWager[]>(
     []
   );
   const [invitationsData, setInvitationsData] = useState<InvitationRecord[]>(
@@ -96,60 +92,59 @@ const CreateWagerBanner = () => {
     },
   };
 
-  const fetchData = async (tabName: typeof activeTab) => {
-    setLoadingStates((prev) => ({ ...prev, [tabName]: true }));
-    try {
-      if (tabName === "created") {
-        const response = await getFn(`/api/games/my-games`);
-        setCreatedGamesData(response?.records || []);
-      } else if (tabName === "invitations") {
-        // Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate API delay
-        setInvitationsData([
-          {
-            id: "INV001",
-            gameTitle: "Chess Titans",
-            totalAmount: "10 SOL",
-            statusText: `Invited by ${username}`,
-          },
-          {
-            id: "INV002",
-            gameTitle: "Poker Arena",
-            totalAmount: "5 SOL",
-            statusText: "Ready Players: User789 invited",
-          },
-        ]);
-      } else if (tabName === "ongoing") {
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        setOngoingGamesData([
-          {
-            id: "ONG001",
-            gameTitle: "Ludo Clash",
-            totalAmount: "2 SOL",
-            statusText: "Your Move!",
-            nextAction: "PLAY",
-          },
-          {
-            id: "ONG002",
-            gameTitle: "FIFA Pro",
-            totalAmount: "5 SOL",
-            statusText: "Waiting for Opponent",
-          },
-        ]);
-      }
-    } catch (error) {
-      console.error(`Failed to fetch ${tabName} games:`, error);
-      if (tabName === "created") setCreatedGamesData([]);
-      if (tabName === "invitations") setInvitationsData([]);
-      if (tabName === "ongoing") setOngoingGamesData([]);
-    } finally {
-      setLoadingStates((prev) => ({ ...prev, [tabName]: false }));
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async (tabName: typeof activeTab) => {
+      setLoadingStates((prev) => ({ ...prev, [tabName]: true }));
+      try {
+        if (tabName === "created") {
+          const response = await getFn(`/api/privatewagers`);
+          setCreatedGamesData(response?.records || []);
+        } else if (tabName === "invitations") {
+          // Replace with actual API call
+          await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate API delay
+          setInvitationsData([
+            {
+              id: "INV001",
+              gameTitle: "Chess Titans",
+              totalAmount: "10 SOL",
+              statusText: `Invited by ${username}`,
+            },
+            {
+              id: "INV002",
+              gameTitle: "Poker Arena",
+              totalAmount: "5 SOL",
+              statusText: "Ready Players: User789 invited",
+            },
+          ]);
+        } else if (tabName === "ongoing") {
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          setOngoingGamesData([
+            {
+              id: "ONG001",
+              gameTitle: "Ludo Clash",
+              totalAmount: "2 SOL",
+              statusText: "Your Move!",
+              nextAction: "PLAY",
+            },
+            {
+              id: "ONG002",
+              gameTitle: "FIFA Pro",
+              totalAmount: "5 SOL",
+              statusText: "Waiting for Opponent",
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error(`Failed to fetch ${tabName} games:`, error);
+        if (tabName === "created") setCreatedGamesData([]);
+        if (tabName === "invitations") setInvitationsData([]);
+        if (tabName === "ongoing") setOngoingGamesData([]);
+      } finally {
+        setLoadingStates((prev) => ({ ...prev, [tabName]: false }));
+      }
+    };
     fetchData(activeTab);
-  }, [activeTab]);
+  }, [activeTab, username]);
 
   const TableRow = ({
     children,
@@ -349,10 +344,12 @@ const CreateWagerBanner = () => {
                       {item.id?.substring(0, 8) || "N/A"}...
                     </TableCell>
                     <TableCell>
-                      {item.name || item.gameTitle || "N/A"}
+                      {item.name || item.gameTitle || item.title || "N/A"}
                     </TableCell>
                     <TableCell>
-                      {item.amount || item.totalAmount || "N/A"}
+                      {formatCurrency(
+                        Number(item.amount || item.totalAmount || 0)
+                      )}
                     </TableCell>
                     <TableCell>
                       <StatusIndicator
