@@ -17,41 +17,40 @@ import { DataFromLogin } from "../../types/global";
 const Login = () => {
   const { login } = useAuth();
   const router = useRouter();
-  const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
 
-  const { register, handleSubmit } = useForm<{
-    // email: string;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<{
     password: string;
     username: string;
   }>();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const password = e.target.value;
-    setPassword(password);
-  };
-
   const loginMutation = useMutation({
-    mutationFn: (userData: {
-      // email: string;
-      password: string;
-      username: string;
-    }) => postFn("api/auth/login", userData),
+    mutationFn: (userData: { password: string; username: string }) =>
+      postFn("api/auth/login", userData),
     onSuccess: async (data: DataFromLogin) => {
       if (data?.token) {
         toast.success("Login Successful");
         await login(data);
         router.push("/dashboard");
+      } else {
+        toast.error(data?.message || "Login Failed: No token received.");
       }
     },
-    onError: (error) => {
-      toast.error(`Login Failed ${error.message}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unknown error occurred";
+      toast.error(`Login Failed: ${errorMessage}`);
     },
   });
 
-  // Form submission handler
   const onSubmit: SubmitHandler<{
-    // email: string;
     password: string;
     username: string;
   }> = (formData) => {
@@ -68,14 +67,23 @@ const Login = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="my-2 space-y-4 ">
             <div className="grid w-full items-center gap-1.5 mt-4 !text-left">
               <div>
-                <Label className="text-[#233d4d]">Email address</Label>
+                <Label htmlFor="username" className="text-[#233d4d]">
+                  Email address
+                </Label>{" "}
+                {/* Ensure htmlFor matches input id */}
                 <Input
                   disabled={loginMutation.isPending}
                   type="email"
-                  id="email"
-                  {...register("username")}
+                  id="username"
+                  {...register("username", { required: "Email is required" })}
                   placeholder="Ex. davidwaza@gmail.com"
+                  autoComplete="username"
                 />
+                {errors.username && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.username.message}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -87,12 +95,13 @@ const Login = () => {
               <div className="relative">
                 <Input
                   disabled={loginMutation.isPending}
-                  value={password}
                   type={isVisible ? "text" : "password"}
                   id="password"
-                  {...register("password")}
-                  onChange={handleChange}
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
                   placeholder="*********"
+                  autoComplete="current-password"
                 />
                 <button
                   disabled={loginMutation.isPending}
@@ -107,6 +116,11 @@ const Login = () => {
                   )}
                 </button>
               </div>
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.password.message}
+                </p>
+              )}
               <p className="text-[#233d4d] text-sm">
                 <Link
                   href="/forgot-password"
@@ -121,6 +135,7 @@ const Login = () => {
               variant="primary"
               size="sm"
               width="full"
+              type="submit"
             >
               {loginMutation.isPending ? "Loading..." : "Login"}
             </Button>
@@ -133,13 +148,13 @@ const Login = () => {
             variant="secondary"
             size="md"
             width="full"
+            type="button"
             icon={
               <Image
                 src={"/assets/icons/google-icons.svg"}
-                alt=""
-                width={0}
-                height={0}
-                sizes="100vw"
+                alt="Google icon"
+                width={20}
+                height={20}
                 className="w-5 h-5 object-contain object-center"
               />
             }

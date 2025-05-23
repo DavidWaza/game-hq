@@ -32,6 +32,7 @@ export type UserFromAuth = {
   email: string;
 };
 export type DataFromLogin = {
+  message: string;
   token: string;
   user: UserFromAuth;
 };
