@@ -49,7 +49,7 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
 
 const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   const { setLoading, loading } = props;
-  const [isPrivate, setIsPrivate] = useState(true);
+  const [isPrivate,] = useState(true);
   // const router = useRouter();
   const [maxInvitees] = useState(5);
   const [invitees, setInvitees] = useState<string[]>([]);
