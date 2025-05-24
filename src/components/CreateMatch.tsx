@@ -33,14 +33,14 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
           onClick={() => setMatchMode(0)}
           className="w-full text-center relative h-full rounded-3xl !outline-none !border-none"
         >
-          1 v 1
+          Invite Players
         </button>
         <button
           disabled={loading}
           onClick={() => setMatchMode(1)}
           className="w-full text-center relative h-full rounded-3xl !outline-none !border-none"
         >
-          Tournament
+          Create Tournament
         </button>
       </div>
       {/* content */}

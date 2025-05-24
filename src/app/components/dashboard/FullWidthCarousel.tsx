@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Intersect, Trophy } from "@phosphor-icons/react";
 import Modal from "./Modal";
 import MainModal from "@/components/Modal";
@@ -19,15 +19,14 @@ const MainDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isOpenInvite, setIsOpenInvite] = useState(false);
   const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
-  const [hoveredButtonLabel, setHoveredButtonLabel] = useState<string | null>(
-    null
-  );
+
   const games: TypeGames[] = store?.games || [];
   const selectedGameData = games.find((game) => game.id === selectedGame);
 
   const handleGameClick = (gameId: string) => {
     setExpandedGameId((prev) => (prev === gameId ? null : gameId));
   };
+
   const handleGameSelect = (gameId: string) => {
     setSelectedGame(gameId);
     setIsModalOpen(true);
@@ -47,8 +46,6 @@ const MainDashboard = () => {
     }
   };
 
-  // const navigateRouter = (path: string) => router.push(path);
-
   const fixedActionButtons = [
     {
       id: "joinWager",
@@ -64,6 +61,26 @@ const MainDashboard = () => {
     },
   ];
 
+  // Variants for the icon animation on button hover
+  const iconVariants = {
+    rest: {
+      rotate: 0,
+      scale: 1,
+    },
+    hover: {
+      rotate: -8,
+      scale: 1.1,
+    },
+  };
+
+  const buttonVariants = {
+    rest: { scale: 1 },
+    hover: {
+      scale: 1.08,
+    },
+    tap: { scale: 0.95 },
+  };
+
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] px-4 pt-32 md:pt-52 overflow-y-auto">
       <motion.h1
@@ -75,14 +92,14 @@ const MainDashboard = () => {
         Select Your Game
       </motion.h1>
 
-      <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto">
+      {/* Game selection area */}
+      <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto pb-24">
         {games.map((game) => {
           const isExpanded = expandedGameId === game.id;
-
           return (
             <motion.div
               key={game.id}
-              className="relative bg-[#1e3a4c] rounded-2xl overflow-hidden shadow-xl w-48 sm:w-56 cursor-pointer hover:scale-105 transition-all duration-300 group"
+              className="relative bg-[#1e3a4c] rounded-2xl overflow-hidden shadow-xl w-48 sm:w-56 cursor-pointer hover:scale-105 transition-transform duration-300 group"
               onClick={() => handleGameClick(game.id)}
               whileHover={{ y: -5 }}
             >
@@ -100,7 +117,6 @@ const MainDashboard = () => {
                   {game.name}
                 </h3>
               </div>
-
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
@@ -121,7 +137,10 @@ const MainDashboard = () => {
                         Info
                       </button>
                       <button
-                        onClick={() => handleGameSelect(game.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleGameSelect(game.id);
+                        }}
                         className="text-[#c1dce8] hover:text-[#f37f2d] hover:underline transition"
                       >
                         Create Game
@@ -135,47 +154,38 @@ const MainDashboard = () => {
         })}
       </div>
 
-      {/* Floating Buttons Bottom Left */}
-      <div className="fixed bottom-4 right-4 flex flex-col gap-3 z-50">
+      <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-50">
         {fixedActionButtons.map((btn) => (
           <motion.button
             key={btn.id}
             onClick={btn.action}
-            onMouseEnter={() => setHoveredButtonLabel(btn.label)}
-            onMouseLeave={() => setHoveredButtonLabel(null)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-[#233d4d] hover:bg-[#f37f2d] text-[#fcf8db] hover:text-[#233d4d] p-3 rounded-full shadow-md focus:outline-none transition-all"
+            initial="rest"
+            whileHover="hover"
+            whileTap="tap"
+            variants={buttonVariants}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="flex items-center bg-[#233d4d] text-[#fcf8db] pl-[14px] pr-[16px] py-[10px] rounded-full shadow-lg hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f37f2d] focus-visible:ring-offset-2 focus-visible:ring-offset-[#101820] transition-colors duration-200 ease-in-out hover:bg-[#f37f2d] hover:text-[#233d4d]"
           >
-            <btn.icon size={20} weight="bold" />
+            <motion.div
+              variants={iconVariants}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <btn.icon size={20} weight="bold" aria-hidden="true" />
+            </motion.div>
+            <span className="ml-2 whitespace-nowrap font-semibold text-sm">
+              {btn.label}
+            </span>
           </motion.button>
         ))}
       </div>
 
-      {/* Hover Label Bottom Right */}
-      <div className="fixed bottom-4 right-20 z-50">
-        <AnimatePresence>
-          {hoveredButtonLabel && (
-            <motion.div
-              key={hoveredButtonLabel}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="bg-[#233d4d] text-[#fcf8db] text-sm px-4 py-2 rounded-md shadow-xl border border-[#4a7c8c]/50"
-            >
-              {hoveredButtonLabel}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
+      {/* Modals */}
       <Modal
         isOpen={isOpenInvite}
         setIsOpen={setIsOpenInvite}
         title="Join an Existing Wager"
         firstButtonText="Join Tournament"
         secondButtonText="My Invitations"
-        // onClick={() => router.push("/dashboard/join-tournament")}
       />
       <MainModal isOpen={isModalOpen}>
         <motion.div
@@ -202,19 +212,18 @@ const MainDashboard = () => {
               Choose how you want to play:
             </p>
             <Button
-              onClick={() => {
-                handleCreate(1);
-              }}
+              onClick={() => handleCreate(1)}
               className="w-full sm:w-auto"
+              variant="secondary"
+              size="lg"
             >
               Create Tournament
             </Button>
             <Button
               variant="primary"
-              onClick={() => {
-                handleCreate(0);
-              }}
+              onClick={() => handleCreate(0)}
               className="w-full sm:w-auto"
+              size="lg"
             >
               Invite Players
             </Button>
