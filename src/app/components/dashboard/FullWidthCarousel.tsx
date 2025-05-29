@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,14 +7,10 @@ import {
   Trophy,
   Info as InfoIcon,
   GameController,
-  XCircle,
   Sparkle,
-  CaretRight,
-  CornersOut, 
-  Lightning, 
+  Lightning,
   ShieldCheck, // For a "confirm" or "secure" button feel
   Power, // For a stylized close button
-  Scan, // For a subtle background effect
 } from "@phosphor-icons/react";
 import Modal from "./Modal";
 import MainModal from "@/components/Modal";
@@ -142,19 +137,45 @@ const MainDashboard = () => {
 
   // SVG for animated grid background pattern
   const GridPattern = () => (
-    <svg width="100%" height="100%" className="absolute inset-0 opacity-[0.03] pointer-events-none">
+    <svg
+      width="100%"
+      height="100%"
+      className="absolute inset-0 opacity-[0.03] pointer-events-none"
+    >
       <defs>
-        <pattern id="animatedGrid" width="50" height="50" patternUnits="userSpaceOnUse" x="0" y="0">
-          <path d="M0 25 H50 M25 0 V50" stroke="rgba(0, 220, 255, 0.5)" strokeWidth="0.5"/>
-          <rect width="50" height="50" fill="transparent"/>
-          <animate attributeName="x" from="0" to="50" dur="5s" repeatCount="indefinite" />
-          <animate attributeName="y" from="0" to="50" dur="7s" repeatCount="indefinite" />
+        <pattern
+          id="animatedGrid"
+          width="50"
+          height="50"
+          patternUnits="userSpaceOnUse"
+          x="0"
+          y="0"
+        >
+          <path
+            d="M0 25 H50 M25 0 V50"
+            stroke="rgba(0, 220, 255, 0.5)"
+            strokeWidth="0.5"
+          />
+          <rect width="50" height="50" fill="transparent" />
+          <animate
+            attributeName="x"
+            from="0"
+            to="50"
+            dur="5s"
+            repeatCount="indefinite"
+          />
+          <animate
+            attributeName="y"
+            from="0"
+            to="50"
+            dur="7s"
+            repeatCount="indefinite"
+          />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#animatedGrid)" />
     </svg>
   );
-
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-br from-[#233d4d] via-[#2c586b] to-[#101820] px-4 pt-32 md:pt-40 pb-40 overflow-y-auto scroll-smooth">
@@ -363,99 +384,149 @@ const MainDashboard = () => {
             initial={{ opacity: 0, y: 50, scale: 0.9, filter: "blur(8px)" }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 30, scale: 0.95, filter: "blur(5px)" }}
-            transition={{ type: "spring", stiffness: 200, damping: 25, duration: 0.5 }}
-            className="relative bg-slate-950/80 backdrop-blur-xl p-0 rounded-2xl shadow-[0_0_60px_rgba(0,255,255,0.3),_0_0_20px_rgba(0,255,255,0.2)_inset] w-full max-w-xl sm:max-w-3xl text-slate-100 flex flex-col max-h-[90vh] border-2 border-cyan-600/70 overflow-hidden"
-            style={{
-              '--glow-color': 'rgba(0, 220, 255, 0.7)', // Cyan glow
-              '--accent-color': 'rgba(255, 215, 0, 0.9)', // Gold accent
+            transition={{
+              type: "spring",
+              stiffness: 200,
+              damping: 25,
+              duration: 0.5,
             }}
+            className="relative bg-slate-950/80 backdrop-blur-xl p-0 rounded-2xl shadow-[0_0_60px_rgba(0,255,255,0.3),_0_0_20px_rgba(0,255,255,0.2)_inset] w-full max-w-xl sm:max-w-3xl text-slate-100 flex flex-col max-h-[90vh] border-2 border-cyan-600/70 overflow-hidden"
+            style={
+              {
+                "--glow-color": "rgba(0, 220, 255, 0.7)", // Cyan glow
+                "--accent-color": "rgba(255, 215, 0, 0.9)", // Gold accent
+              } as React.CSSProperties
+            }
           >
             <GridPattern /> {/* Animated grid background */}
-
             {/* Stylized Corner Brackets */}
             {[
-                "top-1 left-1 rotate-0", "top-1 right-1 rotate-90", 
-                "bottom-1 right-1 rotate-180", "bottom-1 left-1 -rotate-90"
-            ].map(pos => (
-                <div key={pos} className={`absolute ${pos.split(" ")[0]} ${pos.split(" ")[1]} w-10 h-10 pointer-events-none transform ${pos.split(" ")[2]}`}>
-                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full opacity-60">
-                        <path d="M2 2 L2 15 L15 2" stroke="var(--glow-color)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse-corners"/>
-                    </svg>
-                </div>
-            ))}
-            
-            <div className="relative z-10 p-5 sm:p-6 flex flex-col flex-grow overflow-hidden">
-                <div className="flex justify-between items-start mb-4 sm:mb-5 flex-shrink-0">
-                <h3 className="text-3xl sm:text-4xl font-black tracking-tighter uppercase flex items-center gap-2.5"
-                    style={{ textShadow: '0 0 10px var(--glow-color), 0 0 20px var(--glow-color)' }}
+              "top-1 left-1 rotate-0",
+              "top-1 right-1 rotate-90",
+              "bottom-1 right-1 rotate-180",
+              "bottom-1 left-1 -rotate-90",
+            ].map((pos) => (
+              <div
+                key={pos}
+                className={`absolute ${pos.split(" ")[0]} ${
+                  pos.split(" ")[1]
+                } w-10 h-10 pointer-events-none transform ${pos.split(" ")[2]}`}
+              >
+                <svg
+                  viewBox="0 0 40 40"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-full h-full opacity-60"
                 >
-                    <motion.div initial={{ scale:0, rotate: -90 }} animate={{ scale:1, rotate:0 }} transition={{delay:0.2, type:'spring', stiffness:300}}>
-                        <Lightning size={36} className="text-yellow-400 drop-shadow-[0_0_8px_var(--accent-color)]" weight="fill"/>
-                    </motion.div>
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-300 to-teal-200">
-                        {gameForDetailsModal.name}
-                    </span>
+                  <path
+                    d="M2 2 L2 15 L15 2"
+                    stroke="var(--glow-color)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="animate-pulse-corners"
+                  />
+                </svg>
+              </div>
+            ))}
+            <div className="relative z-10 p-5 sm:p-6 flex flex-col flex-grow overflow-hidden">
+              <div className="flex justify-between items-start mb-4 sm:mb-5 flex-shrink-0">
+                <h3
+                  className="text-3xl sm:text-4xl font-black tracking-tighter uppercase flex items-center gap-2.5"
+                  style={{
+                    textShadow:
+                      "0 0 10px var(--glow-color), 0 0 20px var(--glow-color)",
+                  }}
+                >
+                  <motion.div
+                    initial={{ scale: 0, rotate: -90 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+                  >
+                    <Lightning
+                      size={36}
+                      className="text-yellow-400 drop-shadow-[0_0_8px_var(--accent-color)]"
+                      weight="fill"
+                    />
+                  </motion.div>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-300 to-teal-200">
+                    {gameForDetailsModal.name}
+                  </span>
                 </h3>
                 <motion.button
-                    whileHover={{ scale: 1.15, rotate: 30, filter: 'drop-shadow(0 0 8px var(--accent-color))' }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsGameDetailsModalOpen(false)}
-                    className="text-cyan-400 hover:text-yellow-400 text-3xl sm:text-4xl leading-none p-1 rounded-full focus:outline-none transition-all duration-200"
-                    aria-label="Close modal"
+                  whileHover={{
+                    scale: 1.15,
+                    rotate: 30,
+                    filter: "drop-shadow(0 0 8px var(--accent-color))",
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsGameDetailsModalOpen(false)}
+                  className="text-cyan-400 hover:text-yellow-400 text-3xl sm:text-4xl leading-none p-1 rounded-full focus:outline-none transition-all duration-200"
+                  aria-label="Close modal"
                 >
-                    <Power weight="bold" />
+                  <Power weight="bold" />
                 </motion.button>
-                </div>
+              </div>
 
-                <div className="overflow-y-auto flex-grow pr-2 sm:pr-3 custom-scrollbar-v2 space-y-5 sm:space-y-6 scroll-smooth">
-                    <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 items-center lg:items-start">
-                        <div className="lg:w-2/5 flex-shrink-0 w-full max-w-sm lg:max-w-none mx-auto relative group p-1">
-                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-700 via-purple-700 to-pink-700 rounded-lg blur-md opacity-50 group-hover:opacity-70 transition duration-500 animate-pulse-slow"></div>
-                            <div className="relative rounded-md overflow-hidden shadow-2xl border-2 border-slate-700/50 p-0.5 bg-slate-800">
-                                <Image
-                                    src={gameForDetailsModal.game_image}
-                                    alt={gameForDetailsModal.name}
-                                    width={400}
-                                    height={400}
-                                    className="relative rounded object-cover w-full aspect-square"
-                                />
-                                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300"></div>
-                                <div className="absolute bottom-2 right-2 bg-black/50 backdrop-blur-sm px-2 py-1 rounded text-xs text-cyan-300 border border-cyan-500/50">ARTWORK</div>
-                            </div>
-                        </div>
-                        <div className="lg:w-3/5 space-y-4 sm:space-y-5">
-                            <div className="bg-slate-800/50 backdrop-blur-sm p-4 rounded-lg border border-slate-700/60 shadow-inner">
-                                <h4 className="text-xl font-bold text-cyan-300 uppercase tracking-wide mb-2.5 flex items-center border-b-2 border-cyan-600/40 pb-2.5">
-                                    <Sparkle size={24} className="mr-2.5 text-yellow-400 drop-shadow-[0_0_5px_var(--accent-color)]" weight="fill"/>
-                                    Intel Briefing
-                                </h4>
-                                <div
-                                    className="prose prose-sm sm:prose-base prose-invert max-w-none text-slate-300/90 leading-relaxed game-description-prose-v2 mt-3"
-                                    dangerouslySetInnerHTML={{
-                                        __html:
-                                        gameForDetailsModal.description ||
-                                        "<p>No mission intel available for this operative. Stand by for updates.</p>",
-                                    }}
-                                />
-                            </div>
-                        </div>
+              <div className="overflow-y-auto flex-grow pr-2 sm:pr-3 custom-scrollbar-v2 space-y-5 sm:space-y-6 scroll-smooth">
+                <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 items-center lg:items-start">
+                  <div className="lg:w-2/5 flex-shrink-0 w-full max-w-sm lg:max-w-none mx-auto relative group p-1">
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-700 via-purple-700 to-pink-700 rounded-lg blur-md opacity-50 group-hover:opacity-70 transition duration-500 animate-pulse-slow"></div>
+                    <div className="relative rounded-md overflow-hidden shadow-2xl border-2 border-slate-700/50 p-0.5 bg-slate-800">
+                      <Image
+                        src={gameForDetailsModal.game_image}
+                        alt={gameForDetailsModal.name}
+                        width={400}
+                        height={400}
+                        className="relative rounded object-cover w-full aspect-square"
+                      />
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300"></div>
+                      <div className="absolute bottom-2 right-2 bg-black/50 backdrop-blur-sm px-2 py-1 rounded text-xs text-cyan-300 border border-cyan-500/50">
+                        ARTWORK
+                      </div>
                     </div>
+                  </div>
+                  <div className="lg:w-3/5 space-y-4 sm:space-y-5">
+                    <div className="bg-slate-800/50 backdrop-blur-sm p-4 rounded-lg border border-slate-700/60 shadow-inner">
+                      <h4 className="text-xl font-bold text-cyan-300 uppercase tracking-wide mb-2.5 flex items-center border-b-2 border-cyan-600/40 pb-2.5">
+                        <Sparkle
+                          size={24}
+                          className="mr-2.5 text-yellow-400 drop-shadow-[0_0_5px_var(--accent-color)]"
+                          weight="fill"
+                        />
+                        Intel Briefing
+                      </h4>
+                      <div
+                        className="prose prose-sm sm:prose-base prose-invert max-w-none text-slate-300/90 leading-relaxed game-description-prose-v2 mt-3"
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            gameForDetailsModal.description ||
+                            "<p>No mission intel available for this operative. Stand by for updates.</p>",
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-5 sm:mt-6 flex justify-center flex-shrink-0 pt-5 sm:pt-6 border-t-2 border-cyan-600/30">
+              </div>
+              <div className="mt-5 sm:mt-6 flex justify-center flex-shrink-0 pt-5 sm:pt-6 border-t-2 border-cyan-600/30">
                 <motion.button
-                    onClick={() => setIsGameDetailsModalOpen(false)}
-                    className="group relative inline-flex items-center justify-center px-8 py-3.5 sm:px-10 sm:py-4 overflow-hidden font-black tracking-wider uppercase text-slate-950 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 rounded-md shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 ease-out focus:outline-none focus:ring-4 focus:ring-amber-300 focus:ring-offset-4 focus:ring-offset-slate-950"
-                    whileHover={{ scale: 1.08, y: -4, filter: 'brightness(1.1)' }}
-                    whileTap={{ scale: 0.98, filter: 'brightness(0.9)' }}
+                  onClick={() => setIsGameDetailsModalOpen(false)}
+                  className="group relative inline-flex items-center justify-center px-8 py-3.5 sm:px-10 sm:py-4 overflow-hidden font-black tracking-wider uppercase text-slate-950 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 rounded-md shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 ease-out focus:outline-none focus:ring-4 focus:ring-amber-300 focus:ring-offset-4 focus:ring-offset-slate-950"
+                  whileHover={{ scale: 1.08, y: -4, filter: "brightness(1.1)" }}
+                  whileTap={{ scale: 0.98, filter: "brightness(0.9)" }}
                 >
-                    <span className="absolute inset-0 w-full h-full bg-gradient-to-br from-orange-500 via-amber-400 to-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-400"></span>
-                    <span className="absolute inset-0.5 rounded-md bg-slate-950 opacity-0 group-hover:opacity-40 transition-opacity duration-400"></span>
-                    <span className="relative flex items-center text-sm sm:text-base">
-                        <ShieldCheck size={22} className="mr-2 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" weight="bold" />
-                        Close
-                    </span>
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-br from-orange-500 via-amber-400 to-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-400"></span>
+                  <span className="absolute inset-0.5 rounded-md bg-slate-950 opacity-0 group-hover:opacity-40 transition-opacity duration-400"></span>
+                  <span className="relative flex items-center text-sm sm:text-base">
+                    <ShieldCheck
+                      size={22}
+                      className="mr-2 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
+                      weight="bold"
+                    />
+                    Close
+                  </span>
                 </motion.button>
-                </div>
+              </div>
             </div>
           </motion.div>
         </MainModal>
