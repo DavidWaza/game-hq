@@ -95,48 +95,6 @@ const SplashAvartar = () => {
     },
   };
 
-  // const games: Game[] = [
-  //   {
-  //     id: "mk",
-  //     name: "Mortal Kombat",
-  //     src: "/assets/mk-av.svg",
-  //     borderColor: "#b7950b",
-  //     shadowColor: "#b7950b",
-  //     isFull: true,
-  //   },
-  //   {
-  //     id: "cod",
-  //     name: "Call of Duty",
-  //     src: "/assets/cod-av.svg",
-  //     borderColor: "#FFFFFF",
-  //     shadowColor: "#CCCCCC",
-  //     isFull: false,
-  //   },
-  //   {
-  //     id: "fifa",
-  //     name: "EA Sports FC",
-  //     src: "/assets/cards-av.svg",
-  //     borderColor: "#979a9a",
-  //     shadowColor: "#979a9a",
-  //     isFull: false,
-  //   },
-  //   {
-  //     id: "nba2k",
-  //     name: "NBA 2K",
-  //     src: "/assets/basketball-av.svg",
-  //     borderColor: "#f37f2d",
-  //     shadowColor: "#f37f2d",
-  //     isFull: false,
-  //   },
-  //   {
-  //     id: "ludo",
-  //     name: "Ludo",
-  //     src: "/assets/pawn-av.svg",
-  //     borderColor: "#4CAF50",
-  //     shadowColor: "#4CAF50",
-  //     isFull: false,
-  //   },
-  // ];
 
   const selectedGameData = games.find((game) => game.id === selectedGame);
 
@@ -159,7 +117,7 @@ const SplashAvartar = () => {
         "createMatch"
       );
       handleCloseModal();
-      router.push("/dashboard/game/create-match");
+      router.push("/dashboard/match/create");
     }
   };
 
@@ -219,7 +177,7 @@ const SplashAvartar = () => {
                     borderColor: "#FFFFFF",
                     boxShadow:
                       selectedGame === game.id
-                        ? `0 0 20px 5px ${"#CCCCCC"}60`
+                        ? `0 0 20px 5px ${"#EB8338"}60`
                         : `0 0 10px 2px ${"#CCCCCC"}30`,
                   }}
                   onClick={() => handleGameSelect(game.id)}
@@ -252,7 +210,7 @@ const SplashAvartar = () => {
           <div className="my-12 md:my-20 flex gap-6 md:gap-10 flex-col sm:flex-row items-center justify-center">
             <Button
               onClick={() =>
-                router.push("/dashboard/game/create-match?matchType=tournament")
+                router.push("/dashboard/match/create?matchType=tournament")
               }
               className="w-full sm:w-auto"
             >
@@ -260,12 +218,12 @@ const SplashAvartar = () => {
             </Button>
             <Button
               onClick={() =>
-                router.push("/dashboard/game/create-match?matchType=1v1")
+                router.push("/dashboard/match/create?matchType=1v1")
               }
               className="w-full sm:w-auto"
               variant="primary"
             >
-              Create Custom 1v1 Match
+              Create Custom 1 v 1 Match
             </Button>
           </div>
         </div>
@@ -295,7 +253,7 @@ const SplashAvartar = () => {
             }}
             className="w-full sm:w-auto"
           >
-            Create 1v1 Match
+            Invite Players
           </Button>
         </div>
       </Modal>

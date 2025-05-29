@@ -1,18 +1,13 @@
 import Button from "@/components/Button";
 import { motion } from "framer-motion";
 import { X } from "@phosphor-icons/react";
-// import { Cinzel_Decorative } from "next/font/google";
 import DOMPurify from "dompurify";
 
-// const cinzel = Cinzel_Decorative({
-//   variable: "--Cinzel_Decorative",
-//   display: "swap",
-//   subsets: ["latin"],
-//   weight: "400",
-// });
+
 
 interface ModalProps {
   isOpen: boolean;
+  title?:string;
   setIsOpen: (value: boolean) => void;
   header?: string;
   sub?: string;
@@ -42,15 +37,6 @@ const Modal = ({
   const generateMarkdownContent = () => {
     if (!contentTitle || !contentItems || contentItems.length === 0) return "";
 
-    // let htmlContent = `<h3>${contentTitle}</h3>`;
-    // contentItems.forEach((item, index) => {
-    //   const [title, description] = item.split(" – ");
-    //   htmlContent += `<p><strong>${
-    //     index + 1
-    //   }. ${title}</strong> – ${description}</p>`;
-    // });
-
-    // Sanitize the HTML to prevent XSS attacks
     return DOMPurify.sanitize(contentItems[0]);
   };
 

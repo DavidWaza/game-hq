@@ -98,7 +98,7 @@ const RegisterUser: React.FC = () => {
     }) => postFn("api/auth/register", userData),
     onSuccess: () => {
       setTimeout(() => {
-        router.push("/dashboard/game/select-game");
+        router.push("/dashboard/match/select");
       }, 3000);
     },
     onError: (error) => {
