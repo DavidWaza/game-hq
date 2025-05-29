@@ -20,6 +20,7 @@ import {
 } from "@phosphor-icons/react";
 import { TypePrivateWager } from "../../../../types/global"; // Ensure this has matchMode: number
 import { formatCurrency } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 // Define mock structures if not available in global types
 interface InvitationRecord {
@@ -43,6 +44,7 @@ interface OngoingGameRecord {
 const CreateWagerBanner = () => {
   const { user } = useAuth();
   const username = user?.username || "Challenger";
+  const router = useRouter();
 
   const [createdGamesData, setCreatedGamesData] = useState<TypePrivateWager[]>(
     []
@@ -443,9 +445,12 @@ const CreateWagerBanner = () => {
                   </TableCell>
                   <TableCell>
                     <ActionButton
-                      onClick={() =>
-                        console.log(`${actionText} game:`, item.id)
-                      }
+                      onClick={() => {
+                        router.push(
+                          `/dashboard/play-games/dice-roll?wagerId=${item.id}`
+                        );
+                        console.log(`${actionText} game:`, item.id);
+                      }}
                       icon={ActionIcon}
                     >
                       {actionText}

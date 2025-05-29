@@ -8,14 +8,10 @@ import {
   Trophy,
   Info as InfoIcon,
   GameController,
-  XCircle,
   Sparkle,
-  CaretRight,
-  CornersOut,
   Lightning,
   ShieldCheck, // For a "confirm" or "secure" button feel
   Power, // For a stylized close button
-  Scan, // For a subtle background effect
 } from "@phosphor-icons/react";
 import Modal from "./Modal";
 import MainModal from "@/components/Modal";
@@ -396,10 +392,12 @@ const MainDashboard = () => {
               duration: 0.5,
             }}
             className="relative bg-slate-950/80 backdrop-blur-xl p-0 rounded-2xl shadow-[0_0_60px_rgba(0,255,255,0.3),_0_0_20px_rgba(0,255,255,0.2)_inset] w-full max-w-xl sm:max-w-3xl text-slate-100 flex flex-col max-h-[90vh] border-2 border-cyan-600/70 overflow-hidden"
-            style={{
-              "--glow-color": "rgba(0, 220, 255, 0.7)", // Cyan glow
-              "--accent-color": "rgba(255, 215, 0, 0.9)", // Gold accent
-            }}
+            style={
+              {
+                "--glow-color": "rgba(0, 220, 255, 0.7)", // Cyan glow
+                "--accent-color": "rgba(255, 215, 0, 0.9)", // Gold accent
+              } as React.CSSProperties
+            }
           >
             <GridPattern /> {/* Animated grid background */}
             {/* Stylized Corner Brackets */}
