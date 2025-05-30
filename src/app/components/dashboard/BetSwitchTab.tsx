@@ -26,7 +26,7 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { TypeUserSearch } from "../../../../types/global";
 import { CalendarForm } from "./Calendar";
 import EventScheduler from "./TimerSchedule";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface CreateTournamentProps {
   loading: boolean;
@@ -50,7 +50,7 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
 const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   const { setLoading, loading } = props;
   const [isPrivate] = useState(true);
-  // const router = useRouter();
+  const router = useRouter();
   const [maxInvitees] = useState(5);
   const [invitees, setInvitees] = useState<string[]>([]);
   const [search, setSearch] = useState<string>("");
@@ -163,7 +163,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
           className: "p-4",
         });
         console.log(response);
-        // router.push(`/dashboard/join-tournament/${response.id}`);
+        router.push(`/dashboard/my-games`);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Please try again", {

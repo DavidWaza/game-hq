@@ -227,7 +227,7 @@ const TabButton = ({
 );
 
 const CreateWagerBanner = () => {
-  const { user } = useAuth();
+  const { user, store } = useAuth();
   const username = user?.username;
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>("solo");
@@ -319,13 +319,26 @@ const CreateWagerBanner = () => {
         try {
           updateLoadingState("invitedWagers", true);
           const response = await getFn(
-            `/api/users/wagers/invited?page=${page}`
+            `/api/users/invitee_tournament_wager?page=${page}`
           );
           updateData("invitedWagers", response);
         } catch {
           toast.error("Error fetching invited wagers");
         } finally {
           updateLoadingState("invitedWagers", false);
+        }
+      },
+      getInvitedTournaments: async (page = 1) => {
+        try {
+          updateLoadingState("invitedTournaments", true);
+          const response = await getFn(
+            `/api/users/invited_but_not_played_tournament_wager?page=${page}`
+          );
+          updateData("invitedTournaments", response);
+        } catch {
+          toast.error("Error fetching invited tournaments");
+        } finally {
+          updateLoadingState("invitedTournaments", false);
         }
       },
     }),
@@ -347,8 +360,8 @@ const CreateWagerBanner = () => {
           break;
         case "invitations":
           await Promise.all([
-            // methods.getInvitedWagers(1),
-            // Add other invitation fetching methods here
+            methods.getInvitedWagers(1),
+            methods.getInvitedTournaments(1),
           ]);
           break;
         case "ongoing":
@@ -359,6 +372,16 @@ const CreateWagerBanner = () => {
 
     if (username && activeTab && methods) fetchData(activeTab);
   }, [activeTab, username, methods]);
+
+  const handleAction = (item: TypePrivateWager | TypeSingleTournament) => {
+    const games = store.games;
+    if (games && games.length > 0) {
+      const game = games.find((game) => game.id === item.game_id);
+      if (game && game.gameurl) {
+        window.location.href = game.gameurl;
+      }
+    }
+  };
 
   const renderContent = () => {
     let dataList: GameData;
@@ -496,9 +519,7 @@ const CreateWagerBanner = () => {
                       </td>
                       <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
                         <ActionButton
-                          onClick={() =>
-                            console.log(`${actionText} game:`, item.id)
-                          }
+                          onClick={() => handleAction(item)}
                           icon={ActionIcon}
                         >
                           {actionText}
