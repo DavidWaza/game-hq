@@ -357,9 +357,7 @@ const CreateWagerBanner = () => {
       }
     };
 
-    if (username) {
-      fetchData(activeTab);
-    }
+    if (username && activeTab && methods) fetchData(activeTab);
   }, [activeTab, username, methods]);
 
   const renderContent = () => {

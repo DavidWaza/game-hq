@@ -49,7 +49,7 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
 
 const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   const { setLoading, loading } = props;
-  const [isPrivate,] = useState(true);
+  const [isPrivate] = useState(true);
   // const router = useRouter();
   const [maxInvitees] = useState(5);
   const [invitees, setInvitees] = useState<string[]>([]);
@@ -191,7 +191,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   const deleteInvitee = (index: number) => {
     if (invitees.length === 1) return; // Prevent deleting the last input
     const updatedInvitees = invitees.filter((_, i) => i !== index);
-    setInvitees({ ...invitees, ...updatedInvitees });
+    setInvitees(updatedInvitees);
   };
 
   const handleCategoryChange = (value: string) => {
