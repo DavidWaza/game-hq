@@ -17,6 +17,10 @@ import {
   Eye,
   User as UserIcon,
   UsersThree as TournamentIcon,
+  CaretLeft,
+  CaretRight,
+  CaretDoubleLeft,
+  CaretDoubleRight,
 } from "@phosphor-icons/react";
 import {
   TypePrivateWager,
@@ -179,11 +183,11 @@ const SubTabButton = ({
   <button
     onClick={onClick}
     className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 text-xs sm:text-sm rounded-md font-medium transition-all duration-200 ease-in-out focus:outline-none
-                ${
-                  isActive
-                    ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
-                    : "bg-gray-700/60 text-gray-300 hover:bg-gray-600/80 hover:text-white"
-                }`}
+              ${
+                isActive
+                  ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
+                  : "bg-gray-700/60 text-gray-300 hover:bg-gray-600/80 hover:text-white"
+              }`}
     style={{ WebkitTapHighlightColor: "transparent" }}
   >
     <Icon size={16} weight={isActive ? "bold" : "regular"} />
@@ -226,11 +230,250 @@ const TabButton = ({
   </button>
 );
 
+const Pagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) => {
+  if (totalPages <= 1) return null;
+
+  const pageNumbers: (number | string)[] = [];
+  // maxPagesToShow: Number of actual page number buttons (e.g., 3 means c-1, c, c+1 or similar)
+  const maxPageNumButtons = 3; // Show up to 3 page numbers like [c-1, c, c+1]
+  // More complex logic could allow more if space, this is a simpler constraint.
+
+  // Always show first page
+  if (totalPages > 0) {
+    // Ensure totalPages is positive
+    // First page button
+    // pageNumbers.push(1); // Will be handled by loop or specific condition
+
+    let startPage = Math.max(
+      1,
+      currentPage - Math.floor(maxPageNumButtons / 2)
+    );
+    let endPage = Math.min(
+      totalPages,
+      currentPage + Math.ceil(maxPageNumButtons / 2) - 1
+    );
+
+    // Adjust window if it's too small due to being at the start/end
+    if (endPage - startPage + 1 < maxPageNumButtons) {
+      if (startPage === 1) {
+        endPage = Math.min(totalPages, startPage + maxPageNumButtons - 1);
+      } else if (endPage === totalPages) {
+        startPage = Math.max(1, endPage - maxPageNumButtons + 1);
+      }
+    }
+    // Ensure startPage is at least 1
+    startPage = Math.max(1, startPage);
+
+    if (startPage > 1) {
+      pageNumbers.push(1);
+      if (startPage > 2) {
+        pageNumbers.push("...");
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      if (i > 0) pageNumbers.push(i); // Ensure positive page numbers
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pageNumbers.push("...");
+      }
+      pageNumbers.push(totalPages);
+    }
+  }
+
+  // Remove duplicates that might occur if totalPages is small, e.g. [1, ..., 1] or [1, 2, ..., 2]
+  const uniquePageNumbers = pageNumbers.filter((value, index, self) => {
+    if (value === "...") {
+      // Allow ellipsis if it's not consecutive or not at the very start/end next to a direct number it replaces
+      if (
+        index > 0 &&
+        self[index - 1] !== "..." &&
+        typeof self[index - 1] === "number" &&
+        typeof self[index + 1] === "number" &&
+        (self[index + 1] as number) > (self[index - 1] as number) + 1
+      ) {
+        return true;
+      } else if (
+        index === 0 &&
+        typeof self[index + 1] === "number" &&
+        (self[index + 1] as number) > 1
+      ) {
+        // Ellipsis at start
+        return true;
+      } else if (
+        index === self.length - 1 &&
+        typeof self[index - 1] === "number" &&
+        (self[index - 1] as number) < totalPages
+      ) {
+        // Ellipsis at end
+        return true;
+      }
+      // Simplified: just remove consecutive ellipses
+      return !(index > 0 && self[index - 1] === "...");
+    }
+    return self.indexOf(value) === index;
+  });
+
+  // Ensure first and last pages are present if totalPages > 1 and not already in uniquePageNumbers by the loop
+  if (totalPages > 1) {
+    if (!uniquePageNumbers.includes(1)) {
+      if (uniquePageNumbers.length > 0 && uniquePageNumbers[0] === "...") {
+        uniquePageNumbers.unshift(1);
+      } else if (
+        uniquePageNumbers.length > 0 &&
+        typeof uniquePageNumbers[0] === "number" &&
+        uniquePageNumbers[0] > 1
+      ) {
+        if (uniquePageNumbers[0] > 2) uniquePageNumbers.splice(0, 0, 1, "...");
+        else uniquePageNumbers.unshift(1);
+      } else if (uniquePageNumbers.length === 0 && totalPages > 0) {
+        // Handle case where loop produced nothing
+        uniquePageNumbers.push(1);
+      }
+    }
+    if (!uniquePageNumbers.includes(totalPages)) {
+      if (
+        uniquePageNumbers.length > 0 &&
+        uniquePageNumbers[uniquePageNumbers.length - 1] === "..."
+      ) {
+        uniquePageNumbers.push(totalPages);
+      } else if (
+        uniquePageNumbers.length > 0 &&
+        typeof uniquePageNumbers[uniquePageNumbers.length - 1] === "number" &&
+        typeof uniquePageNumbers[uniquePageNumbers.length - 1] === "number" &&
+        (uniquePageNumbers[uniquePageNumbers.length - 1] as number) < totalPages
+      ) {
+        if (
+          typeof uniquePageNumbers[uniquePageNumbers.length - 1] === "number" &&
+          (uniquePageNumbers[uniquePageNumbers.length - 1] as number) < totalPages - 1
+        )
+          uniquePageNumbers.push("...", totalPages);
+        else uniquePageNumbers.push(totalPages);
+      } else if (uniquePageNumbers.length === 0 && totalPages > 1) {
+        // Handle case where loop produced nothing but totalPages > 1
+        uniquePageNumbers.push(totalPages);
+      }
+    }
+  }
+
+  // Final cleanup of page numbers to ensure they are sensible (e.g. no [1, ..., 2])
+  const finalPages: (number | string)[] = [];
+  for (let i = 0; i < uniquePageNumbers.length; i++) {
+    const current = uniquePageNumbers[i];
+    const prev = finalPages[finalPages.length - 1];
+    if (current === "...") {
+      if (prev !== "...") finalPages.push(current); // Avoid consecutive "..."
+    } else if (
+      typeof current === "number" &&
+      typeof prev === "number" &&
+      current === prev + 1 &&
+      uniquePageNumbers[i - 2] === "..."
+    ) {
+
+      const next = uniquePageNumbers[i + 1];
+      if (typeof prev === "string" && prev === "..." && typeof next === "number" && next === current + 1) {
+        finalPages.push(current);
+      } else {
+        finalPages.push(current);
+      }
+    } else {
+      finalPages.push(current);
+    }
+  }
+  // Filter out cases like [1, "...", 2] -> [1, 2]
+  const trulyFinalPages = finalPages.filter((p, i, arr) => {
+    if (p === "...") {
+      const prevN = arr[i - 1];
+      const nextN = arr[i + 1];
+      if (
+        typeof prevN === "number" &&
+        typeof nextN === "number" &&
+        nextN === prevN + 1
+      ) {
+        return false; // Remove "..." if it's between two consecutive numbers
+      }
+    }
+    return true;
+  });
+
+  return (
+    <div className="mt-6 flex items-center justify-center flex-wrap gap-1 sm:gap-2">
+      <button
+        onClick={() => onPageChange(1)}
+        disabled={currentPage === 1}
+        className="flex items-center justify-center p-2 text-sm font-medium text-gray-300 bg-gray-700/60 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600/80"
+        aria-label="First page"
+      >
+        <CaretDoubleLeft size={16} weight="bold" />
+      </button>
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="flex items-center justify-center p-2 text-sm font-medium text-gray-300 bg-gray-700/60 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600/80"
+        aria-label="Previous page"
+      >
+        <CaretLeft size={16} weight="bold" />
+      </button>
+
+      {trulyFinalPages.map((page, index) =>
+        typeof page === "number" ? (
+          <button
+            key={`page-${page}-${index}`}
+            onClick={() => onPageChange(page)}
+            className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${
+              currentPage === page
+                ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md"
+                : "text-gray-300 bg-gray-700/60 hover:bg-gray-600/80"
+            }`}
+          >
+            {page}
+          </button>
+        ) : (
+          <span
+            key={`ellipsis-${index}`}
+            className="px-1 sm:px-2 py-1.5 text-xs sm:text-sm text-gray-400"
+          >
+            {page}
+          </span>
+        )
+      )}
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="flex items-center justify-center p-2 text-sm font-medium text-gray-300 bg-gray-700/60 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600/80"
+        aria-label="Next page"
+      >
+        <CaretRight size={16} weight="bold" />
+      </button>
+      <button
+        onClick={() => onPageChange(totalPages)}
+        disabled={currentPage === totalPages || totalPages === 0}
+        className="flex items-center justify-center p-2 text-sm font-medium text-gray-300 bg-gray-700/60 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600/80"
+        aria-label="Last page"
+      >
+        <CaretDoubleRight size={16} weight="bold" />
+      </button>
+    </div>
+  );
+};
+
 const CreateWagerBanner = () => {
   const { user, store } = useAuth();
   const username = user?.username;
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>("solo");
+  const [currentPage, setCurrentPage] = useState(1);
   const [data, setData] = useState<GameState>({
     createdWagers: {
       records: [],
@@ -298,6 +541,12 @@ const CreateWagerBanner = () => {
           updateData("createdWagers", response);
         } catch {
           toast.error("Error fetching created wagers");
+          updateData("createdWagers", {
+            records: [],
+            totalRecords: 0,
+            recordCount: 0,
+            totalPages: 1,
+          });
         } finally {
           updateLoadingState("createdWagers", false);
         }
@@ -311,6 +560,12 @@ const CreateWagerBanner = () => {
           updateData("createdTournaments", response);
         } catch {
           toast.error("Error fetching created tournaments");
+          updateData("createdTournaments", {
+            records: [],
+            totalRecords: 0,
+            recordCount: 0,
+            totalPages: 1,
+          });
         } finally {
           updateLoadingState("createdTournaments", false);
         }
@@ -324,6 +579,12 @@ const CreateWagerBanner = () => {
           updateData("invitedWagers", response);
         } catch {
           toast.error("Error fetching invited wagers");
+          updateData("invitedWagers", {
+            records: [],
+            totalRecords: 0,
+            recordCount: 0,
+            totalPages: 1,
+          });
         } finally {
           updateLoadingState("invitedWagers", false);
         }
@@ -337,10 +598,18 @@ const CreateWagerBanner = () => {
           updateData("invitedTournaments", response);
         } catch {
           toast.error("Error fetching invited tournaments");
+          updateData("invitedTournaments", {
+            records: [],
+            totalRecords: 0,
+            recordCount: 0,
+            totalPages: 1,
+          });
         } finally {
           updateLoadingState("invitedTournaments", false);
         }
       },
+      // Define getOngoingWagers and getOngoingTournaments when ready
+      // e.g. getOngoingWagers: async (page = 1) => { ... }
     }),
     [updateData, updateLoadingState]
   );
@@ -350,28 +619,65 @@ const CreateWagerBanner = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    const fetchData = async (tabName: TabType) => {
-      switch (tabName) {
-        case "created":
-          await Promise.all([
-            methods.getCreatedWagers(1),
-            methods.getCreatedTournaments(1),
-          ]);
-          break;
-        case "invitations":
-          await Promise.all([
-            methods.getInvitedWagers(1),
-            methods.getInvitedTournaments(1),
-          ]);
-          break;
-        case "ongoing":
-          // Add ongoing game fetching methods here
-          break;
+    setCurrentPage(1);
+  }, [activeTab, activeSubTab]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!username || !methods) return;
+
+      let fetchFunction: ((page: number) => Promise<void>) | undefined;
+      let dataKeyForReset: keyof GameState | undefined;
+      let loadingKeyForReset: keyof LoadingState | undefined;
+
+      if (activeTab === "created") {
+        fetchFunction =
+          activeSubTab === "solo"
+            ? methods.getCreatedWagers
+            : methods.getCreatedTournaments;
+      } else if (activeTab === "invitations") {
+        fetchFunction =
+          activeSubTab === "solo"
+            ? methods.getInvitedWagers
+            : methods.getInvitedTournaments;
+      } else if (activeTab === "ongoing") {
+        if (activeSubTab === "solo") {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          fetchFunction = (methods as any).getOngoingWagers;
+          dataKeyForReset = "ongoingWagers";
+          loadingKeyForReset = "ongoingWagers";
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          fetchFunction = (methods as any).getOngoingTournaments;
+          dataKeyForReset = "ongoingTournaments";
+          loadingKeyForReset = "ongoingTournaments";
+        }
+        if (!fetchFunction && dataKeyForReset && loadingKeyForReset) {
+          updateData(dataKeyForReset, {
+            records: [],
+            totalRecords: 0,
+            recordCount: 0,
+            totalPages: 1,
+          });
+          updateLoadingState(loadingKeyForReset, false);
+        }
+      }
+
+      if (fetchFunction) {
+        await fetchFunction(currentPage);
       }
     };
 
-    if (username && activeTab && methods) fetchData(activeTab);
-  }, [activeTab, username, methods]);
+    fetchData();
+  }, [
+    activeTab,
+    activeSubTab,
+    currentPage,
+    username,
+    methods,
+    updateData,
+    updateLoadingState,
+  ]);
 
   const handleAction = (item: TypePrivateWager | TypeSingleTournament) => {
     const games = store.games;
@@ -380,6 +686,42 @@ const CreateWagerBanner = () => {
       if (game && game.gameurl) {
         window.location.href = game.gameurl;
       }
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    // Determine current data list to get totalPages for boundary check
+    let currentDataKey: keyof GameState;
+    switch (activeTab) {
+      case "created":
+        currentDataKey =
+          activeSubTab === "solo" ? "createdWagers" : "createdTournaments";
+        break;
+      case "invitations":
+        currentDataKey =
+          activeSubTab === "solo" ? "invitedWagers" : "invitedTournaments";
+        break;
+      case "ongoing":
+        currentDataKey =
+          activeSubTab === "solo" ? "ongoingWagers" : "ongoingTournaments";
+        break;
+      default:
+        return; // Should not happen
+    }
+    const listTotalPages = data[currentDataKey]?.totalPages ?? 1;
+
+    if (newPage >= 1 && newPage <= listTotalPages) {
+      setCurrentPage(newPage);
+    } else if (newPage < 1 && listTotalPages > 0) {
+      // Prevent going below 1
+      setCurrentPage(1);
+    } else if (newPage > listTotalPages && listTotalPages > 0) {
+      // Prevent going above totalPages
+      setCurrentPage(listTotalPages);
+    }
+    // if listTotalPages is 0 (e.g. no data), allow setting to 1.
+    else if (listTotalPages === 0 && newPage === 1) {
+      setCurrentPage(1);
     }
   };
 
@@ -429,7 +771,27 @@ const CreateWagerBanner = () => {
         baseEmptyMessage = "No";
         actionText = "VIEW";
         ActionIcon = Eye;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (activeSubTab === "solo" && !(methods as any).getOngoingWagers)
+          isLoading = false;
+        if (
+          activeSubTab === "tournament" &&
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          !(methods as any).getOngoingTournaments
+        )
+          isLoading = false;
         break;
+      default:
+        dataList = {
+          records: [],
+          totalRecords: 0,
+          recordCount: 0,
+          totalPages: 0,
+        };
+        isLoading = false;
+        baseEmptyMessage = "Error loading";
+        actionText = "N/A";
+        ActionIcon = InfoIcon;
     }
 
     const dynamicEmptyMessage = `${baseEmptyMessage} ${activeSubTab} games ${
@@ -473,64 +835,74 @@ const CreateWagerBanner = () => {
             </tbody>
           </table>
         ) : dataList.records.length > 0 ? (
-          <table className="min-w-full">
-            <thead>
-              <tr className="border-b border-gray-800/70">
-                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                  Game ID
-                </th>
-                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                  Game Name
-                </th>
-                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                  Total Amount
-                </th>
-                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800/50">
-              {dataList.records.map(
-                (item: TypePrivateWager | TypeSingleTournament) => {
-                  const title = "title" in item ? item.title : "N/A";
-                  const amount = "amount" in item ? item.amount : "0";
-                  const status = "match_date" in item ? "Scheduled" : "Pending";
+          <>
+            <table className="min-w-full">
+              <thead>
+                <tr className="border-b border-gray-800/70">
+                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                    Game ID
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                    Game Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                    Total Amount
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800/50">
+                {dataList.records.map(
+                  (item: TypePrivateWager | TypeSingleTournament) => {
+                    const title = "title" in item ? item.title : "N/A";
+                    const amount = "amount" in item ? item.amount : "0";
+                    const status =
+                      "match_date" in item ? "Scheduled" : "Pending"; // This status logic might need refinement
 
-                  return (
-                    <tr
-                      key={item.id}
-                      className="border-b border-gray-800/70 transition-colors duration-200 hover:bg-gray-700/40 cursor-pointer"
-                    >
-                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                        {item.id?.substring(0, 8) || "N/A"}...
-                      </td>
-                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                        {title}
-                      </td>
-                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                        {formatCurrency(Number(amount))}
-                      </td>
-                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                        <StatusIndicator statusText={status} />
-                      </td>
-                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                        <ActionButton
-                          onClick={() => handleAction(item)}
-                          icon={ActionIcon}
-                        >
-                          {actionText}
-                        </ActionButton>
-                      </td>
-                    </tr>
-                  );
-                }
-              )}
-            </tbody>
-          </table>
+                    return (
+                      <tr
+                        key={item.id}
+                        className="border-b border-gray-800/70 transition-colors duration-200 hover:bg-gray-700/40"
+                      >
+                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                          {item.id?.substring(0, 8) || "N/A"}...
+                        </td>
+                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                          {title}
+                        </td>
+                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                          {formatCurrency(Number(amount))}
+                        </td>
+                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                          <StatusIndicator statusText={status} />
+                        </td>
+                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                          <ActionButton
+                            onClick={() => handleAction(item)}
+                            icon={ActionIcon}
+                          >
+                            {actionText}
+                          </ActionButton>
+                        </td>
+                      </tr>
+                    );
+                  }
+                )}
+              </tbody>
+            </table>
+            {dataList.totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={dataList.totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
         ) : (
           <EmptyState message={dynamicEmptyMessage} icon={InfoIcon} />
         )}
@@ -554,8 +926,9 @@ const CreateWagerBanner = () => {
               className="text-4xl sm:text-5xl md:text-6xl font-bold text-white uppercase tracking-tighter leading-tight"
             >
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4500] to-[#ffa500]">
-                {username}&apos;s
-              </span>
+                {" "}
+                {username}&apos;s{" "}
+              </span>{" "}
               <br />
               <span className="text-[#e0e0e0]">Game Hub</span>
             </motion.h1>
@@ -574,7 +947,10 @@ const CreateWagerBanner = () => {
               ))}
             </motion.div>
             <div className="mt-1 sm:mt-2">
-              <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
+              {" "}
+              <AnimatePresence mode="wait">
+                {renderContent()}
+              </AnimatePresence>{" "}
             </div>
           </div>
           <motion.div
@@ -590,10 +966,12 @@ const CreateWagerBanner = () => {
                 className="w-full max-w-xs sm:max-w-sm h-auto object-contain drop-shadow-[0_0_30px_rgba(255,100,0,0.4)] opacity-80 hover:opacity-100 transition-opacity duration-300"
               />
               <p className="mt-6 text-xl font-semibold text-[#ffa500]">
-                Latest Tournaments & Events
+                {" "}
+                Latest Tournaments & Events{" "}
               </p>
               <p className="text-gray-400 text-sm px-4">
-                Discover new challenges and climb the leaderboards!
+                {" "}
+                Discover new challenges and climb the leaderboards!{" "}
               </p>
             </div>
           </motion.div>
