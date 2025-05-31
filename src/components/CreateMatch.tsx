@@ -21,7 +21,7 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
     }
   };
   return (
-    <div className="addTransition w-full lg:w-[500px]">
+    <div className="addTransition w-full max-w-[500px]">
       {/* controller */}
       <div className="w-full mb-4 rounded-[30px] border-[#fcf8db] border-4 overflow-hidden relative h-[60px] flex items-center justify-between isolate shadow-lg bg-primary">
         <span
@@ -44,7 +44,7 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
         </button>
       </div>
       {/* content */}
-      <div className="relative bg-primary text-white py-4 bg-opacity-90 rounded-3xl shadow-lg border-4 border-[#fcf8db] w-full justify_auto h-full max-h-[750px]">
+      <div className="relative bg-primary text-white py-4 bg-opacity-90 rounded-3xl shadow-lg border-4 border-[#fcf8db] w-full justify_auto h-full">
         {/* content */}
         <div className="overflow-y-auto px-6 pb-6 w-full hidden_scroll">
           {!matchMode ? (

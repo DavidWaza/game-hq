@@ -100,12 +100,14 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
         "api/tournamentstables/add",
         data
       );
-      toast.success("Tournament Created Successfully", {
-        position: "top-right",
-        className: "p-4",
-      });
-      setState(response, "singleTournament");
-      router.push(`/dashboard/join-tournament/${response.id}`);
+      if (response?.id) {
+        toast.success("Tournament Created Successfully", {
+          position: "top-right",
+          className: "p-4",
+        });
+        setState(response, "singleTournament");
+        router.push(`/dashboard/join-tournament/${response.id}`);
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Please try again", {
         position: "top-right",

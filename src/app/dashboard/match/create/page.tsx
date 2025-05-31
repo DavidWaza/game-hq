@@ -82,8 +82,7 @@ const CreateMatchContent = () => {
       <Navbar variant="primary" />
       {/* video */}
       <div className="create-wager-banner fixed top-0 left-0 bottom-0 w-dvw h-dvh">
-        {process.env.NEXT_PUBLIC_HIDE_VIDEO &&
-        process.env.NEXT_PUBLIC_HIDE_VIDEO !== "false" ? (
+        {process.env.NEXT_PUBLIC_HIDE_VIDEO !== "false" ? (
           <video
             ref={videoRef}
             key={videoTrailers[currentVideoIndex].id}

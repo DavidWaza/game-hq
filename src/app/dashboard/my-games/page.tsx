@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { getFn } from "@/lib/apiClient";
-
+import { toast } from "sonner";
 import {
   ListPlus,
   EnvelopeSimple,
@@ -15,355 +15,422 @@ import {
   Info as InfoIcon,
   UserPlus,
   Eye,
-  User as UserIcon, // For Solo
-  UsersThree as TournamentIcon, // For Tournament
+  User as UserIcon,
+  UsersThree as TournamentIcon,
 } from "@phosphor-icons/react";
-import { TypePrivateWager } from "../../../../types/global"; // Ensure this has matchMode: number
+import {
+  TypePrivateWager,
+  TypeSingleTournament,
+} from "../../../../types/global";
 import { formatCurrency } from "@/lib/utils";
 
-// Define mock structures if not available in global types
-interface InvitationRecord {
-  id: string;
-  gameTitle: string;
-  totalAmount: string | number;
-  statusText: string;
-  invitedBy?: string;
-  gameMode: "solo" | "tournament"; // Added for sub-filtering
+// Types
+type TabType = "created" | "invitations" | "ongoing";
+type SubTabType = "solo" | "tournament";
+
+interface GameData {
+  records: TypePrivateWager[] | TypeSingleTournament[];
+  totalRecords: number;
+  recordCount: number;
+  totalPages: number;
 }
 
-interface OngoingGameRecord {
-  id: string;
-  gameTitle: string;
-  totalAmount: string | number;
-  statusText: string;
-  nextAction?: string;
-  gameMode: "solo" | "tournament"; // Added for sub-filtering
+interface GameState {
+  createdWagers: GameData;
+  createdTournaments: GameData;
+  invitedWagers: GameData;
+  invitedTournaments: GameData;
+  ongoingWagers: GameData;
+  ongoingTournaments: GameData;
 }
+
+interface LoadingState {
+  createdWagers: boolean;
+  createdTournaments: boolean;
+  invitedWagers: boolean;
+  invitedTournaments: boolean;
+  ongoingWagers: boolean;
+  ongoingTournaments: boolean;
+}
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
+
+const tabContentVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.4, ease: "easeInOut" },
+  },
+  exit: {
+    opacity: 0,
+    x: 20,
+    transition: { duration: 0.3, ease: "easeInOut" },
+  },
+};
+
+// Constants
+const TABS = [
+  { name: "created", label: "My Created Games", icon: ListPlus },
+  { name: "invitations", label: "Invitations", icon: EnvelopeSimple },
+  { name: "ongoing", label: "Ongoing Games", icon: ClockClockwise },
+] as const;
+
+// Components
+const SkeletonRow = ({ columns = 5 }: { columns?: number }) => (
+  <tr className="border-b border-gray-800/70">
+    {Array.from({ length: columns }).map((_, i) => (
+      <td key={i} className="px-4 py-3.5">
+        <div className="h-4 bg-gray-700/50 rounded animate-pulse"></div>
+      </td>
+    ))}
+  </tr>
+);
+
+const EmptyState = ({
+  message,
+  icon: Icon,
+}: {
+  message: string;
+  icon?: React.ElementType;
+}) => (
+  <div className="flex flex-col items-center justify-center py-12 text-center min-h-[200px]">
+    {Icon && (
+      <Icon size={48} className="text-gray-600/80 mb-4" weight="light" />
+    )}
+    <p className="text-gray-400 text-lg">{message}</p>
+  </div>
+);
+
+const StatusIndicator = ({ statusText }: { statusText: string }) => {
+  const getColor = (text: string) => {
+    if (text.toLowerCase().includes("invited")) return "text-blue-400";
+    if (
+      text.toLowerCase().includes("starting soon") ||
+      text.toLowerCase().includes("ready")
+    )
+      return "text-yellow-400";
+    if (
+      text.toLowerCase().includes("your turn") ||
+      text.toLowerCase().includes("your move")
+    )
+      return "text-green-400";
+    if (text.toLowerCase().includes("opponent")) return "text-purple-400";
+    return "text-gray-400";
+  };
+
+  return (
+    <span className={`${getColor(statusText)} font-medium`}>{statusText}</span>
+  );
+};
+
+const ActionButton = ({
+  children,
+  onClick,
+  icon: Icon,
+  variant = "primary",
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  icon?: React.ElementType;
+  variant?: "primary" | "secondary";
+}) => (
+  <motion.button
+    onClick={onClick}
+    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out transform hover:scale-105 ${
+      variant === "primary"
+        ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
+        : "bg-gray-600/50 text-gray-300 hover:bg-gray-500/70 hover:text-white"
+    }`}
+    whileTap={{ scale: 0.95 }}
+  >
+    {Icon && <Icon size={14} weight="bold" />}
+    {children}
+  </motion.button>
+);
+
+const SubTabButton = ({
+  label,
+  icon: Icon,
+  isActive,
+  onClick,
+}: {
+  label: string;
+  icon: React.ElementType;
+  isActive: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 text-xs sm:text-sm rounded-md font-medium transition-all duration-200 ease-in-out focus:outline-none
+                ${
+                  isActive
+                    ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
+                    : "bg-gray-700/60 text-gray-300 hover:bg-gray-600/80 hover:text-white"
+                }`}
+    style={{ WebkitTapHighlightColor: "transparent" }}
+  >
+    <Icon size={16} weight={isActive ? "bold" : "regular"} />
+    {label}
+  </button>
+);
+
+const TabButton = ({
+  label,
+  icon: Icon,
+  isActive,
+  onClick,
+}: {
+  label: string;
+  icon: React.ElementType;
+  isActive: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className={`relative flex items-center justify-center gap-2 px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium rounded-t-md transition-colors duration-300 ease-in-out focus:outline-none z-10 ${
+      isActive ? "text-white" : "text-gray-400 hover:text-white"
+    }`}
+    style={{ WebkitTapHighlightColor: "transparent" }}
+  >
+    <Icon
+      size={16}
+      weight={isActive ? "fill" : "regular"}
+      className={`${isActive ? "text-[#ffa500]" : ""}`}
+    />
+    {label}
+    {isActive && (
+      <motion.div
+        className="absolute bottom-[-1px] left-0 right-0 h-[3px] bg-gradient-to-r from-[#ff4500] to-[#ffa500] rounded-t-sm"
+        layoutId="activeTabIndicator"
+        initial={false}
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      />
+    )}
+  </button>
+);
 
 const CreateWagerBanner = () => {
-  const { user } = useAuth();
-  const username = user?.username || "Challenger";
-
-  const [createdGamesData, setCreatedGamesData] = useState<TypePrivateWager[]>(
-    []
-  );
-  const [invitationsData, setInvitationsData] = useState<InvitationRecord[]>(
-    []
-  );
-  const [ongoingGamesData, setOngoingGamesData] = useState<OngoingGameRecord[]>(
-    []
-  );
-
-  const [loadingStates, setLoadingStates] = useState({
-    created: false,
-    invitations: false,
-    ongoing: false,
+  const { user, store } = useAuth();
+  const username = user?.username;
+  const [activeTab, setActiveTab] = useState<TabType>("created");
+  const [activeSubTab, setActiveSubTab] = useState<SubTabType>("solo");
+  const [data, setData] = useState<GameState>({
+    createdWagers: {
+      records: [],
+      totalRecords: 0,
+      recordCount: 0,
+      totalPages: 1,
+    },
+    createdTournaments: {
+      records: [],
+      totalRecords: 0,
+      recordCount: 0,
+      totalPages: 1,
+    },
+    invitedWagers: {
+      records: [],
+      totalRecords: 0,
+      recordCount: 0,
+      totalPages: 1,
+    },
+    invitedTournaments: {
+      records: [],
+      totalRecords: 0,
+      recordCount: 0,
+      totalPages: 1,
+    },
+    ongoingWagers: {
+      records: [],
+      totalRecords: 0,
+      recordCount: 0,
+      totalPages: 1,
+    },
+    ongoingTournaments: {
+      records: [],
+      totalRecords: 0,
+      recordCount: 0,
+      totalPages: 1,
+    },
+  });
+  const [loadingStates, setLoadingStates] = useState<LoadingState>({
+    createdWagers: false,
+    createdTournaments: false,
+    invitedWagers: false,
+    invitedTournaments: false,
+    ongoingWagers: false,
+    ongoingTournaments: false,
   });
 
-  const [activeTab, setActiveTab] = useState<
-    "created" | "invitations" | "ongoing"
-  >("created");
+  const updateData = useCallback((key: keyof GameState, value: GameData) => {
+    setData((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
-  // New state for sub-tabs
-  const [activeSubTab, setActiveSubTab] = useState<"solo" | "tournament">(
-    "solo"
+  const updateLoadingState = useCallback(
+    (key: keyof LoadingState, value: boolean) => {
+      setLoadingStates((prev) => ({ ...prev, [key]: value }));
+    },
+    []
   );
 
-  // Reset sub-tab when main tab changes
+  const methods = useMemo(
+    () => ({
+      getCreatedWagers: async (page = 1) => {
+        try {
+          updateLoadingState("createdWagers", true);
+          const response = await getFn(`/api/users/wagers?page=${page}`);
+          updateData("createdWagers", response);
+        } catch {
+          toast.error("Error fetching created wagers");
+        } finally {
+          updateLoadingState("createdWagers", false);
+        }
+      },
+      getCreatedTournaments: async (page = 1) => {
+        try {
+          updateLoadingState("createdTournaments", true);
+          const response = await getFn(
+            `/api/users/tournamentwager?page=${page}`
+          );
+          updateData("createdTournaments", response);
+        } catch {
+          toast.error("Error fetching created tournaments");
+        } finally {
+          updateLoadingState("createdTournaments", false);
+        }
+      },
+      getInvitedWagers: async (page = 1) => {
+        try {
+          updateLoadingState("invitedWagers", true);
+          const response = await getFn(
+            `/api/users/invitee_tournament_wager?page=${page}`
+          );
+          updateData("invitedWagers", response);
+        } catch {
+          toast.error("Error fetching invited wagers");
+        } finally {
+          updateLoadingState("invitedWagers", false);
+        }
+      },
+      getInvitedTournaments: async (page = 1) => {
+        try {
+          updateLoadingState("invitedTournaments", true);
+          const response = await getFn(
+            `/api/users/invited_but_not_played_tournament_wager?page=${page}`
+          );
+          updateData("invitedTournaments", response);
+        } catch {
+          toast.error("Error fetching invited tournaments");
+        } finally {
+          updateLoadingState("invitedTournaments", false);
+        }
+      },
+    }),
+    [updateData, updateLoadingState]
+  );
+
   useEffect(() => {
     setActiveSubTab("solo");
   }, [activeTab]);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: "easeOut" },
-    },
-  };
-
-  const tabContentVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.4, ease: "easeInOut" },
-    },
-    exit: {
-      opacity: 0,
-      x: 20,
-      transition: { duration: 0.3, ease: "easeInOut" },
-    },
-  };
-
   useEffect(() => {
-    const fetchData = async (tabName: typeof activeTab) => {
-      setLoadingStates((prev) => ({ ...prev, [tabName]: true }));
-      try {
-        if (tabName === "created") {
-          const response = await getFn(`/api/privatewagers`);
-          // Assuming response.records is TypePrivateWager[] and includes matchMode
-          setCreatedGamesData(response?.records || []);
-        } else if (tabName === "invitations") {
-          await new Promise((resolve) => setTimeout(resolve, 800));
-          setInvitationsData([
-            {
-              id: "INV001",
-              gameTitle: "Chess Titans",
-              totalAmount: "10 SOL",
-              statusText: `Invited by ${username}`,
-              gameMode: "solo", // Added gameMode
-            },
-            {
-              id: "INV002",
-              gameTitle: "Poker Arena",
-              totalAmount: "5 SOL",
-              statusText: "Ready Players: User789 invited",
-              gameMode: "tournament", // Added gameMode
-            },
-            {
-              id: "INV003",
-              gameTitle: "1v1 Brawl",
-              totalAmount: "3 SOL",
-              statusText: `Invited by Admin`,
-              gameMode: "solo",
-            },
+    const fetchData = async (tabName: TabType) => {
+      switch (tabName) {
+        case "created":
+          await Promise.all([
+            methods.getCreatedWagers(1),
+            methods.getCreatedTournaments(1),
           ]);
-        } else if (tabName === "ongoing") {
-          await new Promise((resolve) => setTimeout(resolve, 800));
-          setOngoingGamesData([
-            {
-              id: "ONG001",
-              gameTitle: "Ludo Clash",
-              totalAmount: "2 SOL",
-              statusText: "Your Move!",
-              nextAction: "PLAY",
-              gameMode: "solo", // Added gameMode
-            },
-            {
-              id: "ONG002",
-              gameTitle: "FIFA Pro Tournament",
-              totalAmount: "5 SOL",
-              statusText: "Waiting for Opponent",
-              gameMode: "tournament", // Added gameMode
-            },
+          break;
+        case "invitations":
+          await Promise.all([
+            methods.getInvitedWagers(1),
+            methods.getInvitedTournaments(1),
           ]);
-        }
-      } catch (error) {
-        console.error(`Failed to fetch ${tabName} games:`, error);
-        if (tabName === "created") setCreatedGamesData([]);
-        if (tabName === "invitations") setInvitationsData([]);
-        if (tabName === "ongoing") setOngoingGamesData([]);
-      } finally {
-        setLoadingStates((prev) => ({ ...prev, [tabName]: false }));
+          break;
+        case "ongoing":
+          // Add ongoing game fetching methods here
+          break;
       }
     };
-    fetchData(activeTab);
-  }, [activeTab, username]);
 
-  const TableRow = ({
-    children,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    onClick?: () => void;
-  }) => (
-    <motion.tr
-      className={`border-b border-gray-800/70 transition-colors duration-200 ${
-        onClick ? "hover:bg-gray-700/40 cursor-pointer" : "hover:bg-gray-700/20"
-      }`}
-      onClick={onClick}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      layout
-    >
-      {children}
-    </motion.tr>
-  );
+    if (username && activeTab && methods) fetchData(activeTab);
+  }, [activeTab, username, methods]);
 
-  const TableCell = ({
-    children,
-    className = "",
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <td
-      className={`px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap ${className}`}
-    >
-      {children}
-    </td>
-  );
-
-  const HeaderCell = ({
-    children,
-    className = "",
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <th
-      className={`px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider ${className}`}
-    >
-      {children}
-    </th>
-  );
-
-  const StatusIndicator = ({ statusText }: { statusText: string }) => {
-    let color = "text-gray-400";
-    if (statusText.toLowerCase().includes("invited")) color = "text-blue-400";
-    if (
-      statusText.toLowerCase().includes("starting soon") ||
-      statusText.toLowerCase().includes("ready")
-    )
-      color = "text-yellow-400";
-    if (
-      statusText.toLowerCase().includes("your turn") ||
-      statusText.toLowerCase().includes("your move")
-    )
-      color = "text-green-400";
-    if (statusText.toLowerCase().includes("opponent"))
-      color = "text-purple-400";
-    return <span className={`${color} font-medium`}>{statusText}</span>;
+  const handleAction = (item: TypePrivateWager | TypeSingleTournament) => {
+    const games = store.games;
+    if (games && games.length > 0) {
+      const game = games.find((game) => game.id === item.game_id);
+      if (game && game.gameurl) {
+        window.location.href = game.gameurl;
+      }
+    }
   };
 
-  const ActionButton = ({
-    children,
-    onClick,
-    icon: Icon,
-    variant = "primary",
-  }: {
-    children: React.ReactNode;
-    onClick: () => void;
-    icon?: React.ElementType;
-    variant?: "primary" | "secondary";
-  }) => (
-    <motion.button
-      onClick={onClick}
-      className={`flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ease-in-out transform hover:scale-105 ${
-        variant === "primary"
-          ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
-          : "bg-gray-600/50 text-gray-300 hover:bg-gray-500/70 hover:text-white"
-      }`}
-      whileTap={{ scale: 0.95 }}
-    >
-      {Icon && <Icon size={14} weight="bold" />}
-      {children}
-    </motion.button>
-  );
-
-  const SkeletonRow = ({ columns = 5 }: { columns?: number }) => (
-    <tr className="border-b border-gray-800/70">
-      {Array.from({ length: columns }).map((_, i) => (
-        <td key={i} className="px-4 py-3.5">
-          <div className="h-4 bg-gray-700/50 rounded animate-pulse"></div>
-        </td>
-      ))}
-    </tr>
-  );
-
-  const EmptyState = ({
-    message,
-    icon: Icon,
-  }: {
-    message: string;
-    icon?: React.ElementType;
-  }) => (
-    <div className="flex flex-col items-center justify-center py-12 text-center min-h-[200px]">
-      {" "}
-      {/* Added min-h */}
-      {Icon && (
-        <Icon size={48} className="text-gray-600/80 mb-4" weight="light" />
-      )}
-      <p className="text-gray-400 text-lg">{message}</p>
-    </div>
-  );
-
-  // SubTabButton Component
-  const SubTabButton = ({
-    label,
-    icon: Icon,
-    isActive,
-    onClick,
-  }: {
-    label: string;
-    subTabName: "solo" | "tournament";
-    icon: React.ElementType;
-    isActive: boolean;
-    onClick: () => void;
-  }) => (
-    <button
-      onClick={onClick}
-      className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 text-xs sm:text-sm rounded-md font-medium transition-all duration-200 ease-in-out focus:outline-none
-                  ${
-                    isActive
-                      ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
-                      : "bg-gray-700/60 text-gray-300 hover:bg-gray-600/80 hover:text-white"
-                  }`}
-      style={{ WebkitTapHighlightColor: "transparent" }}
-    >
-      <Icon size={16} weight={isActive ? "bold" : "regular"} />
-      {label}
-    </button>
-  );
-
   const renderContent = () => {
-    let dataList: any[] = []; // Initialize with an empty array
-    let isLoading, baseEmptyMessage, actionText, ActionIcon;
-    const commonColumns = [
-      "Game ID",
-      "Game Name",
-      "Total Amount",
-      "Status",
-      "Action",
-    ];
+    let dataList: GameData;
+    let isLoading: boolean;
+    let baseEmptyMessage: string;
+    let actionText: string;
+    let ActionIcon: React.ElementType;
 
     switch (activeTab) {
       case "created":
-        dataList = createdGamesData;
-        isLoading = loadingStates.created;
+        dataList =
+          activeSubTab === "solo"
+            ? data.createdWagers
+            : data.createdTournaments;
+        isLoading =
+          activeSubTab === "solo"
+            ? loadingStates.createdWagers
+            : loadingStates.createdTournaments;
         baseEmptyMessage = "You haven't created any";
         actionText = "START";
         ActionIcon = Play;
         break;
       case "invitations":
-        dataList = invitationsData;
-        isLoading = loadingStates.invitations;
+        dataList =
+          activeSubTab === "solo"
+            ? data.invitedWagers
+            : data.invitedTournaments;
+        isLoading =
+          activeSubTab === "solo"
+            ? loadingStates.invitedWagers
+            : loadingStates.invitedTournaments;
         baseEmptyMessage = "No pending";
         actionText = "JOIN";
         ActionIcon = UserPlus;
         break;
       case "ongoing":
-        dataList = ongoingGamesData;
-        isLoading = loadingStates.ongoing;
+        dataList =
+          activeSubTab === "solo"
+            ? data.ongoingWagers
+            : data.ongoingTournaments;
+        isLoading =
+          activeSubTab === "solo"
+            ? loadingStates.ongoingWagers
+            : loadingStates.ongoingTournaments;
         baseEmptyMessage = "No";
         actionText = "VIEW";
         ActionIcon = Eye;
         break;
-      default:
-        return null;
     }
-
-    // Filter data based on activeSubTab
-    const filteredDataList = dataList.filter((item) => {
-      if (activeTab === "created") {
-        // Uses matchMode
-        const gameMode = item.matchMode === 1 ? "tournament" : "solo";
-        return gameMode === activeSubTab;
-      }
-      // For invitations and ongoing, assumes item.gameMode directly
-      return item.gameMode === activeSubTab;
-    });
 
     const dynamicEmptyMessage = `${baseEmptyMessage} ${activeSubTab} games ${
       activeTab === "created"
@@ -375,25 +442,22 @@ const CreateWagerBanner = () => {
 
     return (
       <motion.div
-        key={`${activeTab}-${activeSubTab}`} // Ensure re-render on subTab change if needed, or manage content internally
+        key={`${activeTab}-${activeSubTab}`}
         variants={tabContentVariants}
         initial="hidden"
         animate="visible"
         exit="exit"
         className="overflow-x-auto bg-black/20 p-3 sm:p-4 rounded-b-lg rounded-tr-lg shadow-2xl backdrop-blur-md border border-gray-700/30 min-h-[350px]"
       >
-        {/* Sub-Tab Buttons Area */}
-        <div className="mb-4 grid grid-cols-2 gap-2 sm:flex sm:space-x-2 p-1 bg-gray-800/20 rounded-lg sm:max-w-md">
+        <div className="mb-4 flex items-center flex-wrap gap-2 sm:flex sm:space-x-2 p-1 bg-gray-800/20 rounded-lg max-w-max w-full">
           <SubTabButton
             label="Solo Games"
-            subTabName="solo"
             icon={UserIcon}
             isActive={activeSubTab === "solo"}
             onClick={() => setActiveSubTab("solo")}
           />
           <SubTabButton
             label="Tournaments"
-            subTabName="tournament"
             icon={TournamentIcon}
             isActive={activeSubTab === "tournament"}
             onClick={() => setActiveSubTab("tournament")}
@@ -404,55 +468,67 @@ const CreateWagerBanner = () => {
           <table className="min-w-full">
             <tbody>
               {Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonRow key={i} columns={commonColumns.length} />
+                <SkeletonRow key={i} columns={5} />
               ))}
             </tbody>
           </table>
-        ) : filteredDataList.length > 0 ? (
+        ) : dataList.records.length > 0 ? (
           <table className="min-w-full">
             <thead>
-              <TableRow>
-                {commonColumns.map((col) => (
-                  <HeaderCell key={col}>{col}</HeaderCell>
-                ))}
-              </TableRow>
+              <tr className="border-b border-gray-800/70">
+                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                  Game ID
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                  Game Name
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                  Total Amount
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                  Action
+                </th>
+              </tr>
             </thead>
             <tbody className="divide-y divide-gray-800/50">
-              {filteredDataList.map((item: any) => (
-                <TableRow
-                  key={item.id}
-                  onClick={
-                    activeTab === "ongoing"
-                      ? () => console.log("View game details:", item.id)
-                      : undefined
-                  }
-                >
-                  <TableCell>{item.id?.substring(0, 8) || "N/A"}...</TableCell>
-                  <TableCell>
-                    {item.name || item.gameTitle || item.title || "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    {formatCurrency(
-                      Number(item.amount || item.totalAmount || 0)
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <StatusIndicator
-                      statusText={item.status || item.statusText || "Pending"}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <ActionButton
-                      onClick={() =>
-                        console.log(`${actionText} game:`, item.id)
-                      }
-                      icon={ActionIcon}
+              {dataList.records.map(
+                (item: TypePrivateWager | TypeSingleTournament) => {
+                  const title = "title" in item ? item.title : "N/A";
+                  const amount = "amount" in item ? item.amount : "0";
+                  const status = "match_date" in item ? "Scheduled" : "Pending";
+
+                  return (
+                    <tr
+                      key={item.id}
+                      className="border-b border-gray-800/70 transition-colors duration-200 hover:bg-gray-700/40 cursor-pointer"
                     >
-                      {actionText}
-                    </ActionButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                        {item.id?.substring(0, 8) || "N/A"}...
+                      </td>
+                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                        {title}
+                      </td>
+                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                        {formatCurrency(Number(amount))}
+                      </td>
+                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                        <StatusIndicator statusText={status} />
+                      </td>
+                      <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                        <ActionButton
+                          onClick={() => handleAction(item)}
+                          icon={ActionIcon}
+                        >
+                          {actionText}
+                        </ActionButton>
+                      </td>
+                    </tr>
+                  );
+                }
+              )}
             </tbody>
           </table>
         ) : (
@@ -461,47 +537,6 @@ const CreateWagerBanner = () => {
       </motion.div>
     );
   };
-
-  const tabs = [
-    { name: "created", label: "My Created Games", icon: ListPlus },
-    { name: "invitations", label: "Invitations", icon: EnvelopeSimple },
-    { name: "ongoing", label: "Ongoing Games", icon: ClockClockwise },
-  ];
-
-  const TabButton = ({
-    label,
-    tabName,
-    icon: Icon,
-    isActive,
-  }: {
-    label: string;
-    tabName: string;
-    icon: React.ElementType;
-    isActive: boolean;
-  }) => (
-    <button
-      onClick={() => setActiveTab(tabName as any)}
-      className={`relative flex items-center justify-center gap-2 px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium rounded-t-md transition-colors duration-300 ease-in-out focus:outline-none z-10 ${
-        isActive ? "text-white" : "text-gray-400 hover:text-white"
-      }`}
-      style={{ WebkitTapHighlightColor: "transparent" }}
-    >
-      <Icon
-        size={16}
-        weight={isActive ? "fill" : "regular"}
-        className={`${isActive ? "text-[#ffa500]" : ""}`}
-      />
-      {label}
-      {isActive && (
-        <motion.div
-          className="absolute bottom-[-1px] left-0 right-0 h-[3px] bg-gradient-to-r from-[#ff4500] to-[#ffa500] rounded-t-sm"
-          layoutId="activeTabIndicator"
-          initial={false}
-          transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        />
-      )}
-    </button>
-  );
 
   return (
     <div className="relative min-h-screen bg-[#0f0f0f] overflow-hidden">
@@ -528,13 +563,13 @@ const CreateWagerBanner = () => {
               variants={itemVariants}
               className="flex border-b border-gray-700/50"
             >
-              {tabs.map((tab) => (
+              {TABS.map((tab) => (
                 <TabButton
                   key={tab.name}
                   label={tab.label}
-                  tabName={tab.name}
                   icon={tab.icon}
                   isActive={activeTab === tab.name}
+                  onClick={() => setActiveTab(tab.name)}
                 />
               ))}
             </motion.div>
@@ -564,7 +599,6 @@ const CreateWagerBanner = () => {
           </motion.div>
         </motion.div>
       </section>
-      {/* Background decorative elements */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <motion.div
           className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,#ff4500_2%,transparent_40%)] opacity-15"

@@ -58,6 +58,9 @@ export type TypeGames = {
   video_banner: string;
   sub_video: string[];
   theme_settings: string
+  gameurl: string | null;
+  gametype: string | null;
+  platformtype: string | null;
 };
 export type TypeSingleTournament = {
   title: string;
