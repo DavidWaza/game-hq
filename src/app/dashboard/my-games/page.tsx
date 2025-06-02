@@ -114,7 +114,7 @@ const EmptyState = ({
   message: string;
   icon?: React.ElementType;
 }) => (
-  <div className="flex flex-col items-center justify-center py-12 text-center min-h-[200px]">
+  <div className="transIn flex flex-col items-center justify-center py-12 text-center min-h-[200px]">
     {Icon && (
       <Icon size={48} className="text-gray-600/80 mb-4" weight="light" />
     )}
@@ -239,7 +239,7 @@ const Pagination = ({
   totalPages: number;
   onPageChange: (page: number) => void;
 }) => {
-  if (totalPages <= 1) return null;
+  // if (totalPages <= 1) return null;
 
   const pageNumbers: (number | string)[] = [];
   // maxPagesToShow: Number of actual page number buttons (e.g., 3 means c-1, c, c+1 or similar)
@@ -355,7 +355,8 @@ const Pagination = ({
       ) {
         if (
           typeof uniquePageNumbers[uniquePageNumbers.length - 1] === "number" &&
-          (uniquePageNumbers[uniquePageNumbers.length - 1] as number) < totalPages - 1
+          (uniquePageNumbers[uniquePageNumbers.length - 1] as number) <
+            totalPages - 1
         )
           uniquePageNumbers.push("...", totalPages);
         else uniquePageNumbers.push(totalPages);
@@ -379,9 +380,13 @@ const Pagination = ({
       current === prev + 1 &&
       uniquePageNumbers[i - 2] === "..."
     ) {
-
       const next = uniquePageNumbers[i + 1];
-      if (typeof prev === "string" && prev === "..." && typeof next === "number" && next === current + 1) {
+      if (
+        typeof prev === "string" &&
+        prev === "..." &&
+        typeof next === "number" &&
+        next === current + 1
+      ) {
         finalPages.push(current);
       } else {
         finalPages.push(current);
@@ -407,7 +412,7 @@ const Pagination = ({
   });
 
   return (
-    <div className="mt-6 flex items-center justify-center flex-wrap gap-1 sm:gap-2">
+    <div className="max-h-max pt-6 flex items-center justify-center flex-wrap gap-1 sm:gap-2">
       <button
         onClick={() => onPageChange(1)}
         disabled={currentPage === 1}
@@ -473,7 +478,6 @@ const CreateWagerBanner = () => {
   const username = user?.username;
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>("solo");
-  const [currentPage, setCurrentPage] = useState(1);
   const [data, setData] = useState<GameState>({
     createdWagers: {
       records: [],
@@ -619,65 +623,29 @@ const CreateWagerBanner = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab, activeSubTab]);
-
-  useEffect(() => {
     const fetchData = async () => {
       if (!username || !methods) return;
 
-      let fetchFunction: ((page: number) => Promise<void>) | undefined;
-      let dataKeyForReset: keyof GameState | undefined;
-      let loadingKeyForReset: keyof LoadingState | undefined;
-
-      if (activeTab === "created") {
-        fetchFunction =
-          activeSubTab === "solo"
-            ? methods.getCreatedWagers
-            : methods.getCreatedTournaments;
-      } else if (activeTab === "invitations") {
-        fetchFunction =
-          activeSubTab === "solo"
-            ? methods.getInvitedWagers
-            : methods.getInvitedTournaments;
-      } else if (activeTab === "ongoing") {
-        if (activeSubTab === "solo") {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          fetchFunction = (methods as any).getOngoingWagers;
-          dataKeyForReset = "ongoingWagers";
-          loadingKeyForReset = "ongoingWagers";
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          fetchFunction = (methods as any).getOngoingTournaments;
-          dataKeyForReset = "ongoingTournaments";
-          loadingKeyForReset = "ongoingTournaments";
-        }
-        if (!fetchFunction && dataKeyForReset && loadingKeyForReset) {
-          updateData(dataKeyForReset, {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
-          updateLoadingState(loadingKeyForReset, false);
-        }
-      }
-
-      if (fetchFunction) {
-        await fetchFunction(currentPage);
+      switch (activeTab) {
+        case "created":
+          await Promise.all([
+            methods.getCreatedWagers(),
+            methods.getCreatedTournaments(),
+          ]);
+          break;
+        case "invitations":
+          await Promise.all([
+            methods.getInvitedWagers(),
+            methods.getInvitedTournaments(),
+          ]);
+          break;
+        default:
+          break;
       }
     };
 
     fetchData();
-  }, [
-    activeTab,
-    activeSubTab,
-    currentPage,
-    username,
-    methods,
-    updateData,
-    updateLoadingState,
-  ]);
+  }, [activeTab, username, methods]);
 
   const handleAction = (item: TypePrivateWager | TypeSingleTournament) => {
     const games = store.games;
@@ -709,19 +677,36 @@ const CreateWagerBanner = () => {
         return; // Should not happen
     }
     const listTotalPages = data[currentDataKey]?.totalPages ?? 1;
+    let pagenum = newPage;
 
     if (newPage >= 1 && newPage <= listTotalPages) {
-      setCurrentPage(newPage);
+      pagenum = newPage;
     } else if (newPage < 1 && listTotalPages > 0) {
       // Prevent going below 1
-      setCurrentPage(1);
+      pagenum = 1;
     } else if (newPage > listTotalPages && listTotalPages > 0) {
       // Prevent going above totalPages
-      setCurrentPage(listTotalPages);
+      pagenum = listTotalPages;
     }
     // if listTotalPages is 0 (e.g. no data), allow setting to 1.
     else if (listTotalPages === 0 && newPage === 1) {
-      setCurrentPage(1);
+      pagenum = 1;
+    }
+
+    switch (currentDataKey) {
+      case "createdWagers":
+        if (activeSubTab === "solo") {
+          methods.getCreatedWagers(pagenum);
+        } else {
+          methods.getCreatedTournaments(pagenum);
+        }
+        break;
+      case "createdTournaments":
+        methods.getCreatedTournaments(pagenum);
+        break;
+
+      default:
+        break;
     }
   };
 
@@ -802,6 +787,8 @@ const CreateWagerBanner = () => {
         : "currently ongoing"
     }.`;
 
+    const newCurrentPage = dataList.totalPages;
+
     return (
       <motion.div
         key={`${activeTab}-${activeSubTab}`}
@@ -809,9 +796,9 @@ const CreateWagerBanner = () => {
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="overflow-x-auto bg-black/20 p-3 sm:p-4 rounded-b-lg rounded-tr-lg shadow-2xl backdrop-blur-md border border-gray-700/30 min-h-[350px]"
+        className="overflow-x-auto bg-black/20 p-3 sm:p-4 rounded-b-lg rounded-tr-lg shadow-2xl backdrop-blur-md border border-gray-700/30 min-h-[350px] justify_auto"
       >
-        <div className="mb-4 flex items-center flex-wrap gap-2 sm:flex sm:space-x-2 p-1 bg-gray-800/20 rounded-lg max-w-max w-full">
+        <div className="max-h-max mb-4 flex items-center flex-wrap gap-2 sm:flex sm:space-x-2 p-1 bg-gray-800/20 rounded-lg max-w-max w-full">
           <SubTabButton
             label="Solo Games"
             icon={UserIcon}
@@ -827,81 +814,85 @@ const CreateWagerBanner = () => {
         </div>
 
         {isLoading ? (
-          <table className="min-w-full">
-            <tbody>
-              {Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonRow key={i} columns={5} />
-              ))}
-            </tbody>
-          </table>
-        ) : dataList.records.length > 0 ? (
-          <>
+          <div className="transIn">
             <table className="min-w-full">
-              <thead>
-                <tr className="border-b border-gray-800/70">
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Game ID
-                  </th>
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Game Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Total Amount
-                  </th>
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800/50">
-                {dataList.records.map(
-                  (item: TypePrivateWager | TypeSingleTournament) => {
-                    const title = "title" in item ? item.title : "N/A";
-                    const amount = "amount" in item ? item.amount : "0";
-                    const status =
-                      "match_date" in item ? "Scheduled" : "Pending"; // This status logic might need refinement
-
-                    return (
-                      <tr
-                        key={item.id}
-                        className="border-b border-gray-800/70 transition-colors duration-200 hover:bg-gray-700/40"
-                      >
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          {item.id?.substring(0, 8) || "N/A"}...
-                        </td>
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          {title}
-                        </td>
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          {formatCurrency(Number(amount))}
-                        </td>
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          <StatusIndicator statusText={status} />
-                        </td>
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          <ActionButton
-                            onClick={() => handleAction(item)}
-                            icon={ActionIcon}
-                          >
-                            {actionText}
-                          </ActionButton>
-                        </td>
-                      </tr>
-                    );
-                  }
-                )}
+              <tbody>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonRow key={i} columns={5} />
+                ))}
               </tbody>
             </table>
-            {dataList.totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={dataList.totalPages}
-                onPageChange={handlePageChange}
-              />
-            )}
+          </div>
+        ) : dataList.records.length > 0 ? (
+          <>
+            <div className="">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b border-gray-800/70">
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Game ID
+                    </th>
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Game Name
+                    </th>
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Total Amount
+                    </th>
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800/50">
+                  {dataList.records.map(
+                    (item: TypePrivateWager | TypeSingleTournament) => {
+                      const title = "title" in item ? item.title : "N/A";
+                      const amount = "amount" in item ? item.amount : "0";
+                      const status =
+                        "match_date" in item ? "Scheduled" : "Pending"; // This status logic might need refinement
+
+                      return (
+                        <tr
+                          key={item.id}
+                          className="border-b border-gray-800/70 transition-colors duration-200 hover:bg-gray-700/40"
+                        >
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            {item.id?.substring(0, 8) || "N/A"}...
+                          </td>
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            {title}
+                          </td>
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            {formatCurrency(Number(amount))}
+                          </td>
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            <StatusIndicator statusText={status} />
+                          </td>
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            <ActionButton
+                              onClick={() => handleAction(item)}
+                              icon={ActionIcon}
+                            >
+                              {actionText}
+                            </ActionButton>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {/* {dataList.totalPages > 0 && ( */}
+            <Pagination
+              currentPage={newCurrentPage}
+              totalPages={dataList.totalPages}
+              onPageChange={handlePageChange}
+            />
+            {/* )} */}
           </>
         ) : (
           <EmptyState message={dynamicEmptyMessage} icon={InfoIcon} />
