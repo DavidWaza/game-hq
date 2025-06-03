@@ -99,8 +99,8 @@ const CreateMatchContent = () => {
 
         <div className="absolute top-0 left-0 w-full h-full bottom-0 bg-black bg-opacity-50"></div>
       </div>
-      <div className=" relative min-h-screen overflow-x-hidden">
-        <div className="py-[140px] text-white min-h-screen flex items-center justify-center px-4 max-w-2xl m-auto">
+      <div className="relative min-h-screen overflow-x-hidden">
+        <div className=" text-white min-h-screen flex items-center justify-center px-4 max-w-2xl m-auto">
           <CreateMatch matchMode={matchMode} setMatchMode={setMatchMode} />
         </div>
       </div>

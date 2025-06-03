@@ -135,7 +135,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   }
 
   return (
-    <div className="w-full transIn">
+    <div className="w-full transIn h-[30rem]">
       <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
         {/* Select Game */}
         <div className="space-y-2">

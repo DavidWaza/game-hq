@@ -214,7 +214,6 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   };
 
   const handleInputBlur = () => {
-    // Using setTimeout to delay hiding the results in case the user clicks on a result
     setTimeout(() => {
       setIsInputFocused(false);
     }, 200);
@@ -222,30 +221,10 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
 
   return (
     <section className="transIn">
-      {/* Switch Button: Public/Private Bet */}
-      {/* <div className="flex justify-center items-center space-x-4">
-        <button
-          onClick={() => setIsPrivate(false)}
-          disabled={loading}
-          className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 text-nowrap ${
-            !isPrivate ? "bg-[#EB8338] text-white" : "bg-gray-600 text-black"
-          }`}
-        >
-          Public Bet
-        </button>
-        <button
-          onClick={() => setIsPrivate(true)}
-          disabled={loading}
-          className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 text-nowrap ${
-            isPrivate ? "bg-[#EB8338] text-white" : "bg-gray-600 text-black"
-          }`}
-        >
-          Private Bet
-        </button>
-      </div> */}
+   
 
       {/* Form: Public/Private Bet */}
-      <div className="w-full mt-6 grid gap-4">
+      <div className="w-full mt-6 grid gap-4 h-[30rem]">
         {/* Title */}
         <div className="space-y-2">
           <label htmlFor="gameTitle-single">Title</label>
