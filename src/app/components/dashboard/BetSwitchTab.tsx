@@ -189,7 +189,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
 
   // Handle deleting an invitee
   const deleteInvitee = (index: number) => {
-    if (invitees.length === 1) return; // Prevent deleting the last input
+    if (invitees.length === 1) return; 
     const updatedInvitees = invitees.filter((_, i) => i !== index);
     setInvitees(updatedInvitees);
   };
