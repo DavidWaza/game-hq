@@ -4,11 +4,12 @@ import Button from "@/components/Button";
 import BetSwitchTab from "@/app/components/dashboard/BetSwitchTab";
 import CreateTournament from "@/app/components/dashboard/CreateWagerT";
 
-type CreateMatch = {
+type CreateMatchProps = {
   matchMode: number;
   setMatchMode: (val: number) => void;
 };
-const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
+
+const CreateMatch = ({ matchMode, setMatchMode }: CreateMatchProps) => {
   const [loading, setLoading] = useState<boolean>(false);
   const tournamentRef = useRef<{ submitForm: () => boolean | void }>(null);
   const oneVoneRef = useRef<{ submitForm: () => boolean | void }>(null);
@@ -20,9 +21,9 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
       oneVoneRef.current.submitForm();
     }
   };
+
   return (
     <div className="addTransition w-full max-w-[500px]">
-      {/* controller */}
       <div className="w-full mb-4 rounded-[30px] border-[#fcf8db] border-4 overflow-hidden relative h-[60px] flex items-center justify-between isolate shadow-lg bg-primary">
         <span
           style={{ left: !matchMode ? "6px" : "calc(50% - 6px)" }}
@@ -43,10 +44,8 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
           Create Tournament
         </button>
       </div>
-      {/* content */}
       <div className="relative bg-primary text-white py-4 bg-opacity-90 rounded-3xl shadow-lg border-4 border-[#fcf8db] w-full justify_auto h-full">
-        {/* content */}
-        <div className="overflow-y-auto px-6 pb-6 w-full hidden_scroll">
+        <div className="overflow-y-hidden px-6 pb-6 w-full">
           {!matchMode ? (
             <BetSwitchTab
               ref={oneVoneRef}
@@ -61,7 +60,6 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatch) => {
             />
           )}
         </div>
-        {/* bottom section */}
         <div className="max-h-max button-area flex_between gap-3 border-t border-[#fcf8db] pt-4 px-6">
           <Button
             loading={loading}

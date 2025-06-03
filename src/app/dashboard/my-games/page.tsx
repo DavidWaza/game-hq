@@ -608,8 +608,7 @@ const CreateWagerBanner = () => {
           updateLoadingState("invitedTournaments", false);
         }
       },
-      // Define getOngoingWagers and getOngoingTournaments when ready
-      // e.g. getOngoingWagers: async (page = 1) => { ... }
+   
     }),
     [updateData, updateLoadingState]
   );

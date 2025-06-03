@@ -122,7 +122,7 @@ const ForgotPassword = () => {
                 size="lg"
                 width="full"
                 type="submit"
-                className={`w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg 
+                className={`w-full  text-white font-semibold py-3 rounded-lg 
                             transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none 
                             focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75
                             disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center group`}
@@ -192,7 +192,6 @@ const ForgotPassword = () => {
             </p>
           </div>
         )}
-
         <div className="mt-8 text-center border-t border-slate-200 pt-6">
           <p className="text-sm text-slate-500">
             Suddenly remembered it?{" "}
