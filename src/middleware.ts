@@ -7,10 +7,11 @@ const publicRoutes = [
   "/auth/login",
   "/auth/register",
   "/auth/forgot-password",
+  "/auth/verify-email",
 ];
 
 // Define auth routes that should redirect to dashboard if user is already logged in
-const authRoutes = ["/auth/login", "/auth/register", "/auth/forgot-password"];
+const authRoutes = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/verify-email"];
 
 // Define protected routes that require authentication
 const protectedRoutes = ["/dashboard", "/profile", "/settings"];

@@ -70,7 +70,7 @@ const Login: React.FC = () => {
 
   return (
     <div>
-       <div className="hidden lg:block">
+      <div className="hidden lg:block">
         <Navbar variant="secondary" />
       </div>
       <div className="lg:hidden block">
@@ -149,7 +149,7 @@ const Login: React.FC = () => {
                         )}
                         <p className="text-[#233d4d] text-sm !text-left">
                           <Link
-                            href="/forgot-password"
+                            href="/auth/forgot-password"
                             className="hover:text-[#f37f2d] hover:font-bold transition-all ease-linear duration-300"
                           >
                             Forgot password?

@@ -124,10 +124,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!user) return;
 
       const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
-        { storeKey: "categories", path: "api/gamecategories" },
-        { storeKey: "games", path: "api/games" },
         // { storeKey: "wallet", path: "api/wallets" },
       ];
+      if (!dataHandlers.length) return;
 
       try {
         const results = await Promise.all(
@@ -148,30 +147,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     fetchGlobalData();
   }, [user]);
   // Fetch global data (categories, games, etc.)
-  // useEffect(() => {
-  //   const fetchGlobalData = async () => {
-  //     const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
-  //       { storeKey: "games", path: "api/games" },
-  //     ];
+  useEffect(() => {
+    const fetchGlobalData = async () => {
+      const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
+        { storeKey: "categories", path: "api/gamecategories" },
+        { storeKey: "games", path: "api/games" },
+      ];
+      if (!dataHandlers.length) return;
+      try {
+        const results = await Promise.all(
+          dataHandlers.map(async ({ storeKey, path }) => {
+            const data = await getFn(path);
+            return { storeKey, data: data?.records };
+          })
+        );
 
-  //     try {
-  //       const results = await Promise.all(
-  //         dataHandlers.map(async ({ storeKey, path }) => {
-  //           const data = await getFn(path);
-  //           return { storeKey, data: data?.records };
-  //         })
-  //       );
+        results.forEach(({ storeKey, data }) => {
+          setState(data, storeKey);
+        });
+      } catch (error) {
+        console.error("Error fetching global data:", error);
+      }
+    };
 
-  //       results.forEach(({ storeKey, data }) => {
-  //         setState(data, storeKey);
-  //       });
-  //     } catch (error) {
-  //       console.error("Error fetching global data:", error);
-  //     }
-  //   };
-
-  //   fetchGlobalData();
-  // }, []);
+    fetchGlobalData();
+  }, []);
 
   return (
     <AuthContext.Provider
