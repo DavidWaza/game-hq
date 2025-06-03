@@ -45,7 +45,7 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatchProps) => {
         </button>
       </div>
       <div className="relative bg-primary text-white py-4 bg-opacity-90 rounded-3xl shadow-lg border-4 border-[#fcf8db] w-full justify_auto h-full">
-        <div className="overflow-y-hidden px-6 pb-6 w-full">
+        <div className="overflow-y-auto px-6 pb-6 w-full">
           {!matchMode ? (
             <BetSwitchTab
               ref={oneVoneRef}
