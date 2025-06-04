@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import {
   Mail,
@@ -16,7 +17,7 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -32,13 +33,14 @@ const ForgotPassword = () => {
 
     // --- Simulate API Call ---
     console.log("Sending password reset request for:", data.emailOrPhone);
-    await new Promise((resolve) => setTimeout(resolve, 2500)); // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 2500));
 
     // Mock API Response Logic (Replace with your actual API call)
-    const accountExists = Math.random() > 0.25; // 75% chance account exists
+    const accountExists = Math.random() > 0.25;
 
     if (accountExists) {
       setIsSubmitted(true);
+      router.push("/auth/otp");
     } else {
       setApiError(
         "Hmm, we couldn't find an account with that detail. Mind trying another?"
