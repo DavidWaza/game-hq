@@ -32,12 +32,16 @@ const Login = () => {
     mutationFn: (userData: { password: string; username: string }) =>
       postFn("api/auth/login", userData),
     onSuccess: async (data: DataFromLogin) => {
-      if (data?.token) {
+      if (data) {
         toast.success("Login Successful");
-        await login(data);
-        router.push("/dashboard");
-      } else {
-        toast.error(data?.message || "Login Failed: No token received.");
+        const res = await login(data);
+        if (res) {
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 3000);
+        } else if (res === null) {
+          toast.info("Please verify your email to continue");
+        }
       }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

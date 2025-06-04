@@ -40,10 +40,16 @@ const MobileLogin = () => {
   const loginMutation = useMutation({
     mutationFn: (userData: LoginFormData) => postFn("api/auth/login", userData),
     onSuccess: async (data: DataFromLogin) => {
-      if (data?.token) {
+      if (data) {
         toast.success("Login Successful");
-        await login(data);
-        router.push("/dashboard");
+        const res = await login(data);
+        if (res) {
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 3000);
+        } else if (res === null) {
+          toast.info("Please verify your email to continue");
+        }
       }
     },
     onError: (error) => {

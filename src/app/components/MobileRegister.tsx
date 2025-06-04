@@ -74,11 +74,15 @@ const MobileRegister = () => {
       password: string;
     }) => postFn("api/auth/register", userData),
     onSuccess: async (data: DataFromLogin) => {
-      toast.success("Registration Successful");
-      await login(data);
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 3000);
+      if (data) {
+        toast.success("Registration Successful");
+        const res = await login(data);
+        if (res) {
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 3000);
+        }
+      }
     },
     onError: (error) => {
       toast.error(`Registration error ${error.message}`);

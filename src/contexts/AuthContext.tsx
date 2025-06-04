@@ -36,7 +36,7 @@ type StoreConfigKeys = keyof StoreData;
 interface AuthContextType {
   isAuthenticated: boolean | undefined;
   user: User | null;
-  login: (data: DataFromLogin) => Promise<void>;
+  login: (data: DataFromLogin) => Promise<User | undefined | null>;
   logout: () => Promise<void>;
   store: StoreData;
   setState: (value: StoreData[StoreConfigKeys], name: StoreConfigKeys) => void;
@@ -103,12 +103,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   // Login function
-  const login = async (data: DataFromLogin) => {
-    const dataResponse: User | undefined = await storeUserData(data);
+  const login = async (
+    data: DataFromLogin
+  ): Promise<User | undefined | null> => {
+    const dataResponse: User | undefined | null = await storeUserData(data);
     if (dataResponse) {
       setUser(dataResponse);
       setIsAuthenticated(true);
     }
+    // null for not verified emails
+    return dataResponse;
   };
 
   // Logout function

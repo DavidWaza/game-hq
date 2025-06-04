@@ -102,20 +102,28 @@ export const storeUserData = async (data: DataFromLogin) => {
     // Store in HTTP-only cookie (optional, requires backend endpoint)
     sessionStorage.setItem("token", data.token);
     const user: User = await getFn(`api/users/view/${data.user.id}`);
-    const response = await fetch("/api/auth/set-user", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ ...data, user }),
-      // body: JSON.stringify({ token: data.token }),
-    });
+    if (user && user.email_verified_at) {
+      const response = await fetch("/api/auth/set-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...data, user }),
+        // body: JSON.stringify({ token: data.token }),
+      });
 
-    if (!response.ok) {
-      throw new Error("Failed to set token cookie");
+      if (!response.ok) {
+        throw new Error("Failed to set token cookie");
+      }
+      getUser();
+      return user
+    } else if (user && !user.email_verified_at) {
+      sessionStorage.clear();
+      return null;
+    } else {
+      sessionStorage.clear();
+      return undefined;
     }
-    getUser();
-    return user
   } catch (error) {
     console.error("Failed to store token:", error);
   }

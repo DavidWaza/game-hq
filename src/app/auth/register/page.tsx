@@ -11,9 +11,7 @@ import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
-import { useRouter } from "next/navigation";
 import MobileRegister from "@/app/components/MobileRegister";
-import { useAuth } from "@/contexts/AuthContext";
 import { DataFromLogin } from "../../../../types/global";
 import ReferralCode from "@/app/components/ReferralCode";
 
@@ -35,8 +33,6 @@ const evaluateStrength = (password: string) => {
 };
 
 const RegisterUser: React.FC = () => {
-  const { login } = useAuth();
-  const router = useRouter();
   const [registrationType] = useState<"email" | "phone">("email");
   const {
     register,
@@ -94,11 +90,11 @@ const RegisterUser: React.FC = () => {
       password: string;
     }) => postFn("api/auth/register", userData),
     onSuccess: async (data: DataFromLogin) => {
-      toast.success("Registration Successful");
-      await login(data);
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 3000);
+      if (data) {
+        toast.success(
+          "Registration Successful! Please click on the link in your email to continue"
+        );
+      }
     },
     onError: (error) => {
       toast.error(`Registration error ${error.message}`);
