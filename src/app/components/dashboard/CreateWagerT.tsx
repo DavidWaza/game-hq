@@ -142,7 +142,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   }
 
   return (
-    <div className="w-full transIn h-[30rem]">
+    <div className="w-full transIn">
       <form className="grid gap-4 pb-6" onSubmit={handleSubmit(onSubmit)}>
         {/* Select Game */}
         <div className="space-y-2">
@@ -164,10 +164,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             <SelectContent>
               <SelectGroup>
                 {store?.games
-                  ?.filter(
-                    (game) =>
-                      game.gametype === "tournament" || game.gametype === "both"
-                  )
+                  ?.filter((game) => game.gametype !== "invite")
                   .map((game) => (
                     <SelectItem key={game.id} value={game.id.toString()}>
                       {game.name}

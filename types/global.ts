@@ -59,7 +59,7 @@ export type TypeGames = {
   sub_video: string[];
   theme_settings: string
   gameurl: string | null;
-  gametype: string | null;
+  gametype: 'invite' | 'tournament' | 'both' | null;
   platformtype: string | null;
   maxplayers: number | null | string;
 };

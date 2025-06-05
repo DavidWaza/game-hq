@@ -234,7 +234,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   return (
     <section className="transIn">
       {/* Form: Public/Private Bet */}
-      <div className="w-full mt-6 grid gap-4 h-[30rem]">
+      <div className="w-full mt-6 grid gap-4">
         {/* Title */}
         <div className="space-y-2">
           <label htmlFor="gameTitle-single">Title</label>
@@ -272,10 +272,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
             <SelectContent>
               <SelectGroup>
                 {store?.games
-                  ?.filter(
-                    (game) =>
-                      game.gametype === "invite" || game.gametype === "both"
-                  )
+                  ?.filter((game) => game.gametype !== "tournament")
                   .map((game) => (
                     <SelectItem key={game.id} value={game.id.toString()}>
                       {game.name}

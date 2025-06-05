@@ -37,7 +37,6 @@ const CreateWager = () => {
   };
   const getClosestToToday = (items: TypeSingleTournament[]) => {
     const today = new Date();
-
     return items.reduce(
       (closest: TypeSingleTournament, current: TypeSingleTournament) => {
         const currentDiff = Math.abs(
@@ -85,7 +84,7 @@ const CreateWager = () => {
   useEffect(() => {
     filterGame();
   }, [selectedData?.id, store?.games?.length, filterGame]);
-  console.log(selectedGame);
+  console.log(selectedData);
 
   return (
     <>
