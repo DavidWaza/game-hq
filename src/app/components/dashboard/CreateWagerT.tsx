@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   useState,
   useEffect,
+  useCallback,
 } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +52,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { store, setState } = useAuth();
   const router = useRouter();
+  const [maxInvitees, setMaxInvitees] = useState(0);
   // const quill = new Quill('#editor');
 
   const {
@@ -77,17 +79,22 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
     setIsMounted(true);
   }, []);
 
+  const handleCategoryChange = useCallback(
+    (value: string) => {
+      setValue("game_id", value, { shouldValidate: true });
+      const selectedGame = store?.games?.find((game) => game.id === value);
+      if (selectedGame) {
+        setMaxInvitees(Number(selectedGame.maxplayers));
+      }
+    },
+    [setValue, store?.games]
+  );
+
   useEffect(() => {
     if (store.createMatch.game_id) {
-      setValue("game_id", store.createMatch.game_id.toString(), {
-        shouldValidate: true,
-      });
+      handleCategoryChange(store.createMatch.game_id.toString());
     }
-  }, [store.createMatch.game_id, setValue]);
-
-  const handleCategoryChange = (value: string) => {
-    setValue("game_id", value, { shouldValidate: true });
-  };
+  }, [store.createMatch.game_id, setValue, handleCategoryChange]);
 
   const handleTimeChange = (match_time: string): void => {
     setValue("match_time", match_time, { shouldValidate: true });
@@ -156,11 +163,16 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {store?.games?.map((game) => (
-                  <SelectItem key={game.id} value={game.id.toString()}>
-                    {game.name}
-                  </SelectItem>
-                ))}
+                {store?.games
+                  ?.filter(
+                    (game) =>
+                      game.gametype === "tournament" || game.gametype === "both"
+                  )
+                  .map((game) => (
+                    <SelectItem key={game.id} value={game.id.toString()}>
+                      {game.name}
+                    </SelectItem>
+                  ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -242,6 +254,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             })}
             step={1}
             min={1}
+            max={maxInvitees}
             type="number"
             id="number_of_participants"
             placeholder="ex. 20"

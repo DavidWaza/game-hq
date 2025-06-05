@@ -61,6 +61,7 @@ export type TypeGames = {
   gameurl: string | null;
   gametype: string | null;
   platformtype: string | null;
+  maxplayers: number | null | string;
 };
 export type TypeSingleTournament = {
   title: string;
