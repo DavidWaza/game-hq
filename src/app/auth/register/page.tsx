@@ -290,23 +290,6 @@ const RegisterUser: React.FC = () => {
                       <div className="divider py-4">
                         <span>Or</span>
                       </div>
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        width="full"
-                        icon={
-                          <Image
-                            src={"/assets/icons/google-icons.svg"}
-                            alt="Google Icon"
-                            width={0}
-                            height={0}
-                            sizes="100vw"
-                            className="w-5 h-5 object-contain object-center"
-                          />
-                        }
-                      >
-                        Register with Google
-                      </Button>
                     </div>
                     <p className="text-[#FD8038] text-center">
                       Already have an account?{" "}

@@ -100,3 +100,16 @@ export function copyToClipboard(text: string = 'Text', statusText: string = 'Lin
     console.error(err)
   });
 }
+export function setSearchParams(searchParam: Record<string, string>, allowEmpty: boolean = false) {
+  let params = "";
+  Object.entries(searchParam).forEach(([key, value], index) => {
+    if (value !== undefined && value !== null && value !== '') {
+      if (!index) {
+        params += `?${key}=${value}`;
+      } else params += `&${key}=${value}`;
+    } else if (allowEmpty && !value) {
+      params += `${key}&`;
+    }
+  });
+  return params;
+}

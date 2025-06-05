@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import Image from "next/image";
 import Button from "@/components/Button";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { DataFromLogin } from "../../types/global";
+import Google from "@/components/socials/Google";
 
 const Login = () => {
   const { login } = useAuth();
@@ -147,24 +147,7 @@ const Login = () => {
           <div className="divider py-4">
             <span>Or</span>
           </div>
-          <Button
-            disabled={loginMutation.isPending}
-            variant="secondary"
-            size="md"
-            width="full"
-            type="button"
-            icon={
-              <Image
-                src={"/assets/icons/google-icons.svg"}
-                alt="Google icon"
-                width={20}
-                height={20}
-                className="w-5 h-5 object-contain object-center"
-              />
-            }
-          >
-            Register with Google
-          </Button>
+          <Google disabled={loginMutation.isPending} />
         </div>
         <p className="text-[#64748B] text-center">
           Do not have an account?{" "}

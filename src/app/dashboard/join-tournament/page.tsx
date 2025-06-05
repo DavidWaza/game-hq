@@ -1,7 +1,7 @@
 "use client";
 import CreateWagerBanner from "@/app/components/dashboard/join-wager-banner";
 import Navbar from "@/components/Navbar";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { getFn } from "@/lib/apiClient";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
 import { useAuth } from "@/contexts/AuthContext";
@@ -57,13 +57,13 @@ const CreateWager = () => {
       }
     );
   };
-  const filterForSoonestTournament = () => {
+  const filterForSoonestTournament = useCallback(() => {
     if (data.length) {
       setSelectedData(getClosestToToday(data));
     }
     return undefined;
-  };
-  const filterGame = async () => {
+  }, [data]);
+  const filterGame = useCallback(async () => {
     if (store.games?.length && selectedData?.id) {
       const t: TypeGames | undefined = store.games.find(
         (el) => el.id === selectedData.game_id
@@ -72,7 +72,7 @@ const CreateWager = () => {
         setSelectedGame(t);
       }
     }
-  };
+  }, [selectedData?.id, store.games, selectedData?.game_id]);
 
   useEffect(() => {
     getTournaments();
@@ -80,11 +80,11 @@ const CreateWager = () => {
 
   useEffect(() => {
     filterForSoonestTournament();
-  }, [data.length, store.games]);
+  }, [data.length, store.games, filterForSoonestTournament]);
 
   useEffect(() => {
     filterGame();
-  }, [selectedData?.id, store?.games?.length]);
+  }, [selectedData?.id, store?.games?.length, filterGame]);
   console.log(selectedGame);
 
   return (

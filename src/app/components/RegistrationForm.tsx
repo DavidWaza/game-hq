@@ -19,6 +19,7 @@ import { useMutation } from "@tanstack/react-query";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Google from "@/components/socials/Google";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -294,23 +295,7 @@ const RegistrationForm: React.FC<{
               Register with{" "}
               {registrationType === "email" ? "Phone Number" : "Email"}
             </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              width="full"
-              icon={
-                <Image
-                  src={"/assets/icons/google-icons.svg"}
-                  alt="Google Icon"
-                  width={0}
-                  height={0}
-                  sizes="100vw"
-                  className="w-5 h-5 object-contain object-center"
-                />
-              }
-            >
-              Register with Google
-            </Button>
+            <Google disabled={registerMutation.isPending} />
           </div>
           <p className="text-[#64748B] text-center">
             Already have an account?{" "}

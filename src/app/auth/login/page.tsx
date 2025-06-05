@@ -15,6 +15,7 @@ import MobileLogin from "@/app/components/MobileLogin";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { DataFromLogin } from "../../../../types/global";
+import Google from "@/components/socials/Google";
 
 interface LoginFormData {
   username: string;
@@ -64,10 +65,6 @@ const Login: React.FC = () => {
 
   const onSubmit: SubmitHandler<LoginFormData> = (formData) => {
     loginMutation.mutate(formData);
-  };
-
-  const handleGoogleLogin = () => {
-    router.push("/api/auth/login?connection=google-oauth2");
   };
 
   useEffect(() => {
@@ -174,24 +171,10 @@ const Login: React.FC = () => {
                     <div className="divider py-4">
                       <span>Or</span>
                     </div>
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      width="full"
-                      onClick={handleGoogleLogin}
-                      icon={
-                        <Image
-                          src="/assets/icons/google-icons.svg"
-                          alt="Google Icon"
-                          width={0}
-                          height={0}
-                          sizes="100vw"
-                          className="w-5 h-5 object-contain object-center"
-                        />
-                      }
-                    >
-                      Login with Google
-                    </Button>
+                    <Google
+                      disabled={loginMutation.isPending}
+                      text="Login with Google"
+                    />
                   </div>
                   <p className="text-[#FD8038] text-center">
                     Don’t have an account?{" "}

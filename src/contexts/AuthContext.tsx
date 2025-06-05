@@ -1,5 +1,11 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import {
   storeUserData,
   logout as logoutFn,
@@ -14,7 +20,9 @@ import {
   TypeSingleTournament,
   // TypeWallet,
 } from "../../types/global";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams, usePathname } from "next/navigation";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface StoreActions {
   getTournament: () => void;
@@ -26,6 +34,10 @@ interface StoreData {
   createMatch: {
     game_id: string;
     matchMode: number;
+  };
+  fullScreenLoader: {
+    loader: boolean;
+    message: string;
   };
   // wallet: TypeWallet | undefined;
   dispatch: StoreActions;
@@ -48,6 +60,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | undefined>(
     undefined
   );
+  const [, startTransition] = useTransition();
+  const searchParams = useSearchParams();
+  const code = searchParams.get("code");
+  const state = searchParams.get("state");
+  const error = searchParams.get("error");
+  const error_description = searchParams.get("error_description");
+  const error_uri = searchParams.get("error_uri");
+  const scope = searchParams.get("scope");
+  const router = useRouter();
+  const pathname = usePathname();
   const params = useParams();
   const slug = `${params?.slug}`;
   const [user, setUser] = useState<User | null>(null);
@@ -59,6 +81,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     createMatch: {
       game_id: "",
       matchMode: 0,
+    },
+    fullScreenLoader: {
+      loader: false,
+      message: "",
     },
     // wallet: undefined,
     // actions
@@ -176,6 +202,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     fetchGlobalData();
   }, []);
+
+  useEffect(() => {
+    if (pathname.includes("/join-tournament")) return;
+    let timer = 1000;
+    let message = "";
+    const hasValidGooleCred =
+      code && state && !error && !error_description && !error_uri && scope;
+    if (hasValidGooleCred) {
+      console.log({ code, state, scope });
+      timer = 3000;
+      message = "Verifying Google Account...";
+    } else if (error) {
+      toast.error("Error Verifying Google Account");
+    }
+    startTransition(() => {
+      setState(
+        {
+          loader: true,
+          message: message,
+        },
+        "fullScreenLoader"
+      );
+      setTimeout(() => {
+        setState({ loader: false, message: "" }, "fullScreenLoader");
+        if (hasValidGooleCred) {
+          router.push("/");
+        }
+      }, timer);
+    });
+  }, [code, state, error, error_description, error_uri, scope]);
 
   return (
     <AuthContext.Provider
