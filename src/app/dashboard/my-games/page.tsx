@@ -542,15 +542,9 @@ const CreateWagerBanner = () => {
         try {
           updateLoadingState("createdWagers", true);
           const response = await getFn(`/api/users/wagers?page=${page}`);
-          updateData("createdWagers", response);
+          if (response) updateData("createdWagers", response);
         } catch {
           toast.error("Error fetching created wagers");
-          updateData("createdWagers", {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
         } finally {
           updateLoadingState("createdWagers", false);
         }
@@ -561,15 +555,9 @@ const CreateWagerBanner = () => {
           const response = await getFn(
             `/api/users/tournamentwager?page=${page}`
           );
-          updateData("createdTournaments", response);
+          if (response) updateData("createdTournaments", response);
         } catch {
           toast.error("Error fetching created tournaments");
-          updateData("createdTournaments", {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
         } finally {
           updateLoadingState("createdTournaments", false);
         }
@@ -580,15 +568,9 @@ const CreateWagerBanner = () => {
           const response = await getFn(
             `/api/users/invitee_tournament_wager?page=${page}`
           );
-          updateData("invitedWagers", response);
+          if (response) updateData("invitedWagers", response);
         } catch {
           toast.error("Error fetching invited wagers");
-          updateData("invitedWagers", {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
         } finally {
           updateLoadingState("invitedWagers", false);
         }
@@ -599,20 +581,13 @@ const CreateWagerBanner = () => {
           const response = await getFn(
             `/api/users/invited_but_not_played_tournament_wager?page=${page}`
           );
-          updateData("invitedTournaments", response);
+          if (response) updateData("invitedTournaments", response);
         } catch {
           toast.error("Error fetching invited tournaments");
-          updateData("invitedTournaments", {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
         } finally {
           updateLoadingState("invitedTournaments", false);
         }
       },
-   
     }),
     [updateData, updateLoadingState]
   );
