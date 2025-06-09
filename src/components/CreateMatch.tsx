@@ -4,6 +4,17 @@ import Button from "@/components/Button";
 import BetSwitchTab from "@/app/components/dashboard/BetSwitchTab";
 import CreateTournament from "@/app/components/dashboard/CreateWagerT";
 
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 type CreateMatchProps = {
   matchMode: number;
   setMatchMode: (val: number) => void;
@@ -21,6 +32,7 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatchProps) => {
       oneVoneRef.current.submitForm();
     }
   };
+
 
   return (
     <div className="addTransition w-full max-w-[500px]">
@@ -61,14 +73,35 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatchProps) => {
           )}
         </div>
         <div className="max-h-max button-area flex_between gap-3 border-t border-[#fcf8db] pt-4 px-6">
-          <Button
-            loading={loading}
-            disabled={loading}
-            onClick={handleCreateBet}
-            variant="primary"
-          >
-            Create Bet
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="primary">Create Game</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Read Carefully</DialogTitle>
+                <DialogDescription>
+                  {/* This would be the game information */}
+                </DialogDescription>
+              </DialogHeader>
+              <></>
+              <DialogFooter className="sm:justify-start">
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                    No, Thanks
+                  </Button>
+                </DialogClose>
+                <Button
+                  loading={loading}
+                  disabled={loading}
+                  onClick={handleCreateBet}
+                  variant="primary"
+                >
+                  Proceed
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>
