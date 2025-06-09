@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { DataFromLogin } from "../../../../types/global";
 import Google from "@/components/socials/Google";
+import EmailVerificationModal from "@/app/components/Emailverification";
 
 interface LoginFormData {
   username: string;
@@ -26,6 +27,7 @@ const Login: React.FC = () => {
   const { login } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const usernameRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -52,6 +54,7 @@ const Login: React.FC = () => {
           }, 3000);
         } else if (res === null) {
           toast.info("Please verify your email to continue");
+          setIsModalOpen(true);
         }
       }
     },
@@ -197,6 +200,11 @@ const Login: React.FC = () => {
         </div>
       </div>
       <MobileLogin />
+      <EmailVerificationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        showLogin={false}
+      />
     </div>
   );
 };

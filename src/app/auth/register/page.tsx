@@ -14,7 +14,6 @@ import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import MobileRegister from "@/app/components/MobileRegister";
 import ReferralCode from "@/app/components/ReferralCode";
-import { useRouter } from "next/navigation";
 import EmailVerificationModal from "@/app/components/Emailverification";
 import { DataFromLogin } from "../../../../types/global";
 
@@ -36,7 +35,6 @@ const evaluateStrength = (password: string) => {
 };
 
 const RegisterUser: React.FC = () => {
-  const router = useRouter();
   const [registrationType] = useState<"email" | "phone">("email");
   const {
     register,
@@ -93,11 +91,8 @@ const RegisterUser: React.FC = () => {
         toast.success(
           "Registration Successful! Please click on the link in your email to continue"
         );
-        setTimeout(() => {
-          router.push("/auth/login");
-          setIsModalOpen(true); // Open the modal on success
-          reset(); // Reset the form
-        }, 3000);
+        setIsModalOpen(true);
+        reset();
       }
     },
     onError: (error) => {
@@ -334,6 +329,7 @@ const RegisterUser: React.FC = () => {
       <EmailVerificationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        showClose={false}
       />
     </div>
   );

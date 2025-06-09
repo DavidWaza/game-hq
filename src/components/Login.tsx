@@ -14,7 +14,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DataFromLogin } from "../../types/global";
 import Google from "@/components/socials/Google";
 
-const Login = () => {
+const Login = ({
+  setIsModalOpen,
+  setIsLoginModalOpen,
+}: {
+  setIsModalOpen: (isOpen: boolean) => void;
+  setIsLoginModalOpen: (isOpen: boolean) => void;
+}) => {
   const { login } = useAuth();
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
@@ -41,6 +47,8 @@ const Login = () => {
           }, 3000);
         } else if (res === null) {
           toast.info("Please verify your email to continue");
+          setIsModalOpen(true);
+          setIsLoginModalOpen(false);
         }
       }
     },
