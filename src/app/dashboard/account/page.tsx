@@ -27,7 +27,7 @@ export default function DigitalWallet() {
   const [transferType, setTransferType] = useState("");
   const [depositStep, setDepositStep] = useState("amount");
   const router = useRouter();
-  // Restored original transactions state
+  
   const [transactions, setTransactions] = useState([
     {
       id: 1,
