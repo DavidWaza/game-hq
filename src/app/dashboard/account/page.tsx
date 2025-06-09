@@ -12,22 +12,26 @@ import {
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
+import ButtonSpinner from "@/components/ButtonSpinner";
+import { postFn } from "@/lib/apiClient";
+import { TypePaymentMethods } from "../../../../types/global";
+import { toast } from "sonner";
 
 export default function DigitalWallet() {
-  const { user } = useAuth();
+  const { user, store } = useAuth();
+  const paymentMethods: TypePaymentMethods[] = store.paymentMethods || [];
   // const accountname = user?.username ?? "Game User";
 
   const [balance, setBalance] = useState(Number(user?.wallet?.balance || 0));
-  const [savingsBalance, setSavingsBalance] = useState(5000);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [transferAmount, setTransferAmount] = useState("");
-  const [transferType, setTransferType] = useState("");
   const [depositStep, setDepositStep] = useState("amount");
-  const router = useRouter();
-  
+  const [isLoading, setIsLoading] = useState("");
+  // const router = useRouter();
+
   const [transactions, setTransactions] = useState([
     {
       id: 1,
@@ -69,27 +73,25 @@ export default function DigitalWallet() {
     setDepositStep("method");
   };
 
-  const handlePaystackPayment = () => {
-    console.log(`Initiating Paystack payment for: ${transferAmount}`);
-
+  const handlePayment = async (payment_method_id: string) => {
     const amount = Number(transferAmount);
-    setBalance((prevBalance) => prevBalance + amount);
-    setTransactions((prev) => [
-      {
-        id: Date.now(),
-        type: "deposit",
-        amount: amount,
-        date: new Date().toISOString().split("T")[0],
-        status: "completed",
-      },
-      ...prev,
-    ]);
-    router.push("/dashboard/account/payment-success");
-    closeDepositModal();
-  };
-
-  const handleSelectTransfer = () => {
-    setDepositStep("transferDetails");
+    setIsLoading(payment_method_id);
+    try {
+      const response = await postFn("/api/topup", {
+        amount,
+        payment_method_id,
+      });
+      if (response) {
+        toast.success("Payment initiated successfully");
+        if (response?.data?.payment_url) {
+          window.location.href = response?.data?.payment_url;
+        }
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+    } finally {
+      setIsLoading("");
+    }
   };
 
   const closeDepositModal = () => {
@@ -121,49 +123,6 @@ export default function DigitalWallet() {
     ]);
     setTransferAmount("");
     setShowWithdrawModal(false);
-  };
-
-  // Restored original handleTransfer function
-  const handleTransfer = () => {
-    if (
-      !transferAmount ||
-      isNaN(Number(transferAmount)) ||
-      Number(transferAmount) <= 0
-    )
-      return;
-
-    const amount = Number(transferAmount);
-    if (transferType === "toSavings" && amount <= balance) {
-      setBalance((prevBalance) => prevBalance - amount);
-      setSavingsBalance((prevSavings) => prevSavings + amount);
-      setTransactions((prev) => [
-        {
-          id: Date.now(),
-          type: "transfer to savings",
-          amount: amount,
-          date: new Date().toISOString().split("T")[0],
-          status: "completed",
-        },
-        ...prev,
-      ]);
-      setActiveTab("dashboard");
-    } else if (transferType === "fromSavings" && amount <= savingsBalance) {
-      setSavingsBalance((prevSavings) => prevSavings - amount);
-      setBalance((prevBalance) => prevBalance + amount);
-      setTransactions((prev) => [
-        {
-          id: Date.now(),
-          type: "transfer from savings",
-          amount: amount,
-          date: new Date().toISOString().split("T")[0],
-          status: "completed",
-        },
-        ...prev,
-      ]);
-      setActiveTab("dashboard");
-    }
-    setTransferAmount("");
-    setTransferType("");
   };
 
   const [filterType, setFilterType] = useState("all");
@@ -206,7 +165,7 @@ export default function DigitalWallet() {
                   <div className="flex items-center">
                     <Coins size={28} className="text-teal-400" />
                     <h2 className="text-3xl font-bold text-white ml-3 flex items-center">
-                      {formatCurrency(balance)}
+                      {formatCurrency(Number(user?.wallet?.balance || 0))}
                     </h2>
                   </div>
                   <div className="mt-4 flex space-x-2">
@@ -483,22 +442,35 @@ export default function DigitalWallet() {
                     Select Payment Method
                   </h3>
                   <div className="space-y-4">
-                    <button
-                      onClick={handlePaystackPayment}
-                      className="w-full flex items-center justify-center py-3 px-4 rounded-lg border border-gray-600 hover:border-teal-500 hover:bg-gray-700 transition-all"
-                    >
-                      <CreditCard size={20} className="mr-3 text-teal-400" />
-                      Pay with Paystack
-                    </button>
-                    <button
-                      onClick={handleSelectTransfer}
-                      className="w-full flex items-center justify-center py-3 px-4 rounded-lg border border-gray-600 hover:border-blue-500 hover:bg-gray-700 transition-all"
-                    >
-                      <Bank size={20} className="mr-3 text-blue-400" />
-                      Bank Transfer
-                    </button>
+                    {paymentMethods.map((method) => (
+                      <button
+                        disabled={isLoading !== ""}
+                        key={method.id}
+                        onClick={() => {
+                          handlePayment(method.id);
+                        }}
+                        className="w-full flex items-center justify-center py-3 px-4 rounded-lg border border-gray-600 hover:border-teal-500 hover:bg-gray-700 transition-all"
+                      >
+                        {isLoading === method.id ? (
+                          <ButtonSpinner color="#fff" />
+                        ) : (
+                          <>
+                            {method.name !== "bank_transfer" ? (
+                              <CreditCard
+                                size={20}
+                                className="mr-3 text-teal-400"
+                              />
+                            ) : (
+                              <Bank size={20} className="mr-3 text-teal-400" />
+                            )}
+                            {method.display_name}
+                          </>
+                        )}
+                      </button>
+                    ))}
                   </div>
                   <button
+                    disabled={isLoading !== ""}
                     onClick={() => setDepositStep("amount")}
                     className="mt-6 w-full py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-white"
                   >

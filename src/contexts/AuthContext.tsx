@@ -166,7 +166,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const results = await Promise.all(
           dataHandlers.map(async ({ storeKey, path }) => {
             const data = await getFn(path);
-            return { storeKey, data: data?.records };
+            return {
+              storeKey,
+              data: data?.records ? data.records : data?.data,
+            };
           })
         );
 
@@ -192,7 +195,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const results = await Promise.all(
           dataHandlers.map(async ({ storeKey, path }) => {
             const data = await getFn(path);
-            return { storeKey, data: data?.records };
+            return {
+              storeKey,
+              data: data?.records ? data.records : data?.data,
+            };
           })
         );
 
