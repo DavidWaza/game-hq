@@ -108,7 +108,7 @@ const RegistrationForm: React.FC<{
           "Registration Successful! Please click on the link in your email to continue"
         );
         setTimeout(() => {
-          router.push("/login");
+          router.push("/auth/login");
         }, 3000);
       }
     },

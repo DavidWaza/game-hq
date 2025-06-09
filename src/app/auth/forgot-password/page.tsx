@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import {
   Mail,
@@ -12,42 +12,39 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
+import { postFn } from "@/lib/apiClient";
+import { toast } from "sonner";
 
 const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const router = useRouter();
+  // const router = useRouter();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<{
-    emailOrPhone: string;
+    email: string;
   }>();
 
-  const onSubmit: SubmitHandler<{ emailOrPhone: string }> = async (data) => {
+  const onSubmit: SubmitHandler<{ email: string }> = async (data) => {
     setIsLoading(true);
     setApiError(null);
     setIsSubmitted(false);
-
-    // --- Simulate API Call ---
-    console.log("Sending password reset request for:", data.emailOrPhone);
-    await new Promise((resolve) => setTimeout(resolve, 2500));
-
-    // Mock API Response Logic (Replace with your actual API call)
-    const accountExists = Math.random() > 0.25;
-
-    if (accountExists) {
-      setIsSubmitted(true);
-      router.push("/auth/otp");
-    } else {
-      setApiError(
-        "Hmm, we couldn't find an account with that detail. Mind trying another?"
-      );
+    try {
+      const response = await postFn("/api/auth/forgotpassword", data);
+      console.log(response);
+      if (response) {
+        toast.success("Password reset link sent to your email");
+        // router.push("/auth/login");
+        setIsSubmitted(true);
+      } else {
+        setApiError("We can't find a user with that email address.");
+      }
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -56,7 +53,7 @@ const ForgotPassword = () => {
         {!isSubmitted ? (
           <>
             {/* Header Section */}
-            <div className="text-center mb-8">
+            <div className="transIn text-center mb-8">
               <div className="inline-flex items-center justify-center p-3 bg-indigo-100 rounded-full mb-4 ring-4 ring-indigo-200">
                 <KeyRound size={36} className="text-indigo-600" />
               </div>
@@ -64,24 +61,28 @@ const ForgotPassword = () => {
                 Password Lost in Cyberspace?
               </h1>
               <p className="text-slate-600 mt-2 text-sm">
-                No worries! We&apos;ll send a rescue mission (a 6-digit code) to
-                your registered email or phone.
+                No worries! We&apos;ll send a rescue mission (a password reset
+                link just for you!) to your registered email address.
               </p>
             </div>
 
             {/* Form Section */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="transIn space-y-6"
+            >
               <div className="relative group">
                 <Mail
                   size={20}
                   className={`absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors duration-300 ${
-                    errors.emailOrPhone ? "text-red-500" : ""
+                    errors.email ? "text-red-500" : ""
                   }`}
                 />
                 <Input
+                  disabled={isLoading}
                   type="text"
-                  id="emailOrPhone"
-                  {...register("emailOrPhone", {
+                  id="email"
+                  {...register("email", {
                     required: "We need your email or phone to find you!",
                     pattern: {
                       value:
@@ -94,18 +95,18 @@ const ForgotPassword = () => {
                   className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-all duration-300 ease-in-out
                               focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
                               ${
-                                errors.emailOrPhone
+                                errors.email
                                   ? "border-red-400 ring-red-200 focus:ring-red-500 focus:border-red-500"
                                   : "border-slate-300 group-hover:border-slate-400"
                               }`}
-                  aria-invalid={errors.emailOrPhone ? "true" : "false"}
+                  aria-invalid={errors.email ? "true" : "false"}
                 />
               </div>
 
-              {errors.emailOrPhone && (
+              {errors.email && (
                 <p className="text-red-600 text-xs flex items-center mt-1">
                   <AlertTriangle size={14} className="mr-1" />
-                  {errors.emailOrPhone.message}
+                  {errors.email.message}
                 </p>
               )}
 
@@ -168,17 +169,17 @@ const ForgotPassword = () => {
           </>
         ) : (
           // Post-Submission / Success Message
-          <div className="text-center space-y-5 py-8 animate-fadeIn">
+          <div className="transIn text-center space-y-5 py-8 animate-fadeIn">
             <div className="inline-flex items-center justify-center p-4 bg-green-100 rounded-full ring-4 ring-green-200">
               <CheckCircle2 size={48} className="text-green-600" />
             </div>
             <h2 className="text-2xl font-semibold text-slate-800">
-              Rescue Code En Route!
+              Password Reset Link En Route!
             </h2>
             <p className="text-slate-600 text-sm">
-              If an account matches your details, we&apos;ve dispatched a
-              6-digit code. Please check your inbox (and your spam/junk folder,
-              just in case!). This code will be active for a limited time.
+              We&apos;ve dispatched a password reset link just for you! Please
+              check your inbox (and your spam/junk folder, just in case!). This
+              link will be active for a limited time.
             </p>
             <p className="text-slate-500 text-xs">
               Didn&apos;t receive it after a few minutes?{" "}
