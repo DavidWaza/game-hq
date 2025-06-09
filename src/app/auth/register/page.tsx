@@ -14,6 +14,7 @@ import Navbar from "@/components/Navbar";
 import MobileRegister from "@/app/components/MobileRegister";
 import { DataFromLogin } from "../../../../types/global";
 import ReferralCode from "@/app/components/ReferralCode";
+import { useRouter } from "next/navigation";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -33,6 +34,7 @@ const evaluateStrength = (password: string) => {
 };
 
 const RegisterUser: React.FC = () => {
+  const router = useRouter();
   const [registrationType] = useState<"email" | "phone">("email");
   const {
     register,
@@ -94,6 +96,9 @@ const RegisterUser: React.FC = () => {
         toast.success(
           "Registration Successful! Please click on the link in your email to continue"
         );
+        setTimeout(() => {
+          router.push("/login");
+        }, 3000);
       }
     },
     onError: (error) => {

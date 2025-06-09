@@ -103,10 +103,14 @@ const RegistrationForm: React.FC<{
       password: string;
     }) => postFn("api/auth/register", userData),
     onSuccess: (data) => {
-      toast.success("Registration successful", data);
-      setTimeout(() => {
-        router.push("/login");
-      }, 3000);
+      if (data) {
+        toast.success(
+          "Registration Successful! Please click on the link in your email to continue"
+        );
+        setTimeout(() => {
+          router.push("/login");
+        }, 3000);
+      }
     },
     onError: (error) => {
       toast.error(`Registration error ${error.message}`);

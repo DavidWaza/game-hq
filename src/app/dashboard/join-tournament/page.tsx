@@ -18,23 +18,23 @@ type TypeRequestResponse = {
 const CreateWager = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<TypeSingleTournament[]>([]);
+  const [filteredData, setFilteredData] = useState<TypeSingleTournament[]>([]);
   const [selectedData, setSelectedData] = useState<TypeSingleTournament>();
   const [selectedGame, setSelectedGame] = useState<TypeGames>();
   const { store } = useAuth();
 
-  const getTournaments = async () => {
+  const getTournaments = useCallback(async () => {
     setLoading(true);
     try {
       const response: TypeRequestResponse = await getFn(
         "/api/tournamentstables"
       );
       setData(response.records);
-      filterForSoonestTournament();
     } catch {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
   const getClosestToToday = (items: TypeSingleTournament[]) => {
     const today = new Date();
     return items.reduce(
@@ -57,11 +57,11 @@ const CreateWager = () => {
     );
   };
   const filterForSoonestTournament = useCallback(() => {
-    if (data.length) {
-      setSelectedData(getClosestToToday(data));
+    if (filteredData.length) {
+      setSelectedData(getClosestToToday(filteredData));
     }
     return undefined;
-  }, [data]);
+  }, [filteredData]);
   const filterGame = useCallback(async () => {
     if (store.games?.length && selectedData?.id) {
       const t: TypeGames | undefined = store.games.find(
@@ -75,21 +75,33 @@ const CreateWager = () => {
 
   useEffect(() => {
     getTournaments();
-  }, []);
+  }, [getTournaments]);
 
   useEffect(() => {
     filterForSoonestTournament();
-  }, [data.length, store.games, filterForSoonestTournament]);
+  }, [filteredData, filterForSoonestTournament]);
 
   useEffect(() => {
     filterGame();
   }, [selectedData?.id, store?.games?.length, filterGame]);
+
+  useEffect(() => {
+    if (store.games?.length && data.length) {
+      const gameIds = store.games.map((el) => el.id);
+      const filteredData = data.filter((el) => gameIds.includes(el.game_id));
+      setFilteredData(filteredData);
+    }
+  }, [data, store.games]);
+
   console.log(selectedData);
 
   return (
     <>
       <Navbar variant="primary" />
-      {loading || !data.length || !selectedData?.id || !selectedGame?.id ? (
+      {loading ||
+      !filteredData.length ||
+      !selectedData?.id ||
+      !selectedGame?.id ? (
         <FullScreenLoader isLoading={true} text="Loading All Tournaments" />
       ) : (
         <>
@@ -97,7 +109,7 @@ const CreateWager = () => {
             game={selectedGame}
             tournamentDetails={selectedData}
           />
-          <CreateWagerBanner tournaments={data} />
+          <CreateWagerBanner tournaments={filteredData} />
         </>
       )}
     </>

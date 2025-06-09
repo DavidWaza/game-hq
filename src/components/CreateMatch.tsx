@@ -1,19 +1,19 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Button from "@/components/Button";
 import BetSwitchTab from "@/app/components/dashboard/BetSwitchTab";
 import CreateTournament from "@/app/components/dashboard/CreateWagerT";
 
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import { formatCurrency } from "@/lib/utils";
+import { formatDate } from "date-fns";
 
 type CreateMatchProps = {
   matchMode: number;
@@ -24,6 +24,15 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatchProps) => {
   const [loading, setLoading] = useState<boolean>(false);
   const tournamentRef = useRef<{ submitForm: () => boolean | void }>(null);
   const oneVoneRef = useRef<{ submitForm: () => boolean | void }>(null);
+  const [showDialog, setShowDialog] = useState<boolean>(false);
+  const [matchData, setMatchData] = useState<{
+    title?: string;
+    game_name?: string;
+    description?: string;
+    amount?: number | null;
+    match_date?: string;
+    match_time?: string;
+  }>({});
 
   const handleCreateBet = async () => {
     if (matchMode && tournamentRef.current) {
@@ -32,7 +41,18 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatchProps) => {
       oneVoneRef.current.submitForm();
     }
   };
+  const handleCreateBetConfirm = async () => {
+    handleCreateBet();
+    setTimeout(() => {
+      setShowDialog(false);
+    }, 400);
+  };
 
+  useEffect(() => {
+    if (Object.keys(matchData).length > 0) {
+      setShowDialog(true);
+    }
+  }, [matchData]);
 
   return (
     <div className="addTransition w-full max-w-[500px]">
@@ -63,38 +83,77 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatchProps) => {
               ref={oneVoneRef}
               loading={loading}
               setLoading={setLoading}
+              showDialog={showDialog}
+              setMatchData={setMatchData}
             />
           ) : (
             <CreateTournament
               ref={tournamentRef}
               loading={loading}
               setLoading={setLoading}
+              showDialog={showDialog}
+              setMatchData={setMatchData}
             />
           )}
         </div>
         <div className="max-h-max button-area flex_between gap-3 border-t border-[#fcf8db] pt-4 px-6">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="primary">Create Game</Button>
-            </DialogTrigger>
+          <Button
+            loading={loading}
+            disabled={loading}
+            onClick={handleCreateBet}
+            variant="primary"
+          >
+            Create Game
+          </Button>
+          <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Read Carefully</DialogTitle>
                 <DialogDescription>
-                  {/* This would be the game information */}
+                  {matchData.title} - {matchData.game_name}
                 </DialogDescription>
               </DialogHeader>
-              <></>
+              <div className="flex flex-col gap-2">
+                {matchData.description && (
+                  <div className="text-sm text-gray-500">
+                    <span className="font-bold">Game Description:</span>{" "}
+                    <div
+                      className="rich-text-editor"
+                      dangerouslySetInnerHTML={{
+                        __html: matchData.description,
+                      }}
+                    ></div>
+                  </div>
+                )}
+                {matchData.amount && (
+                  <p className="text-sm text-gray-500">
+                    <span className="font-bold">Wager Amount:</span>{" "}
+                    {formatCurrency(matchData.amount)}
+                  </p>
+                )}
+                {matchData.match_date && (
+                  <p className="text-sm text-gray-500">
+                    <span className="font-bold">Date:</span>{" "}
+                    {formatDate(new Date(matchData.match_date), "MMM d, yyyy")}
+                  </p>
+                )}
+                {matchData.match_time && (
+                  <p className="text-sm text-gray-500">
+                    <span className="font-bold">Time:</span>{" "}
+                    {formatDate(
+                      new Date(
+                        matchData.match_date + "T" + matchData.match_time
+                      ),
+                      "h:mm a"
+                    )}
+                  </p>
+                )}
+              </div>
               <DialogFooter className="sm:justify-start">
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">
-                    No, Thanks
-                  </Button>
-                </DialogClose>
                 <Button
                   loading={loading}
                   disabled={loading}
-                  onClick={handleCreateBet}
+                  onClick={handleCreateBetConfirm}
                   variant="primary"
                 >
                   Proceed

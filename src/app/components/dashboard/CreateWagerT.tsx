@@ -36,19 +36,30 @@ interface FormData {
   description: string;
   amount: number | null;
   number_of_participants: number;
-  match_date: Date | null;
+  match_date: string;
   match_time: string;
 }
 interface CreateTournamentProps {
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  showDialog: boolean;
+  setMatchData: React.Dispatch<
+    React.SetStateAction<{
+      title?: string;
+      game_name?: string;
+      description?: string;
+      amount?: number | null;
+      match_date?: string;
+      match_time?: string;
+    }>
+  >;
 }
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
 
 const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
-  const { setLoading, loading } = props;
+  const { setLoading, loading, showDialog, setMatchData } = props;
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { store, setState } = useAuth();
   const router = useRouter();
@@ -70,7 +81,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
       description: "",
       amount: null,
       number_of_participants: 0,
-      match_date: null,
+      match_date: "",
       match_time: "",
     },
   });
@@ -130,7 +141,19 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
     submitForm: async () => {
       const isValidForm = await trigger();
       if (isValidForm) {
-        handleSubmit(onSubmit)();
+        if (showDialog) handleSubmit(onSubmit)();
+        else {
+          const data = watch();
+          setMatchData({
+            // title: data.title,
+            game_name: store?.games?.find((game) => game.id === data.game_id)
+              ?.name,
+            description: data.description,
+            amount: data.amount,
+            match_date: data.match_date,
+            match_time: data.match_time,
+          });
+        }
         return true;
       }
       return false;

@@ -32,6 +32,17 @@ interface CreateTournamentProps {
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   gameName?: string | null;
+  showDialog: boolean;
+  setMatchData: React.Dispatch<
+    React.SetStateAction<{
+      title?: string;
+      game_name?: string;
+      description?: string;
+      amount?: number | null;
+      match_date?: string;
+      match_time?: string;
+    }>
+  >;
 }
 interface FormData {
   game_id: string;
@@ -48,7 +59,7 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
 });
 
 const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
-  const { setLoading, loading } = props;
+  const { setLoading, loading, showDialog, setMatchData } = props;
   const [isPrivate] = useState(true);
   const router = useRouter();
   const [maxInvitees, setMaxInvitees] = useState(0);
@@ -196,7 +207,26 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
     submitForm: async () => {
       const isValidForm = await trigger();
       if (isValidForm) {
-        handleSubmit(onSubmit)();
+        if (isPrivate && invitees.length > maxInvitees) {
+          toast.error(`Please invite at most ${maxInvitees} users`, {
+            position: "top-right",
+            className: "p-4",
+          });
+          return;
+        }
+        if (showDialog) handleSubmit(onSubmit)();
+        else {
+          const data = watch();
+          setMatchData({
+            title: data.title,
+            game_name: store?.games?.find((game) => game.id === data.game_id)
+              ?.name,
+            description: data.description,
+            amount: data.amount,
+            match_date: data.match_date,
+            match_time: data.match_time,
+          });
+        }
         return true;
       }
       return false;

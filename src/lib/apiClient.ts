@@ -102,6 +102,7 @@ export const storeUserData = async (data: DataFromLogin) => {
     // Store in HTTP-only cookie (optional, requires backend endpoint)
     sessionStorage.setItem("token", data.token);
     const user: User = await getFn(`api/users/view/${data.user.id}`);
+    // const user: User = await getFn("api/account/currentuserdata");
     if (user && user.email_verified_at) {
       const response = await fetch("/api/auth/set-user", {
         method: "POST",
