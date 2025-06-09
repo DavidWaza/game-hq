@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,9 +13,10 @@ import { toast } from "sonner";
 import Button from "@/components/Button";
 import Navbar from "@/components/Navbar";
 import MobileRegister from "@/app/components/MobileRegister";
-import { DataFromLogin } from "../../../../types/global";
 import ReferralCode from "@/app/components/ReferralCode";
 import { useRouter } from "next/navigation";
+import EmailVerificationModal from "@/app/components/Emailverification";
+import { DataFromLogin } from "../../../../types/global";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -41,9 +43,9 @@ const RegisterUser: React.FC = () => {
     handleSubmit,
     setError,
     clearErrors,
-    // reset,
     watch,
     formState: { errors },
+    reset,
   } = useForm<{
     email: string;
     password: string;
@@ -58,25 +60,20 @@ const RegisterUser: React.FC = () => {
   const [confirmIsVisible, setConfirmIsVisible] = useState(false);
   const [strength, setStrength] = useState(0);
   const [openCode, setOpenCode] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for the modal
 
-  // Handle Password Change
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
     setStrength(evaluateStrength(newPassword));
-
-    // Clear confirm password error if passwords start matching
     if (confirmPassword === newPassword) {
       clearErrors("confirm_password");
     }
   };
 
-  // Handle Confirm Password Change
   const handleConfirmPasswordChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const newConfirmPassword = e.target.value;
-
-    // Validate if passwords match
     if (newConfirmPassword !== password) {
       setError("confirm_password", { message: "Passwords do not match" });
     } else {
@@ -98,15 +95,16 @@ const RegisterUser: React.FC = () => {
         );
         setTimeout(() => {
           router.push("/auth/login");
+          setIsModalOpen(true); // Open the modal on success
+          reset(); // Reset the form
         }, 3000);
       }
     },
     onError: (error) => {
-      toast.error(`Registration error ${error.message}`);
+      toast.error(`Registration error: ${error.message}`);
     },
   });
 
-  // Form submission handler
   const onSubmit: SubmitHandler<{
     email?: string;
     phone?: number;
@@ -168,7 +166,10 @@ const RegisterUser: React.FC = () => {
                               />
                             </div>
                             <div className="grid w-full items-center gap-1.5 !text-left">
-                              <Label htmlFor="email" className="text-[#fcf8db]">
+                              <Label
+                                htmlFor="username"
+                                className="text-[#fcf8db]"
+                              >
                                 Username
                               </Label>
                               <Input
@@ -180,21 +181,18 @@ const RegisterUser: React.FC = () => {
                             </div>
                           </>
                         ) : (
-                          <>
-                            <div className="grid w-full items-center gap-1.5 !text-left">
-                              <Label htmlFor="phone" className="text-[#fcf8db]">
-                                Phone Number
-                              </Label>
-                              <Input
-                                type="number"
-                                id="phone"
-                                {...register("phone")}
-                              />
-                            </div>
-                          </>
+                          <div className="grid w-full items-center gap-1.5 !text-left">
+                            <Label htmlFor="phone" className="text-[#fcf8db]">
+                              Phone Number
+                            </Label>
+                            <Input
+                              type="number"
+                              id="phone"
+                              {...register("phone")}
+                            />
+                          </div>
                         )}
 
-                        {/* password */}
                         <div className="grid w-full items-center gap-1.5">
                           <Label
                             htmlFor="password"
@@ -217,7 +215,6 @@ const RegisterUser: React.FC = () => {
                               })}
                               onChange={handlePasswordChange}
                             />
-
                             <button
                               type="button"
                               className="absolute top-1/2 -translate-y-1/2 right-2"
@@ -286,9 +283,12 @@ const RegisterUser: React.FC = () => {
                             Apply Referral Code
                           </div>
                         </div>
-                        <Button variant="primary">
+                        <Button
+                          variant="primary"
+                          disabled={registerMutation.isPending}
+                        >
                           {registerMutation.isPending
-                            ? "Loading..."
+                            ? "Creating Account..."
                             : "Create Account"}
                         </Button>
                       </form>
@@ -306,19 +306,17 @@ const RegisterUser: React.FC = () => {
                 </div>
               </div>
               {openCode && (
-                <>
-                  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-                    <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl p-6 w-full max-w-md  transform transition-all duration-300 scale-100 animate-slide-in">
-                      <ReferralCode />
-                      <button
-                        onClick={() => setOpenCode(false)}
-                        className="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg transition-colors duration-200"
-                      >
-                        Close
-                      </button>
-                    </div>
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                  <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl p-6 w-full max-w-md transform transition-all duration-300 scale-100 animate-slide-in">
+                    <ReferralCode />
+                    <button
+                      onClick={() => setOpenCode(false)}
+                      className="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg transition-colors duration-200"
+                    >
+                      Close
+                    </button>
                   </div>
-                </>
+                </div>
               )}
               <Image
                 src={"/assets/register-duty.png"}
@@ -332,8 +330,11 @@ const RegisterUser: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* MOBILE VIEW */}
       <MobileRegister />
+      <EmailVerificationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
