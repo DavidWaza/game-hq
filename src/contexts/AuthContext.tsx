@@ -18,6 +18,7 @@ import {
   TypeCategories,
   TypeGames,
   TypeSingleTournament,
+  TypePaymentMethods,
   // TypeWallet,
 } from "../../types/global";
 import { useParams, useSearchParams, usePathname } from "next/navigation";
@@ -31,6 +32,7 @@ interface StoreData {
   categories: TypeCategories[] | undefined;
   games: TypeGames[] | undefined;
   singleTournament: TypeSingleTournament | undefined;
+  paymentMethods: TypePaymentMethods[] | undefined;
   createMatch: {
     game_id: string;
     matchMode: number;
@@ -78,6 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     categories: undefined,
     games: undefined,
     singleTournament: undefined,
+    paymentMethods: undefined,
     createMatch: {
       game_id: "",
       matchMode: 0,
@@ -155,6 +158,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
         // { storeKey: "wallet", path: "api/wallets" },
+        { storeKey: "paymentMethods", path: "api/payment-methods" },
       ];
       if (!dataHandlers.length) return;
 

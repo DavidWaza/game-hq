@@ -101,3 +101,18 @@ export type TypeWallet = {
   id: string;
   records: []
 }
+export type TypePaymentMethods = {
+  id: string;
+  user_id: string;
+  name: string;
+  display_name: string;
+  provider: string;
+  settings: null;
+  is_active: boolean;
+  min_amount: string;
+  max_amount: string;
+  fee_percentage: string;
+  fee_fixed: string;
+  created_at: string | null;
+  updated_at: string | null;
+};
