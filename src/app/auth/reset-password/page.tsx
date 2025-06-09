@@ -1,6 +1,5 @@
-'use client'
-import React, { useState } from "react";
-
+"use client";
+import React, { useEffect, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
@@ -9,26 +8,16 @@ import {
   Loader2,
   LockKeyhole,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-
-// Mock API call (replace with your actual API)
-const resetPasswordApi = async (
-  password: string
-): Promise<{ success: boolean; message: string }> => {
-  console.log("Resetting password with new password:", password);
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Simulate API call success
-      resolve({
-        success: true,
-        message: "Password has been reset successfully!",
-      });
-    }, 1500);
-  });
-};
+import { useRouter, useSearchParams } from "next/navigation";
+import { postFn } from "@/lib/apiClient";
+import Link from "next/link";
+import { toast } from "sonner";
 
 const ResetPasswordPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -72,22 +61,33 @@ const ResetPasswordPage = () => {
     }
 
     setIsLoading(true);
-    const response = await resetPasswordApi(newPassword);
-    setIsLoading(false);
+    const response = await postFn("api/auth/resetpassword", {
+      password: newPassword,
+      confirm_password: newPassword,
+      token,
+      email,
+    });
 
-    if (response.success) {
-      setSuccessMessage(response.message + " Redirecting to login...");
+    if (response) {
+      const message = "Password reset successfully. Redirecting to login...";
+      toast.success(message);
+      setSuccessMessage(message);
       setNewPassword("");
       setConfirmPassword("");
       setTimeout(() => {
-        router.push("/auth/login?passwordReset=true");
+        router.push("/auth/login");
       }, 2000);
     } else {
-      setError(
-        response.message || "Failed to reset password. Please try again."
-      );
+      const message = "Failed to reset password. Please try again.";
+      toast.error(message);
+      setError(message);
+      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!token || !email) router.push("/auth/forgot-password");
+  }, [token, email, router]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-sky-100 via-cyan-50 to-teal-100 p-4 selection:bg-cyan-200">
@@ -108,6 +108,7 @@ const ResetPasswordPage = () => {
           {/* New Password Field */}
           <div className="relative">
             <input
+              disabled={isLoading}
               type={showNewPassword ? "text" : "password"}
               id="newPassword"
               value={newPassword}
@@ -142,6 +143,7 @@ const ResetPasswordPage = () => {
           {/* Confirm New Password Field */}
           <div className="relative">
             <input
+              disabled={isLoading}
               type={showConfirmPassword ? "text" : "password"}
               id="confirmPassword"
               value={confirmPassword}
@@ -175,7 +177,7 @@ const ResetPasswordPage = () => {
 
           {error && (
             <div
-              className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg flex items-start text-sm animate-shake"
+              className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg flex items-center text-sm animate-shake"
               role="alert"
             >
               <AlertCircle
@@ -214,6 +216,17 @@ const ResetPasswordPage = () => {
             )}
           </button>
         </form>
+        <div className="mt-8 text-center border-t border-slate-200 pt-6">
+          <p className="text-sm text-slate-500">
+            Suddenly remembered it?{" "}
+            <Link
+              href={"/auth/login"}
+              className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors duration-200"
+            >
+              Log In Here
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

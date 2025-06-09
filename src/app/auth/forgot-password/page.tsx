@@ -112,7 +112,7 @@ const ForgotPassword = () => {
 
               {apiError && (
                 <div
-                  className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg relative flex items-start text-sm animate-shake"
+                  className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg relative flex items-center text-sm animate-shake"
                   role="alert"
                 >
                   <AlertTriangle size={20} className="mr-2 text-red-600" />
