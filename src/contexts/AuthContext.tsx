@@ -1,6 +1,7 @@
 "use client";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -106,12 +107,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   // Update store state
-  const setState = (
-    value: StoreData[StoreConfigKeys],
-    name: StoreConfigKeys
-  ) => {
-    setStore((prev) => ({ ...prev, [name]: value }));
-  };
+  const setState = useCallback(
+    (value: StoreData[StoreConfigKeys], name: StoreConfigKeys) => {
+      setStore((prev) => ({ ...prev, [name]: value }));
+    },
+    [setStore]
+  );
 
   // Fetch user data on mount
   useEffect(() => {
@@ -214,7 +215,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (pathname.includes("/join-tournament")) return;
+    const excludeRoutes = ["/join-tournament", "/verify-transaction"];
+    if (excludeRoutes.includes(pathname)) return;
     let timer = 1000;
     let message = "";
     const hasValidGooleCred =

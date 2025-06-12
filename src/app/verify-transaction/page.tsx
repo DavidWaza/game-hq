@@ -1,10 +1,10 @@
 import React from "react";
-import SuccessPaymentPage from "../dashboard/account/component/SuccessPaymentPage";
+import PaymentCallback from "../dashboard/account/component/SuccessPaymentPage";
 
 const SuccessPayment = () => {
   return (
     <div>
-      <SuccessPaymentPage />
+      <PaymentCallback />
     </div>
   );
 };
