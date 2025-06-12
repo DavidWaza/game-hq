@@ -3,31 +3,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle, ArrowLeft } from "@phosphor-icons/react";
 import Navbar from "@/components/Navbar";
 import { postFn } from "@/lib/apiClient";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-
-const formatCurrency = (amount: string | number | bigint) => {
-  const numericAmount = typeof amount === "string" ? Number(amount) : amount;
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    minimumFractionDigits: 2,
-  }).format(numericAmount);
-};
+import { toast } from "sonner";
 
 export default function PaymentCallback() {
-  const { setState } = useAuth();
+  const { setState, refetchUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const reference = searchParams.get("reference");
   const [status, setStatus] = useState<"success" | "failed" | undefined>(
     undefined
   );
-  const [amount, setAmount] = useState<number>(0);
 
-  const handleGoBack = () => {
+  const handleGoBack = useCallback(() => {
     router.push("/dashboard/account");
-  };
+  }, [router]);
 
   useEffect(() => {
     const verifyTransaction = async () => {
@@ -43,9 +34,10 @@ export default function PaymentCallback() {
           reference,
         });
 
-        if (response?.status === "success") {
+        if (response) {
+          await refetchUser();
+          toast.success(response.message || "Payment successful");
           setStatus("success");
-          setAmount(response.amount || 0);
         } else {
           setStatus("failed");
         }
@@ -62,8 +54,10 @@ export default function PaymentCallback() {
 
     if (reference) {
       verifyTransaction();
+    } else {
+      handleGoBack();
     }
-  }, [reference, setState]);
+  }, [reference, setState, handleGoBack]);
 
   return (
     <>
@@ -84,17 +78,7 @@ export default function PaymentCallback() {
                 </h1>
 
                 <p className="text-gray-300 text-base mb-8">
-                  {amount ? (
-                    <>
-                      You have successfully deposited{" "}
-                      <span className="font-bold text-teal-400 text-lg">
-                        {formatCurrency(Number(amount))}
-                      </span>
-                      .
-                    </>
-                  ) : (
-                    "Your payment has been confirmed."
-                  )}
+                  Your payment has been confirmed.
                 </p>
               </>
             ) : (

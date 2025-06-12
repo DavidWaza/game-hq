@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Wallet,
   ArrowDown,
@@ -14,9 +14,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/utils";
 // import { useRouter } from "next/navigation";
 import ButtonSpinner from "@/components/ButtonSpinner";
-import { postFn } from "@/lib/apiClient";
-import { TypePaymentMethods } from "../../../../types/global";
+import { getFn, postFn } from "@/lib/apiClient";
+import {
+  TypePaymentMethods,
+  TypeTransactionsArray,
+} from "../../../../types/global";
 import { toast } from "sonner";
+import { formatDate } from "date-fns";
 
 export default function DigitalWallet() {
   const { user, store } = useAuth();
@@ -30,38 +34,22 @@ export default function DigitalWallet() {
   const [transferAmount, setTransferAmount] = useState("");
   const [depositStep, setDepositStep] = useState("amount");
   const [isLoading, setIsLoading] = useState("");
+  const [filterType, setFilterType] = useState("all");
   // const router = useRouter();
 
-  const [transactions, setTransactions] = useState([
-    {
-      id: 1,
-      type: "deposit",
-      amount: 2500,
-      date: "2025-04-15",
-      status: "completed",
-    },
-    {
-      id: 2,
-      type: "withdraw",
-      amount: 1000,
-      date: "2025-04-12",
-      status: "completed",
-    },
-    {
-      id: 3,
-      type: "transfer to savings",
-      amount: 350,
-      date: "2025-04-08",
-      status: "completed",
-    },
-    {
-      id: 4,
-      type: "payment",
-      amount: 120,
-      date: "2025-04-05",
-      status: "completed",
-    },
-  ]);
+  const [transactions, setTransactions] = useState<{
+    data: TypeTransactionsArray[];
+    total: number;
+    current_page: number;
+    last_page: number;
+    per_page: number;
+  }>({
+    data: [],
+    total: 0,
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+  });
 
   const handleProceedToPaymentMethod = () => {
     if (
@@ -87,10 +75,9 @@ export default function DigitalWallet() {
           window.location.href = response?.data?.payment_url;
         }
       }
-    } catch (error) {
-      console.error("Payment error:", error);
-    } finally {
+    } catch {
       setIsLoading("");
+    } finally {
     }
   };
 
@@ -111,36 +98,28 @@ export default function DigitalWallet() {
 
     const amount = Number(transferAmount);
     setBalance((prevBalance) => prevBalance - amount);
-    setTransactions((prev) => [
-      {
-        id: Date.now(),
-        type: "withdraw",
-        amount: amount,
-        date: new Date().toISOString().split("T")[0],
-        status: "completed",
-      },
-      ...prev,
-    ]);
     setTransferAmount("");
     setShowWithdrawModal(false);
   };
 
-  const [filterType, setFilterType] = useState("all");
+  const getTransactions = useCallback(async (page: number = 1) => {
+    try {
+      const response = await getFn(`/api/transactions?limit=10&page=${page}`);
+      const responseTransData = {
+        data: response.data.data,
+        total: response.data.total,
+        current_page: response.data.current_page,
+        last_page: response.data.last_page,
+        per_page: response.data.per_page,
+      };
+      setTransactions(responseTransData);
+    } catch {}
+  }, []);
 
-  // Restored original filtering logic
-  const filteredTransactions = transactions.filter((t) => {
-    if (filterType === "all") return true;
-    if (filterType === "deposits")
-      return t.type === "deposit" || t.type === "transfer from savings";
-    if (filterType === "withdrawals")
-      return (
-        t.type === "withdraw" ||
-        t.type === "transfer to savings" ||
-        t.type === "payment"
-      );
-    if (filterType === "transfers") return t.type.includes("transfer");
-    return true;
-  });
+  // get transactions
+  useEffect(() => {
+    getTransactions();
+  }, [getTransactions]);
 
   return (
     <>
@@ -155,106 +134,113 @@ export default function DigitalWallet() {
             <div className="flex space-x-1 bg-gray-800 rounded-lg p-1"></div>
           </div>
 
-          {activeTab === "dashboard" && (
-            <>
-              <div className="transIn grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <div className="bg-gradient-to-br from-gray-800 to-gray-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <p className="text-gray-300 text-sm font-medium mb-2">
-                    Current Balance
-                  </p>
-                  <div className="flex items-center">
-                    <Coins size={28} className="text-teal-400" />
-                    <h2 className="text-3xl font-bold text-white ml-3 flex items-center">
-                      {formatCurrency(Number(user?.wallet?.balance || 0))}
-                    </h2>
-                  </div>
-                  <div className="mt-4 flex space-x-2">
-                    <button
-                      onClick={() => setShowDepositModal(true)}
-                      className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm py-2 rounded-md transition-all"
-                    >
-                      Deposit
-                    </button>
-                    <button
-                      onClick={() => setShowWithdrawModal(true)}
-                      className="flex-1 bg-orange-600 hover:bg-orange-700 text-white text-sm py-2 rounded-md transition-all"
-                    >
-                      Withdraw
-                    </button>
-                  </div>
-                </div>
+          <div className="transIn grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-gray-800 to-gray-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+              <p className="text-gray-300 text-sm font-medium mb-2">
+                Current Balance
+              </p>
+              <div className="flex items-center">
+                <Coins size={28} className="text-teal-400" />
+                <h2 className="text-3xl font-bold text-white ml-3 flex items-center">
+                  {formatCurrency(Number(user?.wallet?.balance || 0))}
+                </h2>
               </div>
-
-              <div className="transIn">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Recent Transactions</h2>
-                  <button
-                    onClick={() => setActiveTab("transactions")}
-                    className="text-teal-400 hover:text-teal-300 text-sm transition-colors"
+              <div className="mt-4 flex space-x-2">
+                <button
+                  onClick={() => setShowDepositModal(true)}
+                  className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm py-2 rounded-md transition-all"
+                >
+                  Deposit
+                </button>
+                <button
+                  onClick={() => setShowWithdrawModal(true)}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white text-sm py-2 rounded-md transition-all"
+                >
+                  Withdraw
+                </button>
+              </div>
+            </div>
+          </div>
+          {activeTab === "dashboard" && (
+            <div className="transIn">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Recent Transactions</h2>
+                <button
+                  onClick={() => setActiveTab("transactions")}
+                  className="text-teal-400 hover:text-teal-300 text-sm transition-colors"
+                >
+                  View All
+                </button>
+              </div>
+              <div className="bg-gray-800 rounded-xl overflow-hidden">
+                {transactions.data.map((transaction: TypeTransactionsArray) => (
+                  <div
+                    key={transaction.id}
+                    className="transIn flex items-center justify-between p-4 border-b border-gray-700 last:border-0 hover:bg-gray-700/50 transition-colors"
                   >
-                    View All
-                  </button>
-                </div>
-                <div className="bg-gray-800 rounded-xl overflow-hidden">
-                  {transactions.slice(0, 3).map((transaction) => (
-                    <div
-                      key={transaction.id}
-                      className="flex items-center justify-between p-4 border-b border-gray-700 last:border-0 hover:bg-gray-700/50 transition-colors"
-                    >
-                      <div className="flex items-center">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            transaction.type === "deposit" ||
-                            transaction.type === "transfer from savings"
-                              ? "bg-green-500/20"
-                              : transaction.type === "withdraw" ||
-                                transaction.type === "transfer to savings"
-                              ? "bg-red-500/20"
-                              : transaction.type === "payment"
-                              ? "bg-yellow-500/20"
-                              : "bg-blue-500/20"
-                          }`}
-                        >
-                          {(transaction.type === "deposit" ||
-                            transaction.type === "transfer from savings") && (
-                            <ArrowDown size={20} className="text-green-400" />
-                          )}
-                          {(transaction.type === "withdraw" ||
-                            transaction.type === "transfer to savings") && (
-                            <ArrowUp size={20} className="text-red-400" />
-                          )}
-                          {transaction.type === "payment" && (
-                            <CreditCard size={20} className="text-yellow-400" />
-                          )}
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm font-medium capitalize">
-                            {transaction.type}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {transaction.date}
-                          </p>
-                        </div>
-                      </div>
+                    <div className="flex items-center">
                       <div
-                        className={`font-medium flex items-center ${
-                          transaction.type === "deposit" ||
-                          transaction.type === "transfer from savings"
-                            ? "text-green-400"
-                            : "text-red-400"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          transaction.transaction_type.name === "topup" ||
+                          transaction.transaction_type.name ===
+                            "transfer from savings"
+                            ? "bg-green-500/20"
+                            : transaction.transaction_type.name ===
+                                "withdraw" ||
+                              transaction.transaction_type.name ===
+                                "transfer to savings"
+                            ? "bg-red-500/20"
+                            : transaction.transaction_type.name === "payment"
+                            ? "bg-yellow-500/20"
+                            : "bg-blue-500/20"
                         }`}
                       >
-                        {transaction.type === "deposit" ||
-                        transaction.type === "transfer from savings"
-                          ? "+"
-                          : "-"}
-                        {formatCurrency(Number(transaction.amount))}
+                        {(transaction.transaction_type.name === "topup" ||
+                          transaction.transaction_type.name ===
+                            "transfer from savings") && (
+                          <ArrowDown size={20} className="text-green-400" />
+                        )}
+                        {(transaction.transaction_type.name === "withdraw" ||
+                          transaction.transaction_type.name ===
+                            "transfer to savings") && (
+                          <ArrowUp size={20} className="text-red-400" />
+                        )}
+                        {transaction.transaction_type.name === "payment" && (
+                          <CreditCard size={20} className="text-yellow-400" />
+                        )}
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium capitalize">
+                          {transaction.description}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(
+                            transaction.transaction_type.created_at,
+                            "MMM d, yyyy"
+                          )}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div
+                      className={`font-medium flex items-center ${
+                        transaction.transaction_type.name === "topup" ||
+                        transaction.transaction_type.name ===
+                          "transfer from savings"
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {transaction.transaction_type.name === "topup" ||
+                      transaction.transaction_type.name ===
+                        "transfer from savings"
+                        ? "+"
+                        : "-"}
+                      {formatCurrency(Number(transaction.amount))}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </>
+            </div>
           )}
 
           {activeTab === "transactions" && (
@@ -310,78 +296,96 @@ export default function DigitalWallet() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTransactions.map((transaction) => (
-                      <tr
-                        key={transaction.id}
-                        className="border-b border-gray-700 last:border-0 hover:bg-gray-700/20"
-                      >
-                        <td className="py-4 pl-2 flex items-center">
-                          <div className="flex items-center">
-                            <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 shrink-0 ${
-                                transaction.type === "deposit" ||
-                                transaction.type === "transfer from savings"
-                                  ? "bg-green-500/20"
-                                  : transaction.type === "withdraw" ||
-                                    transaction.type === "transfer to savings"
-                                  ? "bg-red-500/20"
-                                  : transaction.type === "payment"
-                                  ? "bg-yellow-500/20"
-                                  : "bg-blue-500/20"
-                              }`}
-                            >
-                              {(transaction.type === "deposit" ||
-                                transaction.type ===
-                                  "transfer from savings") && (
-                                <ArrowDown
-                                  size={16}
-                                  className="text-green-400"
-                                />
-                              )}
-                              {(transaction.type === "withdraw" ||
-                                transaction.type === "transfer to savings") && (
-                                <ArrowUp size={16} className="text-red-400" />
-                              )}
-                              {transaction.type === "payment" && (
-                                <CreditCard
-                                  size={16}
-                                  className="text-yellow-400"
-                                />
-                              )}
-                            </div>
-                            <span className="capitalize text-sm">
-                              {transaction.type}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="text-sm">{transaction.date}</td>
-                        <td
-                          className={`text-sm flex items-center ${
-                            transaction.type === "deposit" ||
-                            transaction.type === "transfer from savings"
-                              ? "text-green-400"
-                              : "text-red-400"
-                          }`}
+                    {transactions.data.map(
+                      (transaction: TypeTransactionsArray) => (
+                        <tr
+                          key={transaction.id + 21321212}
+                          className="border-b border-gray-700 last:border-0 hover:bg-gray-700/20"
                         >
-                          {transaction.type === "deposit" ||
-                          transaction.type === "transfer from savings"
-                            ? "+"
-                            : "-"}
-                          {formatCurrency(Number(transaction.amount))}
-                        </td>
-                        <td className="pr-2">
-                          <span
-                            className={`inline-block px-2 py-1 rounded-full text-xs capitalize ${
-                              transaction.status === "completed"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-red-500/20 text-red-400"
+                          <td className="py-4 pl-2 flex items-center">
+                            <div className="flex items-center">
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 shrink-0 ${
+                                  transaction.transaction_type.name ===
+                                    "topup" ||
+                                  transaction.transaction_type.name ===
+                                    "transfer from savings"
+                                    ? "bg-green-500/20"
+                                    : transaction.transaction_type.name ===
+                                        "withdraw" ||
+                                      transaction.transaction_type.name ===
+                                        "transfer to savings"
+                                    ? "bg-red-500/20"
+                                    : transaction.transaction_type.name ===
+                                      "payment"
+                                    ? "bg-yellow-500/20"
+                                    : "bg-blue-500/20"
+                                }`}
+                              >
+                                {(transaction.transaction_type.name ===
+                                  "topup" ||
+                                  transaction.transaction_type.name ===
+                                    "transfer from savings") && (
+                                  <ArrowDown
+                                    size={16}
+                                    className="text-green-400"
+                                  />
+                                )}
+                                {(transaction.transaction_type.name ===
+                                  "withdraw" ||
+                                  transaction.transaction_type.name ===
+                                    "transfer to savings") && (
+                                  <ArrowUp size={16} className="text-red-400" />
+                                )}
+                                {transaction.transaction_type.name ===
+                                  "payment" && (
+                                  <CreditCard
+                                    size={16}
+                                    className="text-yellow-400"
+                                  />
+                                )}
+                              </div>
+                              <span className="capitalize text-sm">
+                                {transaction.transaction_type.name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="text-sm">
+                            {formatDate(
+                              transaction.transaction_type.created_at,
+                              "MMM d, yyyy"
+                            )}
+                          </td>
+                          <td
+                            className={`text-sm flex items-center ${
+                              transaction.transaction_type.name === "topup" ||
+                              transaction.transaction_type.name ===
+                                "transfer from savings"
+                                ? "text-green-400"
+                                : "text-red-400"
                             }`}
                           >
-                            {transaction.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                            {transaction.transaction_type.name === "topup" ||
+                            transaction.transaction_type.name ===
+                              "transfer from savings"
+                              ? "+"
+                              : "-"}
+                            {formatCurrency(Number(transaction.amount))}
+                          </td>
+                          <td className="pr-2">
+                            <span
+                              className={`inline-block px-2 py-1 rounded-full text-xs capitalize ${
+                                transaction.status === "completed"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : "bg-red-500/20 text-red-400"
+                              }`}
+                            >
+                              {transaction.status}
+                            </span>
+                          </td>
+                        </tr>
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>

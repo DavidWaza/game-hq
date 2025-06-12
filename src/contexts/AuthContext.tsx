@@ -12,6 +12,7 @@ import {
   logout as logoutFn,
   getFn,
   getUser,
+  refetchUserData,
 } from "@/lib/apiClient";
 import {
   DataFromLogin,
@@ -55,6 +56,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   store: StoreData;
   setState: (value: StoreData[StoreConfigKeys], name: StoreConfigKeys) => void;
+  refetchUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -113,6 +115,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     },
     [setStore]
   );
+  // refetch user Data and update store
+  const refetchUser = useCallback(async () => {
+    const data: User | undefined | null = await refetchUserData();
+    if (data) {
+      setUser(data);
+    }
+  }, [setUser]);
 
   // Fetch user data on mount
   useEffect(() => {
@@ -247,7 +256,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, login, logout, store, setState }}
+      value={{
+        isAuthenticated,
+        user,
+        login,
+        logout,
+        store,
+        setState,
+        refetchUser,
+      }}
     >
       {children}
     </AuthContext.Provider>

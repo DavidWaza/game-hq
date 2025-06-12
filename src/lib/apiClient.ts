@@ -97,7 +97,7 @@ const processErrorResponse = (error: unknown): string => {
 };
 
 // Function to Store Token After Login
-export const storeUserData = async (data: DataFromLogin) => {
+export const storeUserData = async (data: DataFromLogin): Promise<User | undefined | null> => {
   if (data.token) {
     try {
       // Store in HTTP-only cookie (optional, requires backend endpoint)
@@ -132,6 +132,16 @@ export const storeUserData = async (data: DataFromLogin) => {
   } else {
     return null;
   }
+};
+// refetch user data
+export const refetchUserData = async (): Promise<User | undefined | null> => {
+  const user = await getUser();
+  const data: DataFromLogin = {
+    token: sessionStorage.getItem("token") || "",
+    user: user.user,
+    message: "Refetched user data",
+  };
+  return await storeUserData(data);
 };
 
 export const getUser = async () => {
