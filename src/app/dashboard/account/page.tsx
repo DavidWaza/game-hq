@@ -84,7 +84,7 @@ export default function DigitalWallet() {
       },
       ...prev,
     ]);
-    router.push("/dashboard/account/payment-success");
+    router.push("/verify-transaction");
     closeDepositModal();
   };
 
