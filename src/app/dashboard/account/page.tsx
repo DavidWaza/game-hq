@@ -75,23 +75,23 @@ export default function DigitalWallet() {
 
   const handlePayment = async (payment_method_id: string) => {
     const amount = Number(transferAmount);
-    setBalance((prevBalance) => prevBalance + amount);
-    setTransactions((prev) => [
-      {
-        id: Date.now(),
-        type: "deposit",
-        amount: amount,
-        date: new Date().toISOString().split("T")[0],
-        status: "completed",
-      },
-      ...prev,
-    ]);
-    router.push("/verify-transaction");
-    closeDepositModal();
-  };
-
-  const handleSelectTransfer = () => {
-    setDepositStep("transferDetails");
+    setIsLoading(payment_method_id);
+    try {
+      const response = await postFn("/api/topup", {
+        amount,
+        payment_method_id,
+      });
+      if (response) {
+        toast.success("Payment initiated successfully");
+        if (response?.data?.payment_url) {
+          window.location.href = response?.data?.payment_url;
+        }
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+    } finally {
+      setIsLoading("");
+    }
   };
 
   const closeDepositModal = () => {
