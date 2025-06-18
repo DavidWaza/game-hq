@@ -1,7 +1,7 @@
 "use client";
 import CreateWagerBanner from "@/app/components/dashboard/join-wager-banner";
 import Navbar from "@/components/Navbar";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { getFn } from "@/lib/apiClient";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,26 +18,25 @@ type TypeRequestResponse = {
 const CreateWager = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<TypeSingleTournament[]>([]);
+  const [filteredData, setFilteredData] = useState<TypeSingleTournament[]>([]);
   const [selectedData, setSelectedData] = useState<TypeSingleTournament>();
   const [selectedGame, setSelectedGame] = useState<TypeGames>();
   const { store } = useAuth();
 
-  const getTournaments = async () => {
+  const getTournaments = useCallback(async () => {
     setLoading(true);
     try {
       const response: TypeRequestResponse = await getFn(
         "/api/tournamentstables"
       );
       setData(response.records);
-      filterForSoonestTournament();
     } catch {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
   const getClosestToToday = (items: TypeSingleTournament[]) => {
     const today = new Date();
-
     return items.reduce(
       (closest: TypeSingleTournament, current: TypeSingleTournament) => {
         const currentDiff = Math.abs(
@@ -57,13 +56,13 @@ const CreateWager = () => {
       }
     );
   };
-  const filterForSoonestTournament = () => {
-    if (data.length) {
-      setSelectedData(getClosestToToday(data));
+  const filterForSoonestTournament = useCallback(() => {
+    if (filteredData.length) {
+      setSelectedData(getClosestToToday(filteredData));
     }
     return undefined;
-  };
-  const filterGame = async () => {
+  }, [filteredData]);
+  const filterGame = useCallback(async () => {
     if (store.games?.length && selectedData?.id) {
       const t: TypeGames | undefined = store.games.find(
         (el) => el.id === selectedData.game_id
@@ -72,25 +71,37 @@ const CreateWager = () => {
         setSelectedGame(t);
       }
     }
-  };
+  }, [selectedData?.id, store.games, selectedData?.game_id]);
 
   useEffect(() => {
     getTournaments();
-  }, []);
+  }, [getTournaments]);
 
   useEffect(() => {
     filterForSoonestTournament();
-  }, [data.length, store.games]);
+  }, [filteredData, filterForSoonestTournament]);
 
   useEffect(() => {
     filterGame();
-  }, [selectedData?.id, store?.games?.length]);
-  console.log(selectedGame);
+  }, [selectedData?.id, store?.games?.length, filterGame]);
+
+  useEffect(() => {
+    if (store.games?.length && data.length) {
+      const gameIds = store.games.map((el) => el.id);
+      const filteredData = data.filter((el) => gameIds.includes(el.game_id));
+      setFilteredData(filteredData);
+    }
+  }, [data, store.games]);
+
+  console.log(selectedData);
 
   return (
     <>
       <Navbar variant="primary" />
-      {loading || !data.length || !selectedData?.id || !selectedGame?.id ? (
+      {loading ||
+      !filteredData.length ||
+      !selectedData?.id ||
+      !selectedGame?.id ? (
         <FullScreenLoader isLoading={true} text="Loading All Tournaments" />
       ) : (
         <>
@@ -98,7 +109,7 @@ const CreateWager = () => {
             game={selectedGame}
             tournamentDetails={selectedData}
           />
-          <CreateWagerBanner tournaments={data} />
+          <CreateWagerBanner tournaments={filteredData} />
         </>
       )}
     </>

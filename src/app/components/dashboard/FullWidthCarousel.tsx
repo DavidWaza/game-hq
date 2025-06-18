@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from "react";
+import { useCallback, useState, useMemo } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -90,31 +89,47 @@ const MainDashboard = () => {
   const [gameForDetailsModal, setGameForDetailsModal] =
     useState<TypeGames | null>(null);
 
-  const games: TypeGames[] = store?.games || [];
+  const games: TypeGames[] = useMemo(() => store?.games || [], [store?.games]);
   const selectedGameData = games.find((game) => game.id === selectedGame);
 
   const handleGameClick = (gameId: string) => {
     setExpandedGameId((prev) => (prev === gameId ? null : gameId));
   };
 
-  const handleGameSelect = (gameId: string) => {
-    setSelectedGame(gameId);
-    setIsModalOpen(true);
-  };
+  const handleCreate = useCallback(
+    (type: number, gameData = selectedGameData) => {
+      if (gameData) {
+        setState(
+          {
+            game_id: gameData.id,
+            matchMode: type,
+          },
+          "createMatch"
+        );
+        setIsModalOpen(false);
+        router.push("/dashboard/match/create");
+      }
+    },
+    [selectedGameData, router, setState]
+  );
 
-  const handleCreate = (type: number) => {
-    if (selectedGameData) {
-      setState(
-        {
-          game_id: selectedGameData.id,
-          matchMode: type,
-        },
-        "createMatch"
-      );
-      setIsModalOpen(false);
-      router.push("/dashboard/match/create");
-    }
-  };
+  const handleGameSelect = useCallback(
+    (gameId: string) => {
+      setSelectedGame(gameId);
+      const newGame = games.find((game) => game.id === gameId);
+      switch (newGame?.gametype) {
+        case "tournament":
+          handleCreate(1, newGame);
+          break;
+        case "invite":
+          handleCreate(0, newGame);
+          break;
+        default:
+          setIsModalOpen(true);
+      }
+    },
+    [games, handleCreate]
+  );
 
   const handleOpenGameDetailsModal = (game: TypeGames) => {
     setGameForDetailsModal(game);

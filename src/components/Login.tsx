@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import Image from "next/image";
 import Button from "@/components/Button";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -13,8 +12,15 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { DataFromLogin } from "../../types/global";
+import Google from "@/components/socials/Google";
 
-const Login = () => {
+const Login = ({
+  setIsModalOpen,
+  setIsLoginModalOpen,
+}: {
+  setIsModalOpen: (isOpen: boolean) => void;
+  setIsLoginModalOpen: (isOpen: boolean) => void;
+}) => {
   const { login } = useAuth();
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
@@ -32,12 +38,18 @@ const Login = () => {
     mutationFn: (userData: { password: string; username: string }) =>
       postFn("api/auth/login", userData),
     onSuccess: async (data: DataFromLogin) => {
-      if (data?.token) {
+      if (data) {
         toast.success("Login Successful");
-        await login(data);
-        router.push("/dashboard");
-      } else {
-        toast.error(data?.message || "Login Failed: No token received.");
+        const res = await login(data);
+        if (res) {
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 3000);
+        } else if (res === null) {
+          toast.info("Please verify your email to continue");
+          setIsModalOpen(true);
+          setIsLoginModalOpen(false);
+        }
       }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,7 +135,7 @@ const Login = () => {
               )}
               <p className="text-[#233d4d] text-sm">
                 <Link
-                  href="/forgot-password"
+                  href="/auth/forgot-password"
                   className="hover:text-[#f37f2d] hover:font-bold transition-all ease-linear duration-300"
                 >
                   Forgot password?
@@ -143,24 +155,7 @@ const Login = () => {
           <div className="divider py-4">
             <span>Or</span>
           </div>
-          <Button
-            disabled={loginMutation.isPending}
-            variant="secondary"
-            size="md"
-            width="full"
-            type="button"
-            icon={
-              <Image
-                src={"/assets/icons/google-icons.svg"}
-                alt="Google icon"
-                width={20}
-                height={20}
-                className="w-5 h-5 object-contain object-center"
-              />
-            }
-          >
-            Register with Google
-          </Button>
+          <Google disabled={loginMutation.isPending} />
         </div>
         <p className="text-[#64748B] text-center">
           Do not have an account?{" "}

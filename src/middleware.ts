@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+
+
+// Define auth routes that should redirect to dashboard if user is already logged in
+const authRoutes = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/verify-email", "/auth/reset-password"];
 // Define public routes that don't require authentication
 const publicRoutes = [
   "/",
-  "/auth/login",
-  "/auth/register",
-  "/auth/forgot-password",
+  ...authRoutes
 ];
-
-// Define auth routes that should redirect to dashboard if user is already logged in
-const authRoutes = ["/auth/login", "/auth/register", "/auth/forgot-password"];
 
 // Define protected routes that require authentication
 const protectedRoutes = ["/dashboard", "/profile", "/settings"];

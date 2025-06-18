@@ -26,12 +26,23 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { TypeUserSearch } from "../../../../types/global";
 import { CalendarForm } from "./Calendar";
 import EventScheduler from "./TimerSchedule";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface CreateTournamentProps {
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   gameName?: string | null;
+  showDialog: boolean;
+  setMatchData: React.Dispatch<
+    React.SetStateAction<{
+      title?: string;
+      game_name?: string;
+      description?: string;
+      amount?: number | null;
+      match_date?: string;
+      match_time?: string;
+    }>
+  >;
 }
 interface FormData {
   game_id: string;
@@ -48,10 +59,10 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
 });
 
 const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
-  const { setLoading, loading } = props;
-  const [isPrivate,] = useState(true);
-  // const router = useRouter();
-  const [maxInvitees] = useState(5);
+  const { setLoading, loading, showDialog, setMatchData } = props;
+  const [isPrivate] = useState(true);
+  const router = useRouter();
+  const [maxInvitees, setMaxInvitees] = useState(0);
   const [invitees, setInvitees] = useState<string[]>([]);
   const [search, setSearch] = useState<string>("");
   const [searchResults, setSearchResults] = useState<TypeUserSearch[]>([]);
@@ -80,13 +91,22 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
     },
   });
 
+  const handleCategoryChange = useCallback(
+    (value: string) => {
+      setValue("game_id", value, { shouldValidate: true });
+      const selectedGame = store?.games?.find((game) => game.id === value);
+      if (selectedGame) {
+        setMaxInvitees(Number(selectedGame.maxplayers));
+      }
+    },
+    [setValue, store?.games]
+  );
+
   useEffect(() => {
     if (store.createMatch.game_id) {
-      setValue("game_id", store.createMatch.game_id.toString(), {
-        shouldValidate: true,
-      });
+      handleCategoryChange(store.createMatch.game_id.toString());
     }
-  }, [store.createMatch.game_id, setValue]);
+  }, [store.createMatch.game_id, setValue, handleCategoryChange]);
 
   // Debounced search function
   const debouncedSearch = useCallback(
@@ -151,6 +171,13 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
       });
       return;
     }
+    if (isPrivate && invitees.length > maxInvitees) {
+      toast.error(`Please invite at most ${maxInvitees} users`, {
+        position: "top-right",
+        className: "p-4",
+      });
+      return;
+    }
     try {
       setLoading(true);
       if (isPrivate) {
@@ -163,7 +190,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
           className: "p-4",
         });
         console.log(response);
-        // router.push(`/dashboard/join-tournament/${response.id}`);
+        router.push(`/dashboard/my-games`);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Please try again", {
@@ -180,7 +207,26 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
     submitForm: async () => {
       const isValidForm = await trigger();
       if (isValidForm) {
-        handleSubmit(onSubmit)();
+        if (isPrivate && invitees.length > maxInvitees) {
+          toast.error(`Please invite at most ${maxInvitees} users`, {
+            position: "top-right",
+            className: "p-4",
+          });
+          return;
+        }
+        if (showDialog) handleSubmit(onSubmit)();
+        else {
+          const data = watch();
+          setMatchData({
+            title: data.title,
+            game_name: store?.games?.find((game) => game.id === data.game_id)
+              ?.name,
+            description: data.description,
+            amount: data.amount,
+            match_date: data.match_date,
+            match_time: data.match_time,
+          });
+        }
         return true;
       }
       return false;
@@ -189,13 +235,9 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
 
   // Handle deleting an invitee
   const deleteInvitee = (index: number) => {
-    if (invitees.length === 1) return; // Prevent deleting the last input
+    if (invitees.length === 1) return;
     const updatedInvitees = invitees.filter((_, i) => i !== index);
-    setInvitees({ ...invitees, ...updatedInvitees });
-  };
-
-  const handleCategoryChange = (value: string) => {
-    setValue("game_id", value, { shouldValidate: true });
+    setInvitees(updatedInvitees);
   };
 
   // Modified to prevent form submission since we're using debounce
@@ -214,7 +256,6 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   };
 
   const handleInputBlur = () => {
-    // Using setTimeout to delay hiding the results in case the user clicks on a result
     setTimeout(() => {
       setIsInputFocused(false);
     }, 200);
@@ -222,28 +263,6 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
 
   return (
     <section className="transIn">
-      {/* Switch Button: Public/Private Bet */}
-      {/* <div className="flex justify-center items-center space-x-4">
-        <button
-          onClick={() => setIsPrivate(false)}
-          disabled={loading}
-          className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 text-nowrap ${
-            !isPrivate ? "bg-[#EB8338] text-white" : "bg-gray-600 text-black"
-          }`}
-        >
-          Public Bet
-        </button>
-        <button
-          onClick={() => setIsPrivate(true)}
-          disabled={loading}
-          className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 text-nowrap ${
-            isPrivate ? "bg-[#EB8338] text-white" : "bg-gray-600 text-black"
-          }`}
-        >
-          Private Bet
-        </button>
-      </div> */}
-
       {/* Form: Public/Private Bet */}
       <div className="w-full mt-6 grid gap-4">
         {/* Title */}
@@ -282,11 +301,13 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {store?.games?.map((game) => (
-                  <SelectItem key={game.id} value={game.id.toString()}>
-                    {game.name}
-                  </SelectItem>
-                ))}
+                {store?.games
+                  ?.filter((game) => game.gametype !== "tournament")
+                  .map((game) => (
+                    <SelectItem key={game.id} value={game.id.toString()}>
+                      {game.name}
+                    </SelectItem>
+                  ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -398,7 +419,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
 
         {/* Private Bet Fields */}
         {isPrivate && (
-          <div className="space-y-4 transIn">
+          <div className="space-y-4 transIn pb-20">
             <div>
               <div className="relative">
                 <Input
@@ -464,59 +485,61 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
                 </div>
               )}
             </div>
-            <div className="pb-20">
-              <label className="block text-sm text-gray-300">
-                Invite Users (max {maxInvitees})
-              </label>
-              {invitees.length > 0 &&
-                invitees.map((invitee, index) => (
-                  <div
-                    key={index + 32323 + invitee}
-                    className="transIn flex items-center space-x-2 mb-5"
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-[#EB8338] text-white rounded-full flex items-center justify-center font-medium">
-                      {index + 1}
-                    </div>
-                    <input
-                      type="text"
-                      className="w-full mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md"
-                      placeholder={`Invitee ${index + 1}`}
-                      value={invitee}
-                      disabled
-                    />
-                    {invitees.length !== 1 && (
-                      <button
-                        type="button"
-                        onClick={() => deleteInvitee(index)}
-                        className="mt-2 text-red-500 hover:text-red-700 transition-colors"
-                        disabled={invitees.length === 1}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
+            {maxInvitees > 0 && (
+              <div className="transIn">
+                <label className="block text-sm text-gray-300">
+                  Invite Users (max {maxInvitees})
+                </label>
+                {invitees.length > 0 &&
+                  invitees.map((invitee, index) => (
+                    <div
+                      key={index + 32323 + invitee}
+                      className="transIn flex items-center space-x-2 mb-5"
+                    >
+                      <div className="flex-shrink-0 w-8 h-8 bg-[#EB8338] text-white rounded-full flex items-center justify-center font-medium">
+                        {index + 1}
+                      </div>
+                      <input
+                        type="text"
+                        className="w-full mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md"
+                        placeholder={`Invitee ${index + 1}`}
+                        value={invitee}
+                        disabled
+                      />
+                      {invitees.length !== 1 && (
+                        <button
+                          type="button"
+                          onClick={() => deleteInvitee(index)}
+                          className="mt-2 text-red-500 hover:text-red-700 transition-colors"
+                          disabled={invitees.length === 1}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M3 7h18"
-                          />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                ))}
-              {/* <button
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M3 7h18"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                {/* <button
                 type="button"
                 onClick={handleAddInvitee}
                 className="ml-auto px-4 py-2 rounded-lg text-sm flex items-center whitespace-nowrap bg-[#202216] text-[#F0DE9B]"
               >
                 + Add Invitee
               </button> */}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>

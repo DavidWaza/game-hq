@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   useState,
   useEffect,
+  useCallback,
 } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,22 +36,34 @@ interface FormData {
   description: string;
   amount: number | null;
   number_of_participants: number;
-  match_date: Date | null;
+  match_date: string;
   match_time: string;
 }
 interface CreateTournamentProps {
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  showDialog: boolean;
+  setMatchData: React.Dispatch<
+    React.SetStateAction<{
+      title?: string;
+      game_name?: string;
+      description?: string;
+      amount?: number | null;
+      match_date?: string;
+      match_time?: string;
+    }>
+  >;
 }
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
 
 const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
-  const { setLoading, loading } = props;
+  const { setLoading, loading, showDialog, setMatchData } = props;
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const { store, setState } = useAuth();
   const router = useRouter();
+  const [maxInvitees, setMaxInvitees] = useState(0);
   // const quill = new Quill('#editor');
 
   const {
@@ -68,7 +81,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
       description: "",
       amount: null,
       number_of_participants: 0,
-      match_date: null,
+      match_date: "",
       match_time: "",
     },
   });
@@ -77,17 +90,22 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
     setIsMounted(true);
   }, []);
 
+  const handleCategoryChange = useCallback(
+    (value: string) => {
+      setValue("game_id", value, { shouldValidate: true });
+      const selectedGame = store?.games?.find((game) => game.id === value);
+      if (selectedGame) {
+        setMaxInvitees(Number(selectedGame.maxplayers));
+      }
+    },
+    [setValue, store?.games]
+  );
+
   useEffect(() => {
     if (store.createMatch.game_id) {
-      setValue("game_id", store.createMatch.game_id.toString(), {
-        shouldValidate: true,
-      });
+      handleCategoryChange(store.createMatch.game_id.toString());
     }
-  }, [store.createMatch.game_id, setValue]);
-
-  const handleCategoryChange = (value: string) => {
-    setValue("game_id", value, { shouldValidate: true });
-  };
+  }, [store.createMatch.game_id, setValue, handleCategoryChange]);
 
   const handleTimeChange = (match_time: string): void => {
     setValue("match_time", match_time, { shouldValidate: true });
@@ -100,12 +118,14 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
         "api/tournamentstables/add",
         data
       );
-      toast.success("Tournament Created Successfully", {
-        position: "top-right",
-        className: "p-4",
-      });
-      setState(response, "singleTournament");
-      router.push(`/dashboard/join-tournament/${response.id}`);
+      if (response?.id) {
+        toast.success("Tournament Created Successfully", {
+          position: "top-right",
+          className: "p-4",
+        });
+        setState(response, "singleTournament");
+        router.push(`/dashboard/join-tournament/${response.id}`);
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Please try again", {
         position: "top-right",
@@ -121,7 +141,19 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
     submitForm: async () => {
       const isValidForm = await trigger();
       if (isValidForm) {
-        handleSubmit(onSubmit)();
+        if (showDialog) handleSubmit(onSubmit)();
+        else {
+          const data = watch();
+          setMatchData({
+            // title: data.title,
+            game_name: store?.games?.find((game) => game.id === data.game_id)
+              ?.name,
+            description: data.description,
+            amount: data.amount,
+            match_date: data.match_date,
+            match_time: data.match_time,
+          });
+        }
         return true;
       }
       return false;
@@ -134,7 +166,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
 
   return (
     <div className="w-full transIn">
-      <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
+      <form className="grid gap-4 pb-6" onSubmit={handleSubmit(onSubmit)}>
         {/* Select Game */}
         <div className="space-y-2">
           <Label>Select Game</Label>
@@ -154,11 +186,13 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {store?.games?.map((game) => (
-                  <SelectItem key={game.id} value={game.id.toString()}>
-                    {game.name}
-                  </SelectItem>
-                ))}
+                {store?.games
+                  ?.filter((game) => game.gametype !== "invite")
+                  .map((game) => (
+                    <SelectItem key={game.id} value={game.id.toString()}>
+                      {game.name}
+                    </SelectItem>
+                  ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -240,6 +274,7 @@ const CreateTournament = forwardRef((props: CreateTournamentProps, ref) => {
             })}
             step={1}
             min={1}
+            max={maxInvitees}
             type="number"
             id="number_of_participants"
             placeholder="ex. 20"

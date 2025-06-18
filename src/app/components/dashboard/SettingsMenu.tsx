@@ -93,7 +93,7 @@ const SettingsMenu = () => {
                       {category.category}
                     </div>
                     {category.items.map((item, itemIndex) => (
-                      <Link href={item.href} key={itemIndex}>
+                      <Link prefetch href={item.href} key={itemIndex}>
                         <div
                           className="group px-4 py-2 flex items-center hover:bg-[#f37f2d] transition-all duration-200 cursor-pointer"
                           onClick={item.label === "Logout" ? logout : undefined}
