@@ -1,38 +1,34 @@
-import { useState } from "react";
-import { CaretDoubleRight } from "@phosphor-icons/react"; // Assuming you're using Phosphor icons
+import { useState, useEffect, useRef } from "react";
+import { CaretDoubleRight } from "@phosphor-icons/react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const Chat = () => {
-  const playername = useAuth()?.user?.username || "Guest";
-  const [chatMessages, setChatMessages] = useState([
-    {
-      id: 1,
-      sender: "System",
-      message: "Welcome to the Call of Duty Tournament Lobby!",
-      time: "14:35",
-    },
-    {
-      id: 2,
-      sender: playername,
-      message: "Hey everyone, let's warm up before the match",
-      time: "14:36",
-    },
-    {
-      id: 3,
-      sender: "GhostShadow",
-      message: "I'll be using sniper loadout for Search & Destroy",
-      time: "14:37",
-    },
-    {
-      id: 4,
-      sender: "VipeR_X",
-      message: "Sounds good, I'll cover mid",
-      time: "14:37",
-    },
-  ]);
+interface ChatMessage {
+  id: string;
+  sender: string;
+  message: string;
+  time: string;
+  type: "system" | "user";
+}
 
-  // State to track input value
+interface ChatProps {
+  sendChatMessage?: (message: string) => void;
+  messages?: ChatMessage[];
+}
+
+const Chat = ({ sendChatMessage, messages = [] }: ChatProps) => {
+  const { user } = useAuth();
+  const playername = user?.username || "Guest";
   const [inputMessage, setInputMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,19 +37,9 @@ const Chat = () => {
 
   // Handle sending message
   const handleSendMessage = () => {
-    if (inputMessage.trim() === "") return;
+    if (inputMessage.trim() === "" || !sendChatMessage) return;
 
-    const newMessage = {
-      id: chatMessages.length + 1,
-      sender: playername,
-      message: inputMessage,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-
-    setChatMessages([...chatMessages, newMessage]);
+    sendChatMessage(inputMessage.trim());
     setInputMessage("");
   };
 
@@ -67,10 +53,12 @@ const Chat = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 sm:p-5">
-        {chatMessages.map((msg) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`${msg.sender === "System" ? "text-orange-400" : ""}`}
+            className={`transIn ${
+              msg.type === "system" ? "text-orange-400" : ""
+            }`}
           >
             <div className="flex justify-between text-xs text-gray-400 mb-1">
               <span
@@ -87,6 +75,7 @@ const Chat = () => {
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="p-4 border-t border-gray-800 sm:p-5">
@@ -94,13 +83,13 @@ const Chat = () => {
           <input
             type="text"
             placeholder="Type a message..."
-            value={inputMessage} // Bind input value to state
-            onChange={handleInputChange} // Update state on input change
-            onKeyPress={handleKeyPress} // Handle Enter key
+            value={inputMessage}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
             className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
           <button
-            onClick={handleSendMessage} // Handle button click
+            onClick={handleSendMessage}
             className="absolute right-2 top-2 text-orange-400 hover:text-orange-500"
           >
             <CaretDoubleRight size={20} />

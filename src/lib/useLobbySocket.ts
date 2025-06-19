@@ -14,13 +14,24 @@ interface LobbySocketEvents {
     onPlayerStatusChanged?: (playerId: number, status: "ready" | "not ready") => void;
     onPlayerListUpdate?: (players: LobbyPlayer[]) => void;
     onGameStarted?: () => void;
+    onChatMessage?: (message: ChatMessage) => void;
+    onChatHistory?: (messages: ChatMessage[]) => void;
     onError?: (error: string) => void;
+}
+
+interface ChatMessage {
+    id: string;
+    sender: string;
+    message: string;
+    time: string;
+    type: 'system' | 'user';
 }
 
 export function useLobbySocket(
     slug: string,
     isConnected: boolean,
     currentPlayer: LobbyPlayer | null,
+    wagerTitle?: string,
     events: LobbySocketEvents = {}
 ) {
     const socketRef = useRef<Socket | null>(null);
@@ -28,6 +39,7 @@ export function useLobbySocket(
     const isConnectedRef = useRef(isConnected);
     const currentPlayerRef = useRef(currentPlayer);
     const slugRef = useRef(slug);
+    const wagerTitleRef = useRef(wagerTitle);
     const isUnmountingRef = useRef(false);
 
     // Update refs when props change
@@ -35,6 +47,7 @@ export function useLobbySocket(
     isConnectedRef.current = isConnected;
     currentPlayerRef.current = currentPlayer;
     slugRef.current = slug;
+    wagerTitleRef.current = wagerTitle;
 
     // Connect to socket when isConnected becomes true
     useEffect(() => {
@@ -63,7 +76,11 @@ export function useLobbySocket(
             socketRef.current = socket;
 
             // Join the specific lobby room
-            socket.emit('joinLobby', { slug: slugRef.current, player: currentPlayerRef.current });
+            socket.emit('joinLobby', {
+                slug: slugRef.current,
+                player: currentPlayerRef.current,
+                wagerTitle: wagerTitleRef.current
+            });
 
             // Set up event listeners
             socket.on('playerJoined', (player: LobbyPlayer) => {
@@ -89,6 +106,16 @@ export function useLobbySocket(
             socket.on('gameStarted', () => {
                 console.log('Game started');
                 eventsRef.current.onGameStarted?.();
+            });
+
+            socket.on('chatMessage', (message: ChatMessage) => {
+                console.log('Chat message received:', message);
+                eventsRef.current.onChatMessage?.(message);
+            });
+
+            socket.on('chatHistory', (messages: ChatMessage[]) => {
+                console.log('Chat history received:', messages);
+                eventsRef.current.onChatHistory?.(messages);
             });
 
             socket.on('error', (error: string) => {
@@ -123,6 +150,12 @@ export function useLobbySocket(
         }
     }, []);
 
+    const sendChatMessage = useCallback((message: string) => {
+        if (socketRef.current) {
+            socketRef.current.emit('sendChatMessage', { slug: slugRef.current, message });
+        }
+    }, []);
+
     const leaveLobby = useCallback(() => {
         if (socketRef.current) {
             socketRef.current.emit('leaveLobby', { slug: slugRef.current });
@@ -131,6 +164,7 @@ export function useLobbySocket(
 
     return {
         updatePlayerStatus,
+        sendChatMessage,
         leaveLobby,
         isConnected: socketRef.current?.connected || false
     };

@@ -437,6 +437,14 @@ const lobbies: Record<string, {
         socketId: string;
     }>;
     wagerId: string;
+    chatMessages: Array<{
+        id: string;
+        sender: string;
+        message: string;
+        time: string;
+        type: 'system' | 'user';
+    }>;
+    createdAt: Date;
 }> = {};
 
 export function getIO() {
@@ -459,17 +467,23 @@ export function initSocket(existingIo: SocketIOServer) {
                 // === LOBBY MANAGEMENT ===
 
                 // Handle joining a lobby
-                socket.on('joinLobby', (data: { slug: string, player: { id: number; name: string; status: "ready" | "not ready"; captain: boolean } }) => {
+                socket.on('joinLobby', (data: {
+                    slug: string,
+                    player: { id: number; name: string; status: "ready" | "not ready"; captain: boolean },
+                    wagerTitle?: string
+                }) => {
                     if (!io) return;
 
-                    const { slug, player } = data;
+                    const { slug, player, wagerTitle } = data;
                     const lobbyId = `lobby_${slug}`;
 
                     // Create lobby if it doesn't exist
                     if (!lobbies[lobbyId]) {
                         lobbies[lobbyId] = {
                             players: {},
-                            wagerId: slug
+                            wagerId: slug,
+                            chatMessages: [],
+                            createdAt: new Date()
                         };
                     }
 
@@ -482,8 +496,38 @@ export function initSocket(existingIo: SocketIOServer) {
                         socketId: socket.id
                     };
 
+                    // Send welcome message if this is the first player
+                    if (Object.keys(lobbies[lobbyId].players).length === 1) {
+                        const welcomeMessage = {
+                            id: `welcome_${Date.now()}`,
+                            sender: "System",
+                            message: `Welcome to the ${wagerTitle || slug} lobby! Get ready for an exciting match!`,
+                            time: new Date().toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            }),
+                            type: 'system' as const
+                        };
+                        lobbies[lobbyId].chatMessages.push(welcomeMessage);
+                        io.to(lobbyId).emit('chatMessage', welcomeMessage);
+                    }
+
                     // Broadcast player joined to all in lobby
                     io.to(lobbyId).emit('playerJoined', player);
+
+                    // Send player joined message to chat
+                    const joinMessage = {
+                        id: `join_${Date.now()}_${player.id}`,
+                        sender: "System",
+                        message: `${player.name} has joined the lobby!`,
+                        time: new Date().toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                        }),
+                        type: 'system' as const
+                    };
+                    lobbies[lobbyId].chatMessages.push(joinMessage);
+                    io.to(lobbyId).emit('chatMessage', joinMessage);
 
                     // Send current player list to all in lobby
                     const playerList = Object.values(lobbies[lobbyId].players).map(p => ({
@@ -493,6 +537,9 @@ export function initSocket(existingIo: SocketIOServer) {
                         captain: p.captain
                     }));
                     io.to(lobbyId).emit('playerListUpdate', playerList);
+
+                    // Send chat history to the new player
+                    socket.emit('chatHistory', lobbies[lobbyId].chatMessages);
 
                     console.log(`Player ${player.name} joined lobby ${slug}`);
                 });
@@ -512,6 +559,20 @@ export function initSocket(existingIo: SocketIOServer) {
 
                         // Leave the lobby room
                         socket.leave(lobbyId);
+
+                        // Send player left message to chat
+                        const leaveMessage = {
+                            id: `leave_${Date.now()}_${player.id}`,
+                            sender: "System",
+                            message: `${player.name} has left the lobby.`,
+                            time: new Date().toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            }),
+                            type: 'system' as const
+                        };
+                        lobbies[lobbyId].chatMessages.push(leaveMessage);
+                        io.to(lobbyId).emit('chatMessage', leaveMessage);
 
                         // Broadcast player left to all in lobby
                         io.to(lobbyId).emit('playerLeft', player.id);
@@ -560,6 +621,36 @@ export function initSocket(existingIo: SocketIOServer) {
                         io.to(lobbyId).emit('playerListUpdate', playerList);
 
                         console.log(`Player ${player.name} status changed to ${status} in lobby ${slug}`);
+                    }
+                });
+
+                // Handle chat messages
+                socket.on('sendChatMessage', (data: { slug: string, message: string }) => {
+                    if (!io) return;
+
+                    const { slug, message } = data;
+                    const lobbyId = `lobby_${slug}`;
+
+                    if (lobbies[lobbyId] && lobbies[lobbyId].players[socket.id]) {
+                        const player = lobbies[lobbyId].players[socket.id];
+                        const chatMessage = {
+                            id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                            sender: player.name,
+                            message: message.trim(),
+                            time: new Date().toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            }),
+                            type: 'user' as const
+                        };
+
+                        // Add message to lobby history
+                        lobbies[lobbyId].chatMessages.push(chatMessage);
+
+                        // Broadcast message to all players in lobby
+                        io.to(lobbyId).emit('chatMessage', chatMessage);
+
+                        console.log(`Chat message from ${player.name} in lobby ${slug}: ${message}`);
                     }
                 });
 

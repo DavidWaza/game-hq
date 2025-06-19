@@ -62,6 +62,15 @@ export default function TournamentLobby() {
   >();
   const [isAllowedInLobby, setIsAllowedInLobby] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [chatMessages, setChatMessages] = useState<
+    Array<{
+      id: string;
+      sender: string;
+      message: string;
+      time: string;
+      type: "system" | "user";
+    }>
+  >([]);
   // --- Hooks ---
   const router = useRouter();
   const params = useParams();
@@ -295,10 +304,15 @@ export default function TournamentLobby() {
   }, [user, privateWager]);
 
   // Socket hook for lobby synchronization
-  const { updatePlayerStatus, isConnected: socketConnected } = useLobbySocket(
+  const {
+    updatePlayerStatus,
+    sendChatMessage,
+    isConnected: socketConnected,
+  } = useLobbySocket(
     slug,
     isAllowedInLobby,
     currentPlayer,
+    privateWager?.title,
     {
       onPlayerJoined: useCallback((player: Player) => {
         setPlayers((prev) => {
@@ -327,6 +341,32 @@ export default function TournamentLobby() {
         toast.success("Game is starting!");
         // Handle game start logic here
       }, []),
+      onChatMessage: useCallback(
+        (message: {
+          id: string;
+          sender: string;
+          message: string;
+          time: string;
+          type: "system" | "user";
+        }) => {
+          setChatMessages((prev) => [...prev, message]);
+        },
+        []
+      ),
+      onChatHistory: useCallback(
+        (
+          messages: Array<{
+            id: string;
+            sender: string;
+            message: string;
+            time: string;
+            type: "system" | "user";
+          }>
+        ) => {
+          setChatMessages(messages);
+        },
+        []
+      ),
       onError: useCallback((error: string) => {
         toast.error(`Socket error: ${error}`);
       }, []),
@@ -462,7 +502,7 @@ export default function TournamentLobby() {
                       {/* Player Avatar/Initial */}
                       <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold sm:w-10 sm:h-10 bg-gray-700">
                         <span className="text-orange-400">
-                          {player.name.charAt(0).toUpperCase()}
+                          {player.name.substring(0, 2).toUpperCase()}
                         </span>
                       </div>
                       {/* Player Name & Status */}
@@ -871,7 +911,7 @@ export default function TournamentLobby() {
               </button>
             </div>
             {/* Chat Component */}
-            <Chat />{" "}
+            <Chat messages={chatMessages} sendChatMessage={sendChatMessage} />
           </aside>
         </div>
 
