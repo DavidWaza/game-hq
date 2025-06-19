@@ -117,16 +117,17 @@ const MainDashboard = () => {
     (gameId: string) => {
       setSelectedGame(gameId);
       const newGame = games.find((game) => game.id === gameId);
-      switch (newGame?.gametype) {
-        case "tournament":
-          handleCreate(1, newGame);
-          break;
-        case "invite":
-          handleCreate(0, newGame);
-          break;
-        default:
-          setIsModalOpen(true);
-      }
+      handleCreate(0, newGame);
+      // switch (newGame?.gametype) {
+      //   case "tournament":
+      //     handleCreate(1, newGame);
+      //     break;
+      //   case "invite":
+      //     handleCreate(0, newGame);
+      //     break;
+      //   default:
+      //     setIsModalOpen(true);
+      // }
     },
     [games, handleCreate]
   );

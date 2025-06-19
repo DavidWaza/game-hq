@@ -19,6 +19,24 @@ export function formatCurrency(
   });
   return formatter.format(Number(num));
 }
+export const removeDuplicates = <T extends Record<string, unknown>>(arr: Array<T>, prop: string | null = null) => {
+  const uniqueValues = new Set();
+  return arr.filter(function (item: T) {
+    if (prop) {
+      if (item[prop] === null || !uniqueValues.has(item[prop])) {
+        uniqueValues.add(item[prop]);
+        return true;
+      }
+      return false;
+    } else {
+      if (item === null || !uniqueValues.has(item)) {
+        uniqueValues.add(item);
+        return true;
+      }
+      return false;
+    }
+  });
+};
 
 export function formatNumber(arg: string | number, decimals: number = 0) {
   const number = Number(arg ? arg : 0);

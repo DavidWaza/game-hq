@@ -33,12 +33,16 @@ interface CalendarFormProps {
   onDateChange?: (date: string) => void;
   label?: string;
   disabled?: boolean;
+  disabledDate?: (date: Date) => boolean;
+  className?: string;
 }
 
 export function CalendarForm({
   onDateChange,
   label,
   disabled = false,
+  disabledDate = () => false,
+  className = "",
 }: CalendarFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -69,6 +73,7 @@ export function CalendarForm({
                     variant={"outline"}
                     className={cn(
                       "w-[240px] pl-3 text-left font-normal bg-gray-700 text-white border-gray-500 hover:bg-gray-900 hover:text-white",
+                      className,
                       !field.value && "text-gray-400"
                     )}
                   >
@@ -90,6 +95,7 @@ export function CalendarForm({
                     handleDateSelect(date);
                   }}
                   initialFocus
+                  disabled={disabledDate}
                 />
               </PopoverContent>
             </Popover>

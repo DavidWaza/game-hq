@@ -15,8 +15,8 @@ import {
   Info as InfoIcon,
   UserPlus,
   Eye,
-  User as UserIcon,
-  UsersThree as TournamentIcon,
+  // User as UserIcon,
+  // UsersThree as TournamentIcon,
   CaretLeft,
   CaretRight,
   CaretDoubleLeft,
@@ -28,6 +28,7 @@ import {
 } from "../../../../types/global";
 import { formatCurrency } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { formatDate } from "date-fns";
 
 // Types
 type TabType = "created" | "invitations" | "ongoing";
@@ -38,6 +39,9 @@ interface GameData {
   totalRecords: number;
   recordCount: number;
   totalPages: number;
+  currentPage: number;
+  hasMorePages: boolean;
+  perPage: number;
 }
 
 interface GameState {
@@ -170,31 +174,31 @@ const ActionButton = ({
   </motion.button>
 );
 
-const SubTabButton = ({
-  label,
-  icon: Icon,
-  isActive,
-  onClick,
-}: {
-  label: string;
-  icon: React.ElementType;
-  isActive: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 text-xs sm:text-sm rounded-md font-medium transition-all duration-200 ease-in-out focus:outline-none
-              ${
-                isActive
-                  ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
-                  : "bg-gray-700/60 text-gray-300 hover:bg-gray-600/80 hover:text-white"
-              }`}
-    style={{ WebkitTapHighlightColor: "transparent" }}
-  >
-    <Icon size={16} weight={isActive ? "bold" : "regular"} />
-    {label}
-  </button>
-);
+// const SubTabButton = ({
+//   label,
+//   icon: Icon,
+//   isActive,
+//   onClick,
+// }: {
+//   label: string;
+//   icon: React.ElementType;
+//   isActive: boolean;
+//   onClick: () => void;
+// }) => (
+//   <button
+//     onClick={onClick}
+//     className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 text-xs sm:text-sm rounded-md font-medium transition-all duration-200 ease-in-out focus:outline-none
+//               ${
+//                 isActive
+//                   ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
+//                   : "bg-gray-700/60 text-gray-300 hover:bg-gray-600/80 hover:text-white"
+//               }`}
+//     style={{ WebkitTapHighlightColor: "transparent" }}
+//   >
+//     <Icon size={16} weight={isActive ? "bold" : "regular"} />
+//     {label}
+//   </button>
+// );
 
 const TabButton = ({
   label,
@@ -475,7 +479,7 @@ const Pagination = ({
 };
 
 const CreateWagerBanner = () => {
-  const { user, store } = useAuth();
+  const { user } = useAuth();
   const username = user?.username;
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>("solo");
@@ -485,36 +489,54 @@ const CreateWagerBanner = () => {
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     createdTournaments: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     invitedWagers: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     invitedTournaments: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     ongoingWagers: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     ongoingTournaments: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
   });
   const [loadingStates, setLoadingStates] = useState<LoadingState>({
@@ -525,6 +547,7 @@ const CreateWagerBanner = () => {
     ongoingWagers: false,
     ongoingTournaments: false,
   });
+  const router = useRouter();
 
   const updateData = useCallback((key: keyof GameState, value: GameData) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -551,17 +574,18 @@ const CreateWagerBanner = () => {
         }
       },
       getCreatedTournaments: async (page = 1) => {
-        try {
-          updateLoadingState("createdTournaments", true);
-          const response = await getFn(
-            `/api/users/tournamentwager?page=${page}`
-          );
-          if (response) updateData("createdTournaments", response);
-        } catch {
-          toast.error("Error fetching created tournaments");
-        } finally {
-          updateLoadingState("createdTournaments", false);
-        }
+        return page;
+        // try {
+        //   updateLoadingState("createdTournaments", true);
+        //   const response = await getFn(
+        //     `/api/users/tournamentwager?page=${page}`
+        //   );
+        //   if (response) updateData("createdTournaments", response);
+        // } catch {
+        //   toast.error("Error fetching created tournaments");
+        // } finally {
+        //   updateLoadingState("createdTournaments", false);
+        // }
       },
       getInvitedWagers: async (page = 1) => {
         try {
@@ -577,17 +601,18 @@ const CreateWagerBanner = () => {
         }
       },
       getInvitedTournaments: async (page = 1) => {
-        try {
-          updateLoadingState("invitedTournaments", true);
-          const response = await getFn(
-            `/api/users/invited_but_not_played_tournament_wager?page=${page}`
-          );
-          if (response) updateData("invitedTournaments", response);
-        } catch {
-          toast.error("Error fetching invited tournaments");
-        } finally {
-          updateLoadingState("invitedTournaments", false);
-        }
+        return page;
+        // try {
+        //   updateLoadingState("invitedTournaments", true);
+        //   const response = await getFn(
+        //     `/api/users/invited_but_not_played_tournament_wager?page=${page}`
+        //   );
+        //   if (response) updateData("invitedTournaments", response);
+        // } catch {
+        //   toast.error("Error fetching invited tournaments");
+        // } finally {
+        //   updateLoadingState("invitedTournaments", false);
+        // }
       },
     }),
     [updateData, updateLoadingState]
@@ -599,7 +624,7 @@ const CreateWagerBanner = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!username || !methods) return;
+      if (!methods) return;
 
       switch (activeTab) {
         case "created":
@@ -619,73 +644,92 @@ const CreateWagerBanner = () => {
       }
     };
 
-    fetchData();
-  }, [activeTab, username, methods]);
+    if (activeTab && methods) fetchData();
+  }, [activeTab, methods]);
 
-  const handleAction = (item: TypePrivateWager | TypeSingleTournament) => {
-    const games = store.games;
-    if (games && games.length > 0) {
-      const game = games.find((game) => game.id === item.game_id);
-      if (game && game.gameurl) {
-        window.location.href = game.gameurl;
-      }
-    }
-  };
-
-  const handlePageChange = (newPage: number) => {
-    // Determine current data list to get totalPages for boundary check
-    let currentDataKey: keyof GameState;
-    switch (activeTab) {
-      case "created":
-        currentDataKey =
-          activeSubTab === "solo" ? "createdWagers" : "createdTournaments";
-        break;
-      case "invitations":
-        currentDataKey =
-          activeSubTab === "solo" ? "invitedWagers" : "invitedTournaments";
-        break;
-      case "ongoing":
-        currentDataKey =
-          activeSubTab === "solo" ? "ongoingWagers" : "ongoingTournaments";
-        break;
-      default:
-        return; // Should not happen
-    }
-    const listTotalPages = data[currentDataKey]?.totalPages ?? 1;
-    let pagenum = newPage;
-
-    if (newPage >= 1 && newPage <= listTotalPages) {
-      pagenum = newPage;
-    } else if (newPage < 1 && listTotalPages > 0) {
-      // Prevent going below 1
-      pagenum = 1;
-    } else if (newPage > listTotalPages && listTotalPages > 0) {
-      // Prevent going above totalPages
-      pagenum = listTotalPages;
-    }
-    // if listTotalPages is 0 (e.g. no data), allow setting to 1.
-    else if (listTotalPages === 0 && newPage === 1) {
-      pagenum = 1;
-    }
-
-    switch (currentDataKey) {
-      case "createdWagers":
+  const handleAction = useCallback(
+    (item: TypePrivateWager | TypeSingleTournament) => {
+      if (activeTab === "created") {
         if (activeSubTab === "solo") {
-          methods.getCreatedWagers(pagenum);
-        } else {
-          methods.getCreatedTournaments(pagenum);
+          const gameDate = new Date(item.match_date + "T" + item.match_time);
+          const currentDate = new Date();
+
+          if (currentDate >= gameDate) {
+            router.push(`/dashboard/match/lobby/${item.id}`);
+          } else {
+            toast.warning(
+              `Match time has not arrived yet! Match starts at ${formatDate(
+                gameDate,
+                "MMM do, yyyy"
+              )} at ${item.match_time}`
+            );
+          }
         }
-        break;
-      case "createdTournaments":
-        methods.getCreatedTournaments(pagenum);
-        break;
+      }
+    },
+    [activeSubTab, activeTab, router]
+  );
 
-      default:
-        break;
-    }
-  };
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      // Determine current data list to get totalPages for boundary check
+      let currentDataKey: keyof GameState;
+      switch (activeTab) {
+        case "created":
+          currentDataKey =
+            activeSubTab === "solo" ? "createdWagers" : "createdTournaments";
+          break;
+        case "invitations":
+          currentDataKey =
+            activeSubTab === "solo" ? "invitedWagers" : "invitedTournaments";
+          break;
+        case "ongoing":
+          currentDataKey =
+            activeSubTab === "solo" ? "ongoingWagers" : "ongoingTournaments";
+          break;
+        default:
+          return; // Should not happen
+      }
+      const listTotalPages = data[currentDataKey]?.totalPages ?? 1;
+      let pagenum = newPage;
 
-  const renderContent = () => {
+      if (newPage >= 1 && newPage <= listTotalPages) {
+        pagenum = newPage;
+      } else if (newPage < 1 && listTotalPages > 0) {
+        // Prevent going below 1
+        pagenum = 1;
+      } else if (newPage > listTotalPages && listTotalPages > 0) {
+        // Prevent going above totalPages
+        pagenum = listTotalPages;
+      }
+      // if listTotalPages is 0 (e.g. no data), allow setting to 1.
+      else if (listTotalPages === 0 && newPage === 1) {
+        pagenum = 1;
+      }
+
+      switch (activeTab) {
+        case "created":
+          if (activeSubTab === "solo") {
+            methods.getCreatedWagers(pagenum);
+          } else {
+            methods.getCreatedTournaments(pagenum);
+          }
+          break;
+        case "invitations":
+          if (activeSubTab === "solo") {
+            methods.getInvitedWagers(pagenum);
+          } else {
+            methods.getInvitedTournaments(pagenum);
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [activeTab, activeSubTab, data, methods]
+  );
+
+  const renderContent = useCallback(() => {
     let dataList: GameData;
     let isLoading: boolean;
     let baseEmptyMessage: string;
@@ -747,6 +791,9 @@ const CreateWagerBanner = () => {
           totalRecords: 0,
           recordCount: 0,
           totalPages: 0,
+          currentPage: 1,
+          hasMorePages: false,
+          perPage: 10,
         };
         isLoading = false;
         baseEmptyMessage = "Error loading";
@@ -762,7 +809,7 @@ const CreateWagerBanner = () => {
         : "currently ongoing"
     }.`;
 
-    const newCurrentPage = dataList.totalPages;
+    const newCurrentPage = dataList.currentPage;
 
     return (
       <motion.div
@@ -773,7 +820,7 @@ const CreateWagerBanner = () => {
         exit="exit"
         className="overflow-x-auto bg-black/20 p-3 sm:p-4 rounded-b-lg rounded-tr-lg shadow-2xl backdrop-blur-md border border-gray-700/30 min-h-[350px] justify_auto"
       >
-        <div className="max-h-max mb-4 flex items-center flex-wrap gap-2 sm:flex sm:space-x-2 p-1 bg-gray-800/20 rounded-lg max-w-max w-full">
+        {/* <div className="max-h-max mb-4 flex items-center flex-wrap gap-2 sm:flex sm:space-x-2 p-1 bg-gray-800/20 rounded-lg max-w-max w-full">
           <SubTabButton
             label="Solo Games"
             icon={UserIcon}
@@ -786,7 +833,7 @@ const CreateWagerBanner = () => {
             isActive={activeSubTab === "tournament"}
             onClick={() => setActiveSubTab("tournament")}
           />
-        </div>
+        </div> */}
 
         {isLoading ? (
           <div className="transIn">
@@ -832,7 +879,7 @@ const CreateWagerBanner = () => {
                       return (
                         <tr
                           key={item.id}
-                          className="border-b border-gray-800/70 transition-colors duration-200 hover:bg-gray-700/40"
+                          className="border-b border-gray-800/70 transition-colors duration-200 hover:bg-gray-700/40 transIn"
                         >
                           <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
                             {item.id?.substring(0, 8) || "N/A"}...
@@ -861,20 +908,28 @@ const CreateWagerBanner = () => {
                 </tbody>
               </table>
             </div>
-            {/* {dataList.totalPages > 0 && ( */}
-            <Pagination
-              currentPage={newCurrentPage}
-              totalPages={dataList.totalPages}
-              onPageChange={handlePageChange}
-            />
-            {/* )} */}
+            {dataList.totalPages > 1 && (
+              <Pagination
+                currentPage={newCurrentPage}
+                totalPages={dataList.totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
           </>
         ) : (
           <EmptyState message={dynamicEmptyMessage} icon={InfoIcon} />
         )}
       </motion.div>
     );
-  };
+  }, [
+    activeTab,
+    activeSubTab,
+    data,
+    loadingStates,
+    methods,
+    handleAction,
+    handlePageChange,
+  ]);
 
   return (
     <div className="relative min-h-screen bg-[#0f0f0f] overflow-hidden">

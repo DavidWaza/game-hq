@@ -56,26 +56,29 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatchProps) => {
 
   return (
     <div className="addTransition w-full max-w-[500px]">
-      <div className="w-full mb-4 rounded-[30px] border-[#fcf8db] border-4 overflow-hidden relative h-[60px] flex items-center justify-between isolate shadow-lg bg-primary">
-        <span
-          style={{ left: !matchMode ? "6px" : "calc(50% - 6px)" }}
-          className="transCube bg-primary-1 active !absolute !h-[calc(100%-12px)] w-1/2 !rounded-3xl"
-        ></span>
-        <button
-          disabled={loading}
-          onClick={() => setMatchMode(0)}
-          className="w-full text-center relative h-full rounded-3xl !outline-none !border-none"
-        >
-          Invite Players
-        </button>
-        <button
-          disabled={loading}
-          onClick={() => setMatchMode(1)}
-          className="w-full text-center relative h-full rounded-3xl !outline-none !border-none"
-        >
-          Create Tournament
-        </button>
-      </div>
+      {false && (
+        <div className="w-full mb-4 rounded-[30px] border-[#fcf8db] border-4 overflow-hidden relative h-[60px] flex items-center justify-between isolate shadow-lg bg-primary">
+          <span
+            style={{ left: !matchMode ? "6px" : "calc(50% - 6px)" }}
+            className="transCube bg-primary-1 active !absolute !h-[calc(100%-12px)] w-1/2 !rounded-3xl"
+          ></span>
+          <button
+            disabled={loading}
+            onClick={() => setMatchMode(0)}
+            className="w-full text-center relative h-full rounded-3xl !outline-none !border-none"
+          >
+            Invite Players
+          </button>
+          <button
+            disabled={loading}
+            onClick={() => setMatchMode(1)}
+            className="w-full text-center relative h-full rounded-3xl !outline-none !border-none"
+          >
+            Create Tournament
+          </button>
+        </div>
+      )}
+
       <div className="relative bg-primary text-white py-4 bg-opacity-90 rounded-3xl shadow-lg border-4 border-[#fcf8db] w-full justify_auto h-full">
         <div className="overflow-y-auto px-6 pb-6 w-full">
           {!matchMode ? (
@@ -148,6 +151,15 @@ const CreateMatch = ({ matchMode, setMatchMode }: CreateMatchProps) => {
                     )}
                   </p>
                 )}
+                <p className="text-sm text-red-500 italic font-medium mt-16">
+                  Note: This is a private game, only you and the invited
+                  player(s) can see it.
+                  <br />
+                  <br />
+                  {matchData.amount &&
+                    formatCurrency(matchData.amount) +
+                      " will be deducted from your balance and the players who join and will be shared with the winner(s)."}
+                </p>
               </div>
               <DialogFooter className="sm:justify-start">
                 <Button

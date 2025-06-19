@@ -165,19 +165,20 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     const route = isPrivate ? "api/privatewagers/add" : "api/publicwagers/add";
     if (isPrivate && invitees.length === 0) {
-      toast.error("Please invite at least one user", {
+      toast.warning("Please invite at least one user", {
         position: "top-right",
         className: "p-4",
       });
       return;
     }
     if (isPrivate && invitees.length > maxInvitees) {
-      toast.error(`Please invite at most ${maxInvitees} users`, {
+      toast.warning(`Please invite at most ${maxInvitees} users`, {
         position: "top-right",
         className: "p-4",
       });
       return;
     }
+
     try {
       setLoading(true);
       if (isPrivate) {
@@ -189,7 +190,6 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
           position: "top-right",
           className: "p-4",
         });
-        console.log(response);
         router.push(`/dashboard/my-games`);
       }
     } catch (error) {
@@ -208,7 +208,33 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
       const isValidForm = await trigger();
       if (isValidForm) {
         if (isPrivate && invitees.length > maxInvitees) {
-          toast.error(`Please invite at most ${maxInvitees} users`, {
+          toast.warning(`Please invite at most ${maxInvitees} users`, {
+            position: "top-right",
+            className: "p-4",
+          });
+          return;
+        }
+        if (
+          new Date(watch("match_date") + "T" + watch("match_time")) < new Date()
+        ) {
+          toast.warning(`Match time in the past! Please select a future date`, {
+            position: "top-right",
+            className: "p-4",
+          });
+          return;
+        }
+        if (watch("amount") !== null && Number(watch("amount")) < 500) {
+          toast.warning(`Minimum wager is 500`, {
+            position: "top-right",
+            className: "p-4",
+          });
+          return;
+        }
+        if (
+          watch("amount") !== null &&
+          Number(watch("amount")) > Number(user?.wallet?.balance)
+        ) {
+          toast.warning(`Insufficient balance!`, {
             position: "top-right",
             className: "p-4",
           });
@@ -373,7 +399,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
               disabled={loading}
               onChange={(e) => {
                 const num = Number(e.target.value);
-                setValue("amount", !num ? null : num && num < 500 ? 500 : num, {
+                setValue("amount", !num ? null : num, {
                   shouldValidate: true,
                 });
               }}
@@ -391,9 +417,15 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
           rules={{ required: "Date is required" }}
           render={({ field }) => (
             <CalendarForm
+              className="!h-[50px] w-full"
               onDateChange={(date) => field.onChange(date)}
               label="Select a date"
               disabled={loading}
+              disabledDate={(date) => {
+                const prevDate = new Date();
+                prevDate.setDate(prevDate.getDate() - 1);
+                return date < prevDate;
+              }}
             />
           )}
         />

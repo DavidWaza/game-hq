@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Users,
   Trophy,
@@ -20,27 +20,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import Chat from "../Components/Message";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
-import { TypeGames } from "../../../../../types/global";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatNumber, removeDuplicates } from "@/lib/utils";
+import { getFn } from "@/lib/apiClient";
+import { TypeGames, TypePrivateWager } from "../../../../../../types/global";
+import { toast } from "sonner";
 
-type TournamentDetails = {
-  id: string | number;
-  amount?: number;
-  match_time?: string | number;
-  number_of_participants?: number;
-  description?: string;
-  game_id?: string | number;
-  name?: string;
-  banner?: string;
-};
-
-type MockStore = {
-  games: TypeGames[];
-  singleTournament: TournamentDetails | null;
-  dispatch: {
-    getTournament: () => Promise<void>;
-  };
-};
+interface Player {
+  id: number;
+  name: string;
+  status: "ready" | "not ready";
+  captain: boolean;
+  [key: string]: unknown;
+}
 
 export default function TournamentLobby() {
   // --- State Variables ---
@@ -56,67 +47,126 @@ export default function TournamentLobby() {
     "win" | "lose" | "dispute" | null
   >(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [privateWager, setPrivateWager] = useState<
+    TypePrivateWager | undefined
+  >();
+  const [isAllowedInLobby, setIsAllowedInLobby] = useState(false);
+  const [players, setPlayers] = useState<Player[]>([]);
   // --- Hooks ---
   const router = useRouter();
   const params = useParams();
   const slug = params?.slug as string;
-  const { user, store: mockStore } = useAuth() as unknown as {
-    user: { username?: string; id?: string | number } | null;
-    store: MockStore;
-  };
+  const { user, store } = useAuth();
 
   const playername = user?.username || "Challenger";
+  // playing status
+  const hasEnoughPlayers = useMemo(() => {
+    return players.length >= 2;
+  }, [players]);
 
-  const tournamentDetails = mockStore?.singleTournament;
+  const allPlayersReady = useMemo(() => {
+    return (
+      players.every((player) => player.status === "ready") && hasEnoughPlayers
+    );
+  }, [players, hasEnoughPlayers]);
+
+  const copyLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Link copied to clipboard");
+  }, []);
 
   // Filter the specific game based on tournament details
-  const filterGame = () => {
-    if (mockStore.games?.length && mockStore.singleTournament) {
-      const t: TypeGames | undefined = mockStore.games.find(
-        (el) => el.id === mockStore?.singleTournament?.game_id
-      );
-      if (t) {
-        setSelectedGame(t);
-      } else {
-        console.warn(
-          "Game not found for ID:",
-          mockStore.singleTournament.game_id
-        );
-      }
-    }
-  };
 
+  // get wager
   useEffect(() => {
-    const getTournament = async () => {
-      if (
-        !mockStore.singleTournament ||
-        mockStore.singleTournament.id !== slug
-      ) {
-        setLoading(true);
-        try {
-          await mockStore.dispatch.getTournament();
-          console.log("Fetched tournament data for slug:", slug);
-        } catch (error) {
-          console.error("Failed to fetch tournament:", error);
-        } finally {
-          setLoading(false);
+    const getPrivateWager = async () => {
+      setLoading(true);
+      try {
+        const response: TypePrivateWager = await getFn(
+          `/api/privatewagers/view/${slug}`
+        );
+        if (response) {
+          console.log(response);
+          setPrivateWager(response);
         }
-      } else {
+      } catch (error) {
+        console.error("Failed to fetch private wager:", error);
+      } finally {
         setLoading(false);
       }
     };
     if (slug) {
-      getTournament();
+      getPrivateWager();
     } else {
-      console.error("Tournament slug is missing!");
+      window.history.back();
       setLoading(false);
     }
-  }, [slug, mockStore.dispatch, mockStore.singleTournament]);
+  }, [slug]);
 
+  // get selected game
   useEffect(() => {
-    filterGame();
-  }, [mockStore.games, mockStore.singleTournament]);
+    if (
+      isAllowedInLobby &&
+      privateWager &&
+      privateWager?.game_id &&
+      store.games &&
+      store.games.length > 0
+    ) {
+      const game = store.games.find((game) => game.id === privateWager.game_id);
+      if (game) {
+        setSelectedGame(game);
+      }
+    }
+  }, [privateWager, store.games, isAllowedInLobby]);
+
+  // process allowed in lobby and set players
+  useEffect(() => {
+    if (
+      privateWager &&
+      privateWager?.users &&
+      user?.id &&
+      user?.email &&
+      user?.username
+    ) {
+      const parsedUsers = JSON.parse(privateWager.users);
+      if (
+        parsedUsers.includes(user?.email) ||
+        parsedUsers.includes(user?.username) ||
+        Number(user?.id) === Number(privateWager.user_id)
+      ) {
+        setIsAllowedInLobby(true);
+        // Use functional state update to avoid dependency on players
+        setPlayers((prevPlayers) => {
+          const currentPlayer = {
+            id: Number(user?.id),
+            name: user?.username,
+            status: "not ready" as const,
+            captain: Number(user?.id) === Number(privateWager.user_id),
+          };
+
+          // Check if player already exists to avoid duplicates
+          const playerExists = prevPlayers.some(
+            (player) => player.id === currentPlayer.id
+          );
+          if (playerExists) {
+            return prevPlayers; // Don't update if player already exists
+          }
+
+          return removeDuplicates<Player>(
+            [...prevPlayers, currentPlayer],
+            "id"
+          );
+        });
+      } else {
+        setIsAllowedInLobby(false);
+        router.push("/");
+        toast.error("You are not allowed to access this lobby", {
+          position: "top-right",
+          className: "p-4",
+        });
+      }
+    }
+  }, [privateWager, user, router]);
 
   useEffect(() => {
     let countdownTimer: NodeJS.Timeout | null = null;
@@ -206,19 +256,11 @@ export default function TournamentLobby() {
 
   const reportGameResult = async (result: "win" | "lose" | "dispute") => {
     console.log(
-      `Reporting result: ${result} for user: ${user?.id} in tournament: ${tournamentDetails?.id}`
+      `Reporting result: ${result} for user: ${user?.id} in wager: ${privateWager?.id}`
     );
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log("Report successful (simulated)");
   };
-
-  const players = [
-    { id: 1, name: playername, status: "Ready", captain: true },
-    { id: 2, name: "GhostShadow", status: "Ready", captain: false },
-    { id: 3, name: "VipeR_X", status: "Ready", captain: false },
-    { id: 4, name: "Sniper_Elite", status: "Not Ready", captain: false },
-    { id: 5, name: "", status: "Empty", captain: false },
-  ];
 
   const countdownVariants = {
     initial: { scale: 0.5, opacity: 0 },
@@ -242,7 +284,7 @@ export default function TournamentLobby() {
     exit: { y: -30, opacity: 0, transition: { duration: 0.2 } },
   };
 
-  if (loading || !tournamentDetails || !selectedGame?.id) {
+  if (loading || !privateWager || !selectedGame?.id || !isAllowedInLobby) {
     return <FullScreenLoader isLoading={true} text="Loading Lobby..." />;
   }
 
@@ -274,7 +316,7 @@ export default function TournamentLobby() {
               <span className="text-xs sm:text-sm">
                 Starts in:{" "}
                 <span className="font-bold">
-                  {formatTime(tournamentDetails?.match_time)}
+                  {formatTime(privateWager?.match_time)}
                 </span>
               </span>
             </div>
@@ -284,7 +326,9 @@ export default function TournamentLobby() {
               <span className="text-xs sm:text-sm">
                 Prize:{" "}
                 <span className="font-bold text-green-400">
-                  {formatCurrency(tournamentDetails?.amount || 0)}
+                  {formatCurrency(
+                    players.length * Number(privateWager?.amount || 0)
+                  )}
                 </span>
               </span>
             </div>
@@ -337,15 +381,18 @@ export default function TournamentLobby() {
               <div className="text-sm text-gray-400 mb-3">
                 Status:{" "}
                 <span className="text-orange-400 font-medium">
-                  Waiting for Players...
-                </span>{" "}
-                {/* Example Status */}
+                  {hasEnoughPlayers
+                    ? allPlayersReady
+                      ? "All Players Ready"
+                      : "Players are not ready"
+                    : "Waiting for Players..."}
+                </span>
               </div>
               {players.map((player) => (
                 <div
                   key={player.id}
                   className={`p-3 rounded-lg transition-colors ${
-                    player.status === "Ready"
+                    player.status === "ready"
                       ? "bg-gray-800"
                       : "bg-gray-850 bg-opacity-60 border border-gray-700"
                   }`}
@@ -353,36 +400,28 @@ export default function TournamentLobby() {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center">
                       {/* Player Avatar/Initial */}
-                      <div
-                        className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold sm:w-10 sm:h-10 ${
-                          player.status !== "Empty"
-                            ? "bg-gray-700"
-                            : "bg-gray-600"
-                        }`}
-                      >
-                        {player.status !== "Empty" ? (
-                          <span className="text-orange-400">
-                            {player.name.charAt(0).toUpperCase()}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-gray-400">?</span>
-                        )}
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold sm:w-10 sm:h-10 bg-gray-700">
+                        <span className="text-orange-400">
+                          {player.name.charAt(0).toUpperCase()}
+                        </span>
                       </div>
                       {/* Player Name & Status */}
                       <div className="ml-2 sm:ml-3">
                         <div className="font-medium flex items-center text-sm sm:text-base">
-                          {player.name || "Invite Player"}
+                          <span className="capitalize elipsis">
+                            {player.name}
+                          </span>
                           {player.captain && (
-                            <span className="ml-2 text-xs px-2 py-0.5 bg-orange-400 bg-opacity-20 text-orange-400 rounded-full font-semibold">
+                            <span className="ml-2 min-w-max text-xs px-2 py-0.5 bg-orange-400 bg-opacity-20 text-orange-400 rounded-full font-semibold">
                               Captain
                             </span>
                           )}
                         </div>
                         <div
-                          className={`text-xs sm:text-sm font-medium ${
-                            player.status === "Ready"
+                          className={`text-xs sm:text-sm font-medium capitalize ${
+                            player.status === "ready"
                               ? "text-green-400"
-                              : player.status === "Not Ready"
+                              : player.status === "not ready"
                               ? "text-yellow-400"
                               : "text-gray-500"
                           }`}
@@ -391,22 +430,14 @@ export default function TournamentLobby() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Action based on Status */}
-                    {player.status === "Empty" ? (
-                      <button className="px-2 py-1 bg-orange-400 text-gray-900 rounded-full text-xs font-medium hover:bg-orange-500 transition-colors sm:px-3">
-                        Invite
-                      </button>
-                    ) : player.status === "Not Ready" ? (
-                      <span className="text-xs px-2 py-1 bg-gray-700 rounded-full text-gray-400">
-                        Waiting...
-                      </span>
-                    ) : null}
                   </div>
                 </div>
               ))}
               {/* Invite Link Button */}
-              <button className="w-full mt-4 py-2 border border-gray-700 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:border-gray-600 transition-colors">
+              <button
+                onClick={copyLink}
+                className="w-full mt-4 py-2 border border-gray-700 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:border-gray-600 transition-colors"
+              >
                 Copy Invite Link
               </button>
             </div>
@@ -439,7 +470,9 @@ export default function TournamentLobby() {
                 {/* Voice Status Indicator */}
                 <div className="flex items-center">
                   <div className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse mr-1.5"></div>
-                  <span className="text-xs text-gray-400">3 Online</span>{" "}
+                  <span className="text-xs text-gray-400">
+                    {formatNumber(players.length)} Online
+                  </span>{" "}
                 </div>
               </div>
             </div>
