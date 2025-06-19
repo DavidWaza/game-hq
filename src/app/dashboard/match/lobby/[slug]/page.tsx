@@ -29,8 +29,10 @@ import { useLobbySocket } from "@/lib/useLobbySocket";
 interface Player {
   id: number;
   name: string;
-  status: "ready" | "not ready";
+  status: "ready" | "not ready" | "disconnected";
   captain: boolean;
+  previousStatus?: "ready" | "not ready";
+  isConnected: boolean;
 }
 
 const formatTime = (timeInput: string | number | undefined): string => {
@@ -161,6 +163,7 @@ export default function TournamentLobby() {
             name: user?.username,
             status: "not ready" as const,
             captain: Number(user?.id) === Number(privateWager.user_id),
+            isConnected: true,
           };
 
           // Check if player already exists to avoid duplicates
@@ -300,6 +303,7 @@ export default function TournamentLobby() {
       name: user.username,
       status: "not ready" as const,
       captain: Number(user.id) === Number(privateWager.user_id),
+      isConnected: true,
     };
   }, [user, privateWager]);
 
@@ -314,29 +318,95 @@ export default function TournamentLobby() {
     currentPlayer,
     privateWager?.title,
     {
-      onPlayerJoined: useCallback((player: Player) => {
-        setPlayers((prev) => {
-          const playerExists = prev.some((p) => p.id === player.id);
-          if (playerExists) return prev;
-          return [...prev, player];
-        });
-        toast.success(`${player.name} joined the lobby`);
-      }, []),
+      onPlayerJoined: useCallback(
+        (player: {
+          id: number;
+          name: string;
+          status: "ready" | "not ready" | "disconnected";
+          captain: boolean;
+          isConnected?: boolean;
+          previousStatus?: "ready" | "not ready";
+        }) => {
+          setPlayers((prev) => {
+            const existing = prev.find((p) => p.id === player.id);
+            if (existing) {
+              // If previously disconnected, restore previous status
+              return prev.map((p) =>
+                p.id === player.id
+                  ? {
+                      ...p,
+                      status:
+                        p.previousStatus ||
+                        (p.status as "ready" | "not ready" | "disconnected"),
+                      isConnected: true,
+                    }
+                  : p
+              );
+            }
+            // New player
+            return [
+              ...prev,
+              {
+                ...player,
+                isConnected: player.isConnected ?? true,
+                previousStatus: player.previousStatus || "not ready",
+              },
+            ];
+          });
+          toast.success(`${player.name} joined the lobby`);
+        },
+        []
+      ),
       onPlayerLeft: useCallback((playerId: number) => {
-        setPlayers((prev) => prev.filter((p) => p.id !== playerId));
+        setPlayers((prev) => {
+          const playerCount = prev.length;
+          const updated = prev.map((p) =>
+            p.id === playerId
+              ? {
+                  ...p,
+                  previousStatus:
+                    p.status === "disconnected"
+                      ? p.previousStatus
+                      : (p.status as "ready" | "not ready"),
+                  status: "disconnected" as const,
+                  isConnected: false,
+                }
+              : p
+          );
+          // Only remove if this is the only player left
+          if (playerCount === 1) {
+            return updated.filter((p) => p.id !== playerId);
+          }
+          // Otherwise, just mark as disconnected but keep in list
+          return updated;
+        });
         toast.info("A player left the lobby");
       }, []),
-      onPlayerStatusChanged: useCallback(
-        (playerId: number, status: "ready" | "not ready") => {
+      onPlayerListUpdate: useCallback(
+        (
+          playerList: {
+            id: number;
+            name: string;
+            status: "ready" | "not ready" | "disconnected";
+            captain: boolean;
+            isConnected?: boolean;
+            previousStatus?: "ready" | "not ready";
+          }[]
+        ) => {
           setPlayers((prev) =>
-            prev.map((p) => (p.id === playerId ? { ...p, status } : p))
+            playerList.map((p) => {
+              const existing = prev.find((x) => x.id === p.id);
+              return {
+                ...p,
+                isConnected: p.isConnected ?? true,
+                previousStatus:
+                  p.previousStatus || existing?.previousStatus || "not ready",
+              };
+            })
           );
         },
         []
       ),
-      onPlayerListUpdate: useCallback((playerList: Player[]) => {
-        setPlayers(playerList);
-      }, []),
       onGameStarted: useCallback(() => {
         toast.success("Game is starting!");
         // Handle game start logic here
@@ -494,7 +564,9 @@ export default function TournamentLobby() {
                   className={`p-3 rounded-lg transition-colors ${
                     player.status === "ready"
                       ? "bg-gray-800"
-                      : "bg-gray-850 bg-opacity-60 border border-gray-700"
+                      : player.status === "not ready"
+                      ? "bg-gray-850 bg-opacity-60 border border-gray-700"
+                      : "bg-gray-850 bg-opacity-40 border border-gray-600 opacity-60"
                   }`}
                 >
                   <div className="flex justify-between items-center">
@@ -526,7 +598,14 @@ export default function TournamentLobby() {
                               : "text-gray-500"
                           }`}
                         >
-                          {player.status}
+                          {player.status === "disconnected"
+                            ? "Disconnected"
+                            : player.status}
+                          {player.status === "disconnected" && (
+                            <span className="ml-1 text-xs text-gray-400">
+                              (Reconnecting...)
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

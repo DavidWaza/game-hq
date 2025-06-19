@@ -4,8 +4,10 @@ import { io, Socket } from 'socket.io-client';
 interface LobbyPlayer {
     id: number;
     name: string;
-    status: "ready" | "not ready";
+    status: "ready" | "not ready" | "disconnected";
     captain: boolean;
+    isConnected?: boolean;
+    previousStatus?: "ready" | "not ready";
 }
 
 interface LobbySocketEvents {

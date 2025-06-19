@@ -432,9 +432,11 @@ const lobbies: Record<string, {
     players: Record<string, {
         id: number;
         name: string;
-        status: "ready" | "not ready";
+        status: "ready" | "not ready" | "disconnected";
         captain: boolean;
         socketId: string;
+        isConnected?: boolean;
+        previousStatus?: "ready" | "not ready";
     }>;
     wagerId: string;
     chatMessages: Array<{
@@ -490,44 +492,79 @@ export function initSocket(existingIo: SocketIOServer) {
                     // Join the lobby room
                     socket.join(lobbyId);
 
-                    // Add player to lobby
-                    lobbies[lobbyId].players[socket.id] = {
-                        ...player,
-                        socketId: socket.id
-                    };
+                    // Check if player already exists (reconnection)
+                    const existingPlayer = Object.values(lobbies[lobbyId].players).find(p => p.id === player.id);
+                    if (existingPlayer) {
+                        // Update existing player's connection status
+                        Object.keys(lobbies[lobbyId].players).forEach(socketKey => {
+                            if (lobbies[lobbyId].players[socketKey].id === player.id) {
+                                lobbies[lobbyId].players[socketKey] = {
+                                    ...lobbies[lobbyId].players[socketKey],
+                                    status: lobbies[lobbyId].players[socketKey].previousStatus || "not ready",
+                                    isConnected: true,
+                                    socketId: socket.id
+                                };
+                            }
+                        });
 
-                    // Send welcome message if this is the first player
-                    if (Object.keys(lobbies[lobbyId].players).length === 1) {
-                        const welcomeMessage = {
-                            id: `welcome_${Date.now()}`,
+                        // Send reconnection message to chat
+                        const reconnectMessage = {
+                            id: `reconnect_${Date.now()}_${player.id}`,
                             sender: "System",
-                            message: `Welcome to the ${wagerTitle || slug} lobby! Get ready for an exciting match!`,
+                            message: `${player.name} has reconnected!`,
                             time: new Date().toLocaleTimeString([], {
                                 hour: "2-digit",
                                 minute: "2-digit",
                             }),
                             type: 'system' as const
                         };
-                        lobbies[lobbyId].chatMessages.push(welcomeMessage);
-                        io.to(lobbyId).emit('chatMessage', welcomeMessage);
+                        lobbies[lobbyId].chatMessages.push(reconnectMessage);
+                        io.to(lobbyId).emit('chatMessage', reconnectMessage);
+
+                        console.log(`Player ${player.name} reconnected to lobby ${slug}`);
+                    } else {
+                        // Add new player to lobby
+                        lobbies[lobbyId].players[socket.id] = {
+                            ...player,
+                            socketId: socket.id,
+                            isConnected: true
+                        };
+
+                        // Send welcome message if this is the first player
+                        if (Object.keys(lobbies[lobbyId].players).length === 1) {
+                            const welcomeMessage = {
+                                id: `welcome_${Date.now()}`,
+                                sender: "System",
+                                message: `Welcome to the ${wagerTitle || slug} lobby! Get ready for an exciting match!`,
+                                time: new Date().toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                }),
+                                type: 'system' as const
+                            };
+                            lobbies[lobbyId].chatMessages.push(welcomeMessage);
+                            io.to(lobbyId).emit('chatMessage', welcomeMessage);
+                        }
+
+                        // Send player joined message to chat
+                        const joinMessage = {
+                            id: `join_${Date.now()}_${player.id}`,
+                            sender: "System",
+                            message: `${player.name} has joined the lobby!`,
+                            time: new Date().toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            }),
+                            type: 'system' as const
+                        };
+                        lobbies[lobbyId].chatMessages.push(joinMessage);
+                        io.to(lobbyId).emit('chatMessage', joinMessage);
+
+                        console.log(`Player ${player.name} joined lobby ${slug}`);
                     }
 
                     // Broadcast player joined to all in lobby
                     io.to(lobbyId).emit('playerJoined', player);
-
-                    // Send player joined message to chat
-                    const joinMessage = {
-                        id: `join_${Date.now()}_${player.id}`,
-                        sender: "System",
-                        message: `${player.name} has joined the lobby!`,
-                        time: new Date().toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                        }),
-                        type: 'system' as const
-                    };
-                    lobbies[lobbyId].chatMessages.push(joinMessage);
-                    io.to(lobbyId).emit('chatMessage', joinMessage);
 
                     // Send current player list to all in lobby
                     const playerList = Object.values(lobbies[lobbyId].players).map(p => ({
@@ -540,8 +577,6 @@ export function initSocket(existingIo: SocketIOServer) {
 
                     // Send chat history to the new player
                     socket.emit('chatHistory', lobbies[lobbyId].chatMessages);
-
-                    console.log(`Player ${player.name} joined lobby ${slug}`);
                 });
 
                 // Handle leaving a lobby
@@ -827,17 +862,48 @@ export function initSocket(existingIo: SocketIOServer) {
                     if (!io) return;
 
                     // === LOBBY CLEANUP ===
-                    // Find all lobbies the player is in and remove them
+                    // Find all lobbies the player is in and mark them as disconnected
                     Object.entries(lobbies).forEach(([lobbyId, lobby]) => {
                         if (lobby.players[socket.id]) {
                             const player = lobby.players[socket.id];
+                            const playerCount = Object.keys(lobby.players).length;
 
-                            // Remove player from lobby
-                            delete lobby.players[socket.id];
+                            // Only remove if this is the only player
+                            if (playerCount === 1) {
+                                // Remove player from lobby
+                                delete lobby.players[socket.id];
 
-                            // Broadcast player left to all in lobby
-                            if (io) {
-                                io.to(lobbyId).emit('playerLeft', player.id);
+                                // Broadcast player left to all in lobby
+                                if (io) {
+                                    io.to(lobbyId).emit('playerLeft', player.id);
+                                }
+
+                                // Clean up empty lobbies
+                                delete lobbies[lobbyId];
+                            } else {
+                                // Mark player as disconnected but keep in lobby
+                                lobby.players[socket.id] = {
+                                    ...player,
+                                    previousStatus: player.status === "disconnected" ? player.previousStatus : player.status,
+                                    status: "disconnected",
+                                    isConnected: false
+                                };
+
+                                // Send player disconnected message to chat
+                                const disconnectMessage = {
+                                    id: `disconnect_${Date.now()}_${player.id}`,
+                                    sender: "System",
+                                    message: `${player.name} has disconnected.`,
+                                    time: new Date().toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    }),
+                                    type: 'system' as const
+                                };
+                                lobby.chatMessages.push(disconnectMessage);
+                                if (io) {
+                                    io.to(lobbyId).emit('chatMessage', disconnectMessage);
+                                }
 
                                 // Send updated player list to all in lobby
                                 const playerList = Object.values(lobby.players).map(p => ({
@@ -846,12 +912,9 @@ export function initSocket(existingIo: SocketIOServer) {
                                     status: p.status,
                                     captain: p.captain
                                 }));
-                                io.to(lobbyId).emit('playerListUpdate', playerList);
-                            }
-
-                            // Clean up empty lobbies
-                            if (Object.keys(lobby.players).length === 0) {
-                                delete lobbies[lobbyId];
+                                if (io) {
+                                    io.to(lobbyId).emit('playerListUpdate', playerList);
+                                }
                             }
 
                             console.log(`Player ${player.name} disconnected from lobby ${lobby.wagerId}`);
