@@ -422,10 +422,22 @@ class Game {
     }
 }
 
-// Global game management
-const games: Record<string, Game> = {};
-const wagerGames: Record<string, string> = {}; // Maps wagerId to gameId
+// Global variables for game management
 let io: SocketIOServer | null = null;
+const games: Record<string, Game> = {};
+const wagerGames: Record<string, string> = {};
+
+// Global variables for lobby management
+const lobbies: Record<string, {
+    players: Record<string, {
+        id: number;
+        name: string;
+        status: "ready" | "not ready";
+        captain: boolean;
+        socketId: string;
+    }>;
+    wagerId: string;
+}> = {};
 
 export function getIO() {
     if (!io) {
@@ -443,6 +455,115 @@ export function initSocket(existingIo: SocketIOServer) {
             io.on('connection', (socket) => {
                 if (!io) return;
                 console.log('Client connected:', socket.id);
+
+                // === LOBBY MANAGEMENT ===
+
+                // Handle joining a lobby
+                socket.on('joinLobby', (data: { slug: string, player: { id: number; name: string; status: "ready" | "not ready"; captain: boolean } }) => {
+                    if (!io) return;
+
+                    const { slug, player } = data;
+                    const lobbyId = `lobby_${slug}`;
+
+                    // Create lobby if it doesn't exist
+                    if (!lobbies[lobbyId]) {
+                        lobbies[lobbyId] = {
+                            players: {},
+                            wagerId: slug
+                        };
+                    }
+
+                    // Join the lobby room
+                    socket.join(lobbyId);
+
+                    // Add player to lobby
+                    lobbies[lobbyId].players[socket.id] = {
+                        ...player,
+                        socketId: socket.id
+                    };
+
+                    // Broadcast player joined to all in lobby
+                    io.to(lobbyId).emit('playerJoined', player);
+
+                    // Send current player list to all in lobby
+                    const playerList = Object.values(lobbies[lobbyId].players).map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        status: p.status,
+                        captain: p.captain
+                    }));
+                    io.to(lobbyId).emit('playerListUpdate', playerList);
+
+                    console.log(`Player ${player.name} joined lobby ${slug}`);
+                });
+
+                // Handle leaving a lobby
+                socket.on('leaveLobby', (data: { slug: string }) => {
+                    if (!io) return;
+
+                    const { slug } = data;
+                    const lobbyId = `lobby_${slug}`;
+
+                    if (lobbies[lobbyId] && lobbies[lobbyId].players[socket.id]) {
+                        const player = lobbies[lobbyId].players[socket.id];
+
+                        // Remove player from lobby
+                        delete lobbies[lobbyId].players[socket.id];
+
+                        // Leave the lobby room
+                        socket.leave(lobbyId);
+
+                        // Broadcast player left to all in lobby
+                        io.to(lobbyId).emit('playerLeft', player.id);
+
+                        // Send updated player list to all in lobby
+                        const playerList = Object.values(lobbies[lobbyId].players).map(p => ({
+                            id: p.id,
+                            name: p.name,
+                            status: p.status,
+                            captain: p.captain
+                        }));
+                        io.to(lobbyId).emit('playerListUpdate', playerList);
+
+                        // Clean up empty lobbies
+                        if (Object.keys(lobbies[lobbyId].players).length === 0) {
+                            delete lobbies[lobbyId];
+                        }
+
+                        console.log(`Player ${player.name} left lobby ${slug}`);
+                    }
+                });
+
+                // Handle player status updates
+                socket.on('updatePlayerStatus', (data: { slug: string, status: "ready" | "not ready" }) => {
+                    if (!io) return;
+
+                    const { slug, status } = data;
+                    const lobbyId = `lobby_${slug}`;
+
+                    if (lobbies[lobbyId] && lobbies[lobbyId].players[socket.id]) {
+                        const player = lobbies[lobbyId].players[socket.id];
+
+                        // Update player status
+                        lobbies[lobbyId].players[socket.id].status = status;
+
+                        // Broadcast status change to all in lobby
+                        io.to(lobbyId).emit('playerStatusChanged', player.id, status);
+
+                        // Send updated player list to all in lobby
+                        const playerList = Object.values(lobbies[lobbyId].players).map(p => ({
+                            id: p.id,
+                            name: p.name,
+                            status: p.status,
+                            captain: p.captain
+                        }));
+                        io.to(lobbyId).emit('playerListUpdate', playerList);
+
+                        console.log(`Player ${player.name} status changed to ${status} in lobby ${slug}`);
+                    }
+                });
+
+                // === GAME MANAGEMENT (existing code) ===
 
                 // Handle initial connection with wager ID and user ID check
                 socket.on('checkWagerId', (data: { wagerId?: string, userId?: string }) => {
@@ -613,6 +734,40 @@ export function initSocket(existingIo: SocketIOServer) {
                 // Handle disconnection
                 socket.on('disconnect', () => {
                     if (!io) return;
+
+                    // === LOBBY CLEANUP ===
+                    // Find all lobbies the player is in and remove them
+                    Object.entries(lobbies).forEach(([lobbyId, lobby]) => {
+                        if (lobby.players[socket.id]) {
+                            const player = lobby.players[socket.id];
+
+                            // Remove player from lobby
+                            delete lobby.players[socket.id];
+
+                            // Broadcast player left to all in lobby
+                            if (io) {
+                                io.to(lobbyId).emit('playerLeft', player.id);
+
+                                // Send updated player list to all in lobby
+                                const playerList = Object.values(lobby.players).map(p => ({
+                                    id: p.id,
+                                    name: p.name,
+                                    status: p.status,
+                                    captain: p.captain
+                                }));
+                                io.to(lobbyId).emit('playerListUpdate', playerList);
+                            }
+
+                            // Clean up empty lobbies
+                            if (Object.keys(lobby.players).length === 0) {
+                                delete lobbies[lobbyId];
+                            }
+
+                            console.log(`Player ${player.name} disconnected from lobby ${lobby.wagerId}`);
+                        }
+                    });
+
+                    // === GAME CLEANUP ===
                     // Find all games the player is in
                     Object.values(games).forEach(game => {
                         if (game.players[socket.id]) {

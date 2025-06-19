@@ -20,18 +20,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import Chat from "../Components/Message";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
-import { formatCurrency, formatNumber, removeDuplicates } from "@/lib/utils";
+import { formatCurrency, formatNumber } from "@/lib/utils";
 import { getFn } from "@/lib/apiClient";
 import { TypeGames, TypePrivateWager } from "../../../../../../types/global";
 import { toast } from "sonner";
+import { useLobbySocket } from "@/lib/useLobbySocket";
 
 interface Player {
   id: number;
   name: string;
   status: "ready" | "not ready";
   captain: boolean;
-  [key: string]: unknown;
 }
+
+const formatTime = (timeInput: string | number | undefined): string => {
+  const seconds = Number(timeInput);
+  if (isNaN(seconds) || seconds < 0) {
+    return "0:00";
+  }
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+};
 
 export default function TournamentLobby() {
   // --- State Variables ---
@@ -152,10 +162,7 @@ export default function TournamentLobby() {
             return prevPlayers; // Don't update if player already exists
           }
 
-          return removeDuplicates<Player>(
-            [...prevPlayers, currentPlayer],
-            "id"
-          );
+          return [...prevPlayers, currentPlayer];
         });
       } else {
         setIsAllowedInLobby(false);
@@ -189,19 +196,11 @@ export default function TournamentLobby() {
     };
   }, [countdown]);
 
-  const formatTime = (timeInput: string | number | undefined): string => {
-    const seconds = Number(timeInput);
-    if (isNaN(seconds) || seconds < 0) {
-      return "0:00";
-    }
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
-
   const handleReadyClick = () => {
     if (countdown === null) {
       setCountdown(5);
+      // Update player status via socket
+      updatePlayerStatus("ready");
     }
   };
 
@@ -284,6 +283,56 @@ export default function TournamentLobby() {
     exit: { y: -30, opacity: 0, transition: { duration: 0.2 } },
   };
 
+  // Create current player object for socket
+  const currentPlayer = useMemo(() => {
+    if (!user?.id || !user?.username || !privateWager) return null;
+    return {
+      id: Number(user.id),
+      name: user.username,
+      status: "not ready" as const,
+      captain: Number(user.id) === Number(privateWager.user_id),
+    };
+  }, [user, privateWager]);
+
+  // Socket hook for lobby synchronization
+  const { updatePlayerStatus, isConnected: socketConnected } = useLobbySocket(
+    slug,
+    isAllowedInLobby,
+    currentPlayer,
+    {
+      onPlayerJoined: useCallback((player: Player) => {
+        setPlayers((prev) => {
+          const playerExists = prev.some((p) => p.id === player.id);
+          if (playerExists) return prev;
+          return [...prev, player];
+        });
+        toast.success(`${player.name} joined the lobby`);
+      }, []),
+      onPlayerLeft: useCallback((playerId: number) => {
+        setPlayers((prev) => prev.filter((p) => p.id !== playerId));
+        toast.info("A player left the lobby");
+      }, []),
+      onPlayerStatusChanged: useCallback(
+        (playerId: number, status: "ready" | "not ready") => {
+          setPlayers((prev) =>
+            prev.map((p) => (p.id === playerId ? { ...p, status } : p))
+          );
+        },
+        []
+      ),
+      onPlayerListUpdate: useCallback((playerList: Player[]) => {
+        setPlayers(playerList);
+      }, []),
+      onGameStarted: useCallback(() => {
+        toast.success("Game is starting!");
+        // Handle game start logic here
+      }, []),
+      onError: useCallback((error: string) => {
+        toast.error(`Socket error: ${error}`);
+      }, []),
+    }
+  );
+
   if (loading || !privateWager || !selectedGame?.id || !isAllowedInLobby) {
     return <FullScreenLoader isLoading={true} text="Loading Lobby..." />;
   }
@@ -340,6 +389,17 @@ export default function TournamentLobby() {
                 </span>
               </div>
               <span className="font-medium hidden sm:block">{playername}</span>
+              {/* Socket Connection Indicator */}
+              <div className="flex items-center gap-1">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    socketConnected ? "bg-green-400" : "bg-red-400"
+                  }`}
+                ></div>
+                <span className="text-xs text-gray-400 hidden sm:block">
+                  {socketConnected ? "Connected" : "Disconnected"}
+                </span>
+              </div>
             </div>
             {/* Mobile Menu Toggle (Left Panel) */}
             <button
