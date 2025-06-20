@@ -1,7 +1,7 @@
 "use client";
 import Navbar from "@/components/Navbar";
 import TournamentHero from "@/components/tournament/Hero";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { TypeGames } from "../../../../../types/global";
 import { useParams } from "next/navigation";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
@@ -14,7 +14,7 @@ const CreateWager = () => {
   const params = useParams();
   const slug = params?.slug;
 
-  const filterGame = () => {
+  const filterGame = useCallback(() => {
     if (store.games?.length && store.singleTournament) {
       const t: TypeGames | undefined = store.games.find(
         (el) => el.id === store?.singleTournament?.game_id
@@ -23,22 +23,28 @@ const CreateWager = () => {
         setSelectedGame(t);
       }
     }
-  };
+  }, [store.games, store.singleTournament]);
 
   useEffect(() => {
     const getTournament = async () => {
-      if (!store.singleTournament) {
+      if (!store.singleTournament && store.dispatch && slug) {
         setLoading(true);
         await store.dispatch.getTournament();
       }
       setLoading(false);
     };
     getTournament();
-  }, [slug]);
+  }, [slug, store.dispatch, store.singleTournament]);
 
   useEffect(() => {
-    filterGame();
-  }, [store.games, store.singleTournament]);
+    if (
+      filterGame !== undefined &&
+      store.games !== undefined &&
+      store.singleTournament !== undefined
+    ) {
+      filterGame();
+    }
+  }, [store.games, store.singleTournament, filterGame]);
 
   return (
     <>

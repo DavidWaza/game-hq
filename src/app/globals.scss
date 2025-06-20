@@ -71,10 +71,6 @@ $text-dark: #1a1a1a;
     padding-inline: 10px !important;
     border: none !important;
     border-bottom: 1px solid #ccc !important;
-    &:first-child {
-      display: none !important;
-      visibility: hidden !important;
-    }
     .ql-formats {
       .ql-picker {
         // *:not(.ql-picker-options, .ql-picker-option *) {

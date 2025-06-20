@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -77,6 +78,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const params = useParams();
   const slug = `${params?.slug}`;
+  const isMounted = useRef<boolean>(false);
+  const pathnameRef = useRef<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [store, setStore] = useState<StoreData>({
     // data
@@ -164,7 +167,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Fetch global data (categories, games, etc.) after user login
   useEffect(() => {
     const fetchGlobalData = async () => {
-      if (!user) return;
+      if (!user || setState === undefined) return;
 
       const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
         // { storeKey: "wallet", path: "api/wallets" },
@@ -192,9 +195,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     fetchGlobalData();
-  }, [user]);
+  }, [user, setState]);
   // Fetch global data (categories, games, etc.)
   useEffect(() => {
+    if (setState === undefined) return;
     const fetchGlobalData = async () => {
       const dataHandlers: { storeKey: StoreConfigKeys; path: string }[] = [
         { storeKey: "categories", path: "api/gamecategories" },
@@ -221,11 +225,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     fetchGlobalData();
-  }, []);
+  }, [setState]);
 
   useEffect(() => {
+    if (
+      isMounted.current ||
+      setState === undefined ||
+      router === undefined ||
+      pathname === undefined
+    )
+      return;
+    isMounted.current = true;
+    pathnameRef.current = pathname;
     const excludeRoutes = ["/join-tournament", "/verify-transaction"];
-    if (excludeRoutes.includes(pathname)) return;
+    if (excludeRoutes.includes(pathnameRef.current)) return;
     let timer = 1000;
     let message = "";
     const hasValidGooleCred =
@@ -252,7 +265,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }, timer);
     });
-  }, [code, state, error, error_description, error_uri, scope]);
+    return () => {
+      isMounted.current = false;
+    };
+  }, [
+    code,
+    state,
+    error,
+    error_description,
+    error_uri,
+    scope,
+    setState,
+    router,
+  ]);
 
   return (
     <AuthContext.Provider

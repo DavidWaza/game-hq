@@ -10,7 +10,7 @@ import React, {
 import { Money } from "@phosphor-icons/react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import dynamic from "next/dynamic";
+// import dynamic from "next/dynamic";
 import { postFn } from "@/lib/apiClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ import { TypeUserSearch } from "../../../../types/global";
 import { CalendarForm } from "./Calendar";
 import EventScheduler from "./TimerSchedule";
 import { useRouter } from "next/navigation";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface CreateTournamentProps {
   loading: boolean;
@@ -54,9 +55,9 @@ interface FormData {
   users?: string[];
 }
 
-const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
-  ssr: false,
-});
+// const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
+//   ssr: false,
+// });
 
 const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   const { setLoading, loading, showDialog, setMatchData } = props;
@@ -271,6 +272,13 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
     setSearch(e.target.value);
   };
 
+  const updateRichTextEditor = useCallback(
+    (value: string) => {
+      setValue("description", value, { shouldValidate: true });
+    },
+    [setValue]
+  );
+
   // Handle input focus and blur
   const handleInputFocus = () => {
     setIsInputFocused(true);
@@ -350,25 +358,15 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
             Note to Participants
           </label>
           <div className="editorWrapper">
-            {typeof window !== "undefined" ? (
-              <RichTextEditor
-                {...register("description", {
-                  required: "Description is required",
-                })}
-                value={watch("description")} // Bind the value to react-hook-form
-                disabled={loading}
-                onChange={(value) => {
-                  setValue(
-                    "description",
-                    value === "<p><br></p>" ? "" : value,
-                    { shouldValidate: true }
-                  );
-                }} // Update the form value
-                placeholder="Enter the rules, terms and necessary information for this match"
-              />
-            ) : (
-              ""
-            )}
+            <RichTextEditor
+              {...register("description", {
+                required: "Description is required",
+              })}
+              value={watch("description")} // Bind the value to react-hook-form
+              disabled={loading}
+              onChange={updateRichTextEditor} // Update the form value
+              placeholder="Enter the rules, terms and necessary information for this match"
+            />
           </div>
           {errors.description && (
             <p className="text-red-500 text-sm">{errors.description.message}</p>

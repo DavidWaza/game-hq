@@ -52,12 +52,17 @@ export default function PaymentCallback() {
       }
     };
 
-    if (reference) {
+    if (
+      reference &&
+      setState !== undefined &&
+      handleGoBack !== undefined &&
+      refetchUser !== undefined
+    ) {
       verifyTransaction();
     } else {
       handleGoBack();
     }
-  }, [reference, setState, handleGoBack]);
+  }, [reference, setState, handleGoBack, refetchUser]);
 
   return (
     <>
