@@ -8,7 +8,7 @@ interface LobbySocketEvents {
     onPlayerLeft?: (player: TypePlayer) => void;
     onPlayerStatusChanged?: (playerId: number, status: "ready" | "not ready") => void;
     onPlayerListUpdate?: (players: TypePlayer[]) => void;
-    onGameStarted?: () => void;
+    onGameStarted?: (gameStarted: boolean | undefined) => void;
     onChatHistory?: (messages: ChatMessage[]) => void;
     onError?: (error: string) => void;
 }
@@ -91,8 +91,8 @@ export function useLobbySocket(
                 eventsRef.current.onPlayerListUpdate?.(players);
             });
 
-            socket.on('gameStarted', () => {
-                eventsRef.current.onGameStarted?.();
+            socket.on('gameStarted', (gameStarted: boolean | undefined) => {
+                eventsRef.current.onGameStarted?.(gameStarted);
             });
 
 

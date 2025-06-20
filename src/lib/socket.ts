@@ -20,7 +20,7 @@ const lobbies: Record<string, {
     wagerId: string;
     chatMessages: Array<TypeChatMessage>;
     createdAt: Date;
-    gameStarted: boolean;
+    gameStarted: boolean | undefined;
 }> = {};
 
 export function getIO() {
@@ -60,7 +60,7 @@ export function initSocket(existingIo: SocketIOServer) {
                             wagerId: slug,
                             chatMessages: [],
                             createdAt: new Date(),
-                            gameStarted: false
+                            gameStarted: undefined
                         };
                     }
 
@@ -144,6 +144,10 @@ export function initSocket(existingIo: SocketIOServer) {
                         console.log(`Player ${player.name} joined lobby ${slug}`);
                     }
 
+                    // in this order
+                    // Send game started to all in lobby
+                    io.to(lobbyId).emit('gameStarted', lobbies[lobbyId].gameStarted);
+
                     // Broadcast player joined to all in lobby
                     io.to(lobbyId).emit('playerJoined', player);
 
@@ -210,7 +214,18 @@ export function initSocket(existingIo: SocketIOServer) {
                         }
                         // Leave the lobby room
                         socket.leave(lobbyId);
+                        console.log("lobbyId", lobbyId)
                     }
+                });
+
+                // Handle updating lobby game started
+                socket.on('updateLobbyGameStarted', (data: { slug: string, gameStarted: boolean }) => {
+                    if (!io) return;
+                    const { slug, gameStarted } = data;
+                    const lobbyId = `lobby_${slug}`;
+                    lobbies[lobbyId].gameStarted = gameStarted;
+                    // Send updated game started to all in lobby
+                    io.to(lobbyId).emit('gameStarted', gameStarted);
                 });
 
                 // Handle player status updates

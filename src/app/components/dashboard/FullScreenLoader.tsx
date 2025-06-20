@@ -19,6 +19,7 @@ const FullScreenLoader = ({ isLoading = false, text = "" }: TypeLoader) => {
     >
       <div className="flex flex-col items-center">
         <Image
+          priority
           src={"/assets/bouncing-ball.svg"}
           alt="Loading animation"
           width={80}

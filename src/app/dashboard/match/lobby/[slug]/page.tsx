@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import Chat from "../Components/Message";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatCurrency, formatNumber, setSearchParams } from "@/lib/utils";
 import { getFn } from "@/lib/apiClient";
 import {
   TypeGames,
@@ -41,13 +41,39 @@ const formatTime = (timeInput: string | number | undefined): string => {
   return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
 };
 
+const reportGameResult = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+};
+
+const countdownVariants = {
+  initial: { scale: 0.5, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  exit: { scale: 1.5, opacity: 0 },
+};
+
+const transitionVariants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+const gameSessionVariants = {
+  initial: { y: 30, opacity: 0 },
+  animate: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 100, damping: 15, delay: 0.1 },
+  },
+  exit: { y: -30, opacity: 0, transition: { duration: 0.2 } },
+};
+
 export default function TournamentLobby() {
   // --- State Variables ---
   const [loading, setLoading] = useState<boolean>(true);
   const [micEnabled, setMicEnabled] = useState(true);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState<boolean | undefined>(undefined);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [selectedGame, setSelectedGame] = useState<TypeGames | undefined>();
   const [showTransition, setShowTransition] = useState(false);
@@ -124,7 +150,6 @@ export default function TournamentLobby() {
   // get selected game
   useEffect(() => {
     if (
-      isAllowedInLobby &&
       privateWager &&
       privateWager?.game_id &&
       store.games &&
@@ -133,9 +158,15 @@ export default function TournamentLobby() {
       const game = store.games.find((game) => game.id === privateWager.game_id);
       if (game) {
         setSelectedGame(game);
+      } else {
+        router.push("/dashbord/my-games");
+        toast.error("Game not found!", {
+          position: "top-right",
+          className: "p-4",
+        });
       }
     }
-  }, [privateWager, store.games, isAllowedInLobby]);
+  }, [privateWager, store.games, isAllowedInLobby, router]);
 
   // check if user is allowed in this slug lobby
   useEffect(() => {
@@ -146,7 +177,7 @@ export default function TournamentLobby() {
       user?.id &&
       user?.email &&
       user?.username &&
-      players.length < Number(selectedGame?.maxplayers)
+      players.length < Number(selectedGame?.maxplayers || 0)
     ) {
       const parsedUsers = JSON.parse(privateWager.users);
       if (
@@ -157,7 +188,7 @@ export default function TournamentLobby() {
         setIsAllowedInLobby(true);
       } else {
         setIsAllowedInLobby(false);
-        router.push("/");
+        router.push("/dashbord/my-games");
         toast.error("You are not allowed to access this lobby", {
           position: "top-right",
           className: "p-4",
@@ -167,37 +198,16 @@ export default function TournamentLobby() {
   }, [privateWager, user, router, players, selectedGame]);
 
   useEffect(() => {
-    let countdownTimer: NodeJS.Timeout | null = null;
-
-    if (countdown !== null && countdown > 0) {
-      countdownTimer = setInterval(() => {
-        setCountdown((prev) => (prev !== null ? prev - 1 : null));
-      }, 1000);
-    } else if (countdown === 0) {
-      setShowTransition(true);
-      setTimeout(() => {
-        setIsReady(true);
-        setShowTransition(false);
-        updateLobbyGameStarted(true);
-        setCountdown(null);
-      }, 2000);
-    }
-
-    return () => {
-      if (countdownTimer) clearInterval(countdownTimer);
-    };
-  }, [countdown]);
-
-  useEffect(() => {
     if (
       allPlayersReady &&
       players.length &&
       selectedGame &&
-      players.length === Number(selectedGame?.maxplayers)
+      players.length === Number(selectedGame?.maxplayers) &&
+      !isReady
     ) {
       setCountdown(5);
     }
-  }, [allPlayersReady, players, selectedGame]);
+  }, [allPlayersReady, players, selectedGame, isReady]);
 
   const handleReadyClick = () => {
     if (countdown === null) {
@@ -253,32 +263,6 @@ export default function TournamentLobby() {
     }
   };
 
-  const reportGameResult = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  const countdownVariants = {
-    initial: { scale: 0.5, opacity: 0 },
-    animate: { scale: 1, opacity: 1 },
-    exit: { scale: 1.5, opacity: 0 },
-  };
-
-  const transitionVariants = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-  };
-
-  const gameSessionVariants = {
-    initial: { y: 30, opacity: 0 },
-    animate: {
-      y: 0,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 100, damping: 15, delay: 0.1 },
-    },
-    exit: { y: -30, opacity: 0, transition: { duration: 0.2 } },
-  };
-
   // Create current player object for socket
   const currentPlayer = useMemo(() => {
     if (!user?.id || !user?.username || !privateWager || !isAllowedInLobby)
@@ -314,21 +298,10 @@ export default function TournamentLobby() {
         toast.info(`${player.name} left the lobby`);
       }, []),
       onPlayerListUpdate: useCallback((playerList: TypePlayer[]) => {
-        setPlayers((prev) =>
-          playerList.map((p) => {
-            const existing = prev.find((x) => x.id === p.id);
-            return {
-              ...p,
-              isConnected: p.isConnected ?? true,
-              previousStatus:
-                p.previousStatus || existing?.previousStatus || "not ready",
-            };
-          })
-        );
+        setPlayers(playerList);
       }, []),
-      onGameStarted: useCallback(() => {
-        toast.success("Game is starting!");
-        // Handle game start logic here
+      onGameStarted: useCallback((gameStarted: boolean | undefined) => {
+        setIsReady(gameStarted);
       }, []),
       onChatHistory: useCallback((messages: Array<TypeChatMessage>) => {
         setChatMessages(messages);
@@ -339,13 +312,43 @@ export default function TournamentLobby() {
     }
   );
 
+  useEffect(() => {
+    if (isReady === undefined) return;
+    let countdownTimer: NodeJS.Timeout | null = null;
+
+    if (countdown !== null && countdown > 0) {
+      countdownTimer = setInterval(() => {
+        setCountdown((prev) => (prev !== null ? prev - 1 : null));
+      }, 1000);
+    } else if (countdown === 0) {
+      setShowTransition(true);
+      setTimeout(() => {
+        setIsReady(true);
+        setShowTransition(false);
+        updateLobbyGameStarted(true);
+        setCountdown(null);
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+      }, 2000);
+    }
+
+    return () => {
+      if (countdownTimer) clearInterval(countdownTimer);
+    };
+  }, [countdown, isReady, updateLobbyGameStarted]);
+
   // Cleanup on component unmount or navigation
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (isAllowedInLobby && socketConnected) {
         // Show confirmation dialog when user tries to leave
         event.preventDefault();
-        event.returnValue = "Are you sure you want to leave the lobby?";
+        event.returnValue = "";
+        if (confirm("Are you sure you want to leave the lobby?")) {
+          leaveLobby();
+        }
       }
     };
 
@@ -372,6 +375,23 @@ export default function TournamentLobby() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [isAllowedInLobby, socketConnected, leaveLobby, updatePlayerOnlineStatus]);
+
+  // handle params
+  useEffect(() => {
+    if (isReady && players.length && privateWager && selectedGame) {
+      const gameParamsObj = {
+        players: JSON.stringify(
+          players.map((player) => ({
+            id: player.id,
+            name: player.name,
+          }))
+        ),
+        wagerInfo: JSON.stringify(privateWager),
+        gameInfo: JSON.stringify(selectedGame),
+      };
+      console.log(setSearchParams(gameParamsObj));
+    }
+  }, [isReady, players, privateWager, selectedGame]);
 
   if (loading || !privateWager || !selectedGame?.id || !isAllowedInLobby) {
     return <FullScreenLoader isLoading={true} text="Loading Lobby..." />;
@@ -482,7 +502,11 @@ export default function TournamentLobby() {
                 Status:{" "}
                 <span className="text-orange-400 font-medium">
                   {hasEnoughPlayers
-                    ? allPlayersReady
+                    ? isReady && countdown === null
+                      ? "Game Started!"
+                      : isReady && countdown !== null
+                      ? "Game Starting..."
+                      : allPlayersReady
                       ? "All Players Ready"
                       : "Players are not ready"
                     : "Waiting for Players..."}
@@ -491,7 +515,7 @@ export default function TournamentLobby() {
               {players.map((player) => (
                 <div
                   key={player.id}
-                  className={`p-3 rounded-lg transition-colors ${
+                  className={`transIn p-3 rounded-lg transition-colors ${
                     player.status === "ready"
                       ? "bg-gray-800"
                       : player.status === "not ready"
@@ -683,8 +707,15 @@ export default function TournamentLobby() {
                                   size={16}
                                   className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
                                 />
+                                <span>Minimum of 2 players to start</span>
+                              </li>
+                              <li className="flex items-start">
+                                <CaretDoubleRight
+                                  size={16}
+                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
+                                />
                                 <span>
-                                  Max of{" "}
+                                  Maximmum of{" "}
                                   {formatNumber(
                                     Number(selectedGame?.maxplayers)
                                   )}{" "}
