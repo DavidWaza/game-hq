@@ -11,6 +11,7 @@ import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import Google from "@/components/socials/Google";
 
 const evaluateStrength = (password: string) => {
   const lengthCriteria = password.length >= 8;
@@ -289,23 +290,7 @@ const MobileRegister = () => {
                     Register with{" "}
                     {registrationType === "email" ? "Phone Number" : "Email"}
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    width="full"
-                    icon={
-                      <Image
-                        src={"/assets/icons/google-icons.svg"}
-                        alt="Google Icon"
-                        width={0}
-                        height={0}
-                        sizes="100vw"
-                        className="w-5 h-5 object-contain object-center"
-                      />
-                    }
-                  >
-                    Register with Google
-                  </Button>
+                  <Google disabled={registerMutation.isPending} />
                 </div>
                 <p className="text-[#FD8038] text-center">
                   Already have an account?{" "}

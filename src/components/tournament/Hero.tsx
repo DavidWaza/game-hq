@@ -70,7 +70,7 @@ const TimeBanner = ({ game, tournamentDetails }: TypePropsComponent) => {
           firstButtonText="Accept"
           onClick={() => {
             setState(tournamentDetails, "singleTournament");
-            router.push(`/dashboard/tournament-lobby/${tournamentDetails?.id}`);
+            router.push(`/dashboard/match/lobby/${tournamentDetails?.id}`);
           }}
         />
       </div>

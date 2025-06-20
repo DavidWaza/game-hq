@@ -15,6 +15,8 @@ import MobileLogin from "@/app/components/MobileLogin";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { DataFromLogin } from "../../../../types/global";
+import Google from "@/components/socials/Google";
+import EmailVerificationModal from "@/app/components/Emailverification";
 
 interface LoginFormData {
   username: string;
@@ -25,6 +27,7 @@ const Login: React.FC = () => {
   const { login } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const usernameRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -42,10 +45,17 @@ const Login: React.FC = () => {
   const loginMutation = useMutation({
     mutationFn: (userData: LoginFormData) => postFn("api/auth/login", userData),
     onSuccess: async (data: DataFromLogin) => {
-      if (data?.token) {
+      if (data) {
         toast.success("Login Successful");
-        await login(data);
-        router.push("/dashboard");
+        const res = await login(data);
+        if (res) {
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 3000);
+        } else if (res === null) {
+          toast.info("Please verify your email to continue");
+          setIsModalOpen(true);
+        }
       }
     },
     onError: (error) => {
@@ -60,17 +70,13 @@ const Login: React.FC = () => {
     loginMutation.mutate(formData);
   };
 
-  const handleGoogleLogin = () => {
-    router.push("/api/auth/login?connection=google-oauth2");
-  };
-
   useEffect(() => {
     usernameRef.current?.focus();
   }, []);
 
   return (
     <div>
-       <div className="hidden lg:block">
+      <div className="hidden lg:block">
         <Navbar variant="secondary" />
       </div>
       <div className="lg:hidden block">
@@ -149,7 +155,7 @@ const Login: React.FC = () => {
                         )}
                         <p className="text-[#233d4d] text-sm !text-left">
                           <Link
-                            href="/forgot-password"
+                            href="/auth/forgot-password"
                             className="hover:text-[#f37f2d] hover:font-bold transition-all ease-linear duration-300"
                           >
                             Forgot password?
@@ -168,24 +174,10 @@ const Login: React.FC = () => {
                     <div className="divider py-4">
                       <span>Or</span>
                     </div>
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      width="full"
-                      onClick={handleGoogleLogin}
-                      icon={
-                        <Image
-                          src="/assets/icons/google-icons.svg"
-                          alt="Google Icon"
-                          width={0}
-                          height={0}
-                          sizes="100vw"
-                          className="w-5 h-5 object-contain object-center"
-                        />
-                      }
-                    >
-                      Login with Google
-                    </Button>
+                    <Google
+                      disabled={loginMutation.isPending}
+                      text="Login with Google"
+                    />
                   </div>
                   <p className="text-[#FD8038] text-center">
                     Don’t have an account?{" "}
@@ -208,6 +200,11 @@ const Login: React.FC = () => {
         </div>
       </div>
       <MobileLogin />
+      <EmailVerificationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        showLogin={false}
+      />
     </div>
   );
 };

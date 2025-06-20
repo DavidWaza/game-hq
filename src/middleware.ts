@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+
+
+// Define auth routes that should redirect to dashboard if user is already logged in
+const authRoutes = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/verify-email", "/auth/reset-password"];
 // Define public routes that don't require authentication
 const publicRoutes = [
   "/",
-  "/auth/login",
-  "/auth/register",
-  "/auth/forgot-password",
+  ...authRoutes
 ];
-
-// Define auth routes that should redirect to dashboard if user is already logged in
-const authRoutes = ["/auth/login", "/auth/register", "/auth/forgot-password"];
 
 // Define protected routes that require authentication
 const protectedRoutes = ["/dashboard", "/profile", "/settings"];
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
   const { pathname } = request.nextUrl;
 
@@ -58,11 +57,10 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

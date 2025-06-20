@@ -14,6 +14,7 @@ import { DataFromLogin } from "../../../types/global";
 // import ReferralCode from "./ReferralCode";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import Google from "@/components/socials/Google";
 
 const MobileRegister = () => {
   const [registrationType] = useState<"email" | "phone">("email");
@@ -74,11 +75,15 @@ const MobileRegister = () => {
       password: string;
     }) => postFn("api/auth/register", userData),
     onSuccess: async (data: DataFromLogin) => {
-      toast.success("Registration Successful");
-      await login(data);
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 3000);
+      if (data) {
+        toast.success("Registration Successful");
+        const res = await login(data);
+        if (res) {
+          setTimeout(() => {
+            router.push("/dashboard");
+          }, 3000);
+        }
+      }
     },
     onError: (error) => {
       toast.error(`Registration error ${error.message}`);
@@ -255,23 +260,7 @@ const MobileRegister = () => {
                       <div className="divider py-4">
                         <span>Or</span>
                       </div>
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        width="full"
-                        icon={
-                          <Image
-                            src={"/assets/icons/google-icons.svg"}
-                            alt="Google Icon"
-                            width={0}
-                            height={0}
-                            sizes="100vw"
-                            className="w-5 h-5 object-contain object-center"
-                          />
-                        }
-                      >
-                        Register with Google
-                      </Button>
+                      <Google disabled={registerMutation.isPending} />
                     </div>
                     <p className="text-[#FD8038] text-center">
                       Already have an account?{" "}

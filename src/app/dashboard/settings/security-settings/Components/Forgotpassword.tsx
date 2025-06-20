@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { postFn } from "@/lib/apiClient";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ForgotPasswordAuth {
   oldpassword: string;
@@ -17,6 +18,8 @@ interface ForgotPasswordAuth {
 const ForgotPassword = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [confirmIsVisible, setConfirmIsVisible] = useState(false);
+  const { logout } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -34,21 +37,25 @@ const ForgotPassword = () => {
   });
 
   const onSubmit: SubmitHandler<ForgotPasswordAuth> = async (formData) => {
+    setIsLoading(true);
     try {
       const response = await postFn(`api/account/changepassword`, formData);
-      console.log('pass', response.data)
-      toast.success("Pasword change succesfully", {
-        position: "top-right",
-        className: "p-4",
-      });
-      setTimeout(() => {
-        window.location.reload()
-      }, 3000);
+      if (response) {
+        toast.success(
+          "Pasword change succesfully! Please login into the account with your new password!",
+          {
+            position: "top-right",
+            className: "p-4",
+          }
+        );
+        logout();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Please try again", {
         position: "top-right",
         className: "p-4",
       });
+      setIsLoading(false);
     }
   };
 
@@ -86,6 +93,7 @@ const ForgotPassword = () => {
             Old Password
           </Label>
           <Input
+            disabled={isLoading}
             id="oldpassword"
             {...register("oldpassword", {
               required: "Old password is required",
@@ -104,7 +112,8 @@ const ForgotPassword = () => {
           </Label>
           <div className="relative">
             <Input
-              type={isVisible ? "text" : "newpassword"}
+              disabled={isLoading}
+              type={isVisible ? "text" : "password"}
               id="newpassword"
               placeholder="******"
               {...register("newpassword", {
@@ -146,7 +155,8 @@ const ForgotPassword = () => {
           </Label>
           <div className="relative">
             <Input
-              type={confirmIsVisible ? "text" : "newpassword"}
+              disabled={isLoading}
+              type={confirmIsVisible ? "text" : "password"}
               id="confirm_password"
               {...register("confirmpassword", {
                 required: "Confirm Password is required",
@@ -171,13 +181,15 @@ const ForgotPassword = () => {
             </p>
           )}
         </div>
+
         <Button
+          className="!mt-12"
           variant="primary"
           size="sm"
           width="full"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isLoading}
         >
-          {isSubmitting ? "Loading..." : "Save Changes"}
+          {isSubmitting || isLoading ? "Loading..." : "Save Changes"}
         </Button>
       </form>
     </div>

@@ -10,7 +10,7 @@ import React, {
 import { Money } from "@phosphor-icons/react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import dynamic from "next/dynamic";
+// import dynamic from "next/dynamic";
 import { postFn } from "@/lib/apiClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -27,11 +27,23 @@ import { TypeUserSearch } from "../../../../types/global";
 import { CalendarForm } from "./Calendar";
 import EventScheduler from "./TimerSchedule";
 import { useRouter } from "next/navigation";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface CreateTournamentProps {
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   gameName?: string | null;
+  showDialog: boolean;
+  setMatchData: React.Dispatch<
+    React.SetStateAction<{
+      title?: string;
+      game_name?: string;
+      description?: string;
+      amount?: number | null;
+      match_date?: string;
+      match_time?: string;
+    }>
+  >;
 }
 interface FormData {
   game_id: string;
@@ -43,15 +55,15 @@ interface FormData {
   users?: string[];
 }
 
-const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
-  ssr: false,
-});
+// const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
+//   ssr: false,
+// });
 
 const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
-  const { setLoading, loading } = props;
+  const { setLoading, loading, showDialog, setMatchData } = props;
   const [isPrivate] = useState(true);
   const router = useRouter();
-  const [maxInvitees] = useState(5);
+  const [maxInvitees, setMaxInvitees] = useState(0);
   const [invitees, setInvitees] = useState<string[]>([]);
   const [search, setSearch] = useState<string>("");
   const [searchResults, setSearchResults] = useState<TypeUserSearch[]>([]);
@@ -80,13 +92,22 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
     },
   });
 
+  const handleCategoryChange = useCallback(
+    (value: string) => {
+      setValue("game_id", value, { shouldValidate: true });
+      const selectedGame = store?.games?.find((game) => game.id === value);
+      if (selectedGame) {
+        setMaxInvitees(Number(selectedGame.maxplayers));
+      }
+    },
+    [setValue, store?.games]
+  );
+
   useEffect(() => {
     if (store.createMatch.game_id) {
-      setValue("game_id", store.createMatch.game_id.toString(), {
-        shouldValidate: true,
-      });
+      handleCategoryChange(store.createMatch.game_id.toString());
     }
-  }, [store.createMatch.game_id, setValue]);
+  }, [store.createMatch.game_id, setValue, handleCategoryChange]);
 
   // Debounced search function
   const debouncedSearch = useCallback(
@@ -145,12 +166,20 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     const route = isPrivate ? "api/privatewagers/add" : "api/publicwagers/add";
     if (isPrivate && invitees.length === 0) {
-      toast.error("Please invite at least one user", {
+      toast.warning("Please invite at least one user", {
         position: "top-right",
         className: "p-4",
       });
       return;
     }
+    if (isPrivate && invitees.length > maxInvitees) {
+      toast.warning(`Please invite at most ${maxInvitees} users`, {
+        position: "top-right",
+        className: "p-4",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       if (isPrivate) {
@@ -162,7 +191,6 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
           position: "top-right",
           className: "p-4",
         });
-        console.log(response);
         router.push(`/dashboard/my-games`);
       }
     } catch (error) {
@@ -180,7 +208,52 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
     submitForm: async () => {
       const isValidForm = await trigger();
       if (isValidForm) {
-        handleSubmit(onSubmit)();
+        if (isPrivate && invitees.length > maxInvitees) {
+          toast.warning(`Please invite at most ${maxInvitees} users`, {
+            position: "top-right",
+            className: "p-4",
+          });
+          return;
+        }
+        if (
+          new Date(watch("match_date") + "T" + watch("match_time")) < new Date()
+        ) {
+          toast.warning(`Match time in the past! Please select a future date`, {
+            position: "top-right",
+            className: "p-4",
+          });
+          return;
+        }
+        if (watch("amount") !== null && Number(watch("amount")) < 500) {
+          toast.warning(`Minimum wager is 500`, {
+            position: "top-right",
+            className: "p-4",
+          });
+          return;
+        }
+        if (
+          watch("amount") !== null &&
+          Number(watch("amount")) > Number(user?.wallet?.balance)
+        ) {
+          toast.warning(`Insufficient balance!`, {
+            position: "top-right",
+            className: "p-4",
+          });
+          return;
+        }
+        if (showDialog) handleSubmit(onSubmit)();
+        else {
+          const data = watch();
+          setMatchData({
+            title: data.title,
+            game_name: store?.games?.find((game) => game.id === data.game_id)
+              ?.name,
+            description: data.description,
+            amount: data.amount,
+            match_date: data.match_date,
+            match_time: data.match_time,
+          });
+        }
         return true;
       }
       return false;
@@ -189,19 +262,22 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
 
   // Handle deleting an invitee
   const deleteInvitee = (index: number) => {
-    if (invitees.length === 1) return; // Prevent deleting the last input
+    if (invitees.length === 1) return;
     const updatedInvitees = invitees.filter((_, i) => i !== index);
     setInvitees(updatedInvitees);
-  };
-
-  const handleCategoryChange = (value: string) => {
-    setValue("game_id", value, { shouldValidate: true });
   };
 
   // Modified to prevent form submission since we're using debounce
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
+
+  const updateRichTextEditor = useCallback(
+    (value: string) => {
+      setValue("description", value, { shouldValidate: true });
+    },
+    [setValue]
+  );
 
   // Handle input focus and blur
   const handleInputFocus = () => {
@@ -214,7 +290,6 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
   };
 
   const handleInputBlur = () => {
-    // Using setTimeout to delay hiding the results in case the user clicks on a result
     setTimeout(() => {
       setIsInputFocused(false);
     }, 200);
@@ -222,28 +297,6 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
 
   return (
     <section className="transIn">
-      {/* Switch Button: Public/Private Bet */}
-      {/* <div className="flex justify-center items-center space-x-4">
-        <button
-          onClick={() => setIsPrivate(false)}
-          disabled={loading}
-          className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 text-nowrap ${
-            !isPrivate ? "bg-[#EB8338] text-white" : "bg-gray-600 text-black"
-          }`}
-        >
-          Public Bet
-        </button>
-        <button
-          onClick={() => setIsPrivate(true)}
-          disabled={loading}
-          className={`px-6 py-2 rounded-lg text-lg font-bold transition-all duration-300 text-nowrap ${
-            isPrivate ? "bg-[#EB8338] text-white" : "bg-gray-600 text-black"
-          }`}
-        >
-          Private Bet
-        </button>
-      </div> */}
-
       {/* Form: Public/Private Bet */}
       <div className="w-full mt-6 grid gap-4">
         {/* Title */}
@@ -282,11 +335,13 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {store?.games?.map((game) => (
-                  <SelectItem key={game.id} value={game.id.toString()}>
-                    {game.name}
-                  </SelectItem>
-                ))}
+                {store?.games
+                  ?.filter((game) => game.gametype !== "tournament")
+                  .map((game) => (
+                    <SelectItem key={game.id} value={game.id.toString()}>
+                      {game.name}
+                    </SelectItem>
+                  ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -303,25 +358,15 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
             Note to Participants
           </label>
           <div className="editorWrapper">
-            {typeof window !== "undefined" ? (
-              <RichTextEditor
-                {...register("description", {
-                  required: "Description is required",
-                })}
-                value={watch("description")} // Bind the value to react-hook-form
-                disabled={loading}
-                onChange={(value) => {
-                  setValue(
-                    "description",
-                    value === "<p><br></p>" ? "" : value,
-                    { shouldValidate: true }
-                  );
-                }} // Update the form value
-                placeholder="Enter the rules, terms and necessary information for this match"
-              />
-            ) : (
-              ""
-            )}
+            <RichTextEditor
+              {...register("description", {
+                required: "Description is required",
+              })}
+              value={watch("description")} // Bind the value to react-hook-form
+              disabled={loading}
+              onChange={updateRichTextEditor} // Update the form value
+              placeholder="Enter the rules, terms and necessary information for this match"
+            />
           </div>
           {errors.description && (
             <p className="text-red-500 text-sm">{errors.description.message}</p>
@@ -352,7 +397,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
               disabled={loading}
               onChange={(e) => {
                 const num = Number(e.target.value);
-                setValue("amount", !num ? null : num && num < 500 ? 500 : num, {
+                setValue("amount", !num ? null : num, {
                   shouldValidate: true,
                 });
               }}
@@ -370,9 +415,15 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
           rules={{ required: "Date is required" }}
           render={({ field }) => (
             <CalendarForm
+              className="!h-[50px] w-full"
               onDateChange={(date) => field.onChange(date)}
               label="Select a date"
               disabled={loading}
+              disabledDate={(date) => {
+                const prevDate = new Date();
+                prevDate.setDate(prevDate.getDate() - 1);
+                return date < prevDate;
+              }}
             />
           )}
         />
@@ -398,7 +449,7 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
 
         {/* Private Bet Fields */}
         {isPrivate && (
-          <div className="space-y-4 transIn">
+          <div className="space-y-4 transIn pb-20">
             <div>
               <div className="relative">
                 <Input
@@ -464,59 +515,61 @@ const BetSwitchTab = forwardRef((props: CreateTournamentProps, ref) => {
                 </div>
               )}
             </div>
-            <div className="pb-20">
-              <label className="block text-sm text-gray-300">
-                Invite Users (max {maxInvitees})
-              </label>
-              {invitees.length > 0 &&
-                invitees.map((invitee, index) => (
-                  <div
-                    key={index + 32323 + invitee}
-                    className="transIn flex items-center space-x-2 mb-5"
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-[#EB8338] text-white rounded-full flex items-center justify-center font-medium">
-                      {index + 1}
-                    </div>
-                    <input
-                      type="text"
-                      className="w-full mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md"
-                      placeholder={`Invitee ${index + 1}`}
-                      value={invitee}
-                      disabled
-                    />
-                    {invitees.length !== 1 && (
-                      <button
-                        type="button"
-                        onClick={() => deleteInvitee(index)}
-                        className="mt-2 text-red-500 hover:text-red-700 transition-colors"
-                        disabled={invitees.length === 1}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
+            {maxInvitees > 0 && (
+              <div className="transIn">
+                <label className="block text-sm text-gray-300">
+                  Invite Users (max {maxInvitees})
+                </label>
+                {invitees.length > 0 &&
+                  invitees.map((invitee, index) => (
+                    <div
+                      key={index + 32323 + invitee}
+                      className="transIn flex items-center space-x-2 mb-5"
+                    >
+                      <div className="flex-shrink-0 w-8 h-8 bg-[#EB8338] text-white rounded-full flex items-center justify-center font-medium">
+                        {index + 1}
+                      </div>
+                      <input
+                        type="text"
+                        className="w-full mt-2 p-3 bg-gray-700 text-white rounded-lg shadow-md"
+                        placeholder={`Invitee ${index + 1}`}
+                        value={invitee}
+                        disabled
+                      />
+                      {invitees.length !== 1 && (
+                        <button
+                          type="button"
+                          onClick={() => deleteInvitee(index)}
+                          className="mt-2 text-red-500 hover:text-red-700 transition-colors"
+                          disabled={invitees.length === 1}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M3 7h18"
-                          />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                ))}
-              {/* <button
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M3 7h18"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                {/* <button
                 type="button"
                 onClick={handleAddInvitee}
                 className="ml-auto px-4 py-2 rounded-lg text-sm flex items-center whitespace-nowrap bg-[#202216] text-[#F0DE9B]"
               >
                 + Add Invitee
               </button> */}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>

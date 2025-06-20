@@ -19,6 +19,24 @@ export function formatCurrency(
   });
   return formatter.format(Number(num));
 }
+export const removeDuplicates = <T extends Record<string, unknown>>(arr: Array<T>, prop: string | null = null) => {
+  const uniqueValues = new Set();
+  return arr.filter(function (item: T) {
+    if (prop) {
+      if (item[prop] === null || !uniqueValues.has(item[prop])) {
+        uniqueValues.add(item[prop]);
+        return true;
+      }
+      return false;
+    } else {
+      if (item === null || !uniqueValues.has(item)) {
+        uniqueValues.add(item);
+        return true;
+      }
+      return false;
+    }
+  });
+};
 
 export function formatNumber(arg: string | number, decimals: number = 0) {
   const number = Number(arg ? arg : 0);
@@ -99,4 +117,17 @@ export function copyToClipboard(text: string = 'Text', statusText: string = 'Lin
     });
     console.error(err)
   });
+}
+export function setSearchParams(searchParam: Record<string, string | Array<string | number>>, allowEmpty: boolean = false) {
+  let params = "";
+  Object.entries(searchParam).forEach(([key, value], index) => {
+    if (value !== undefined && value !== null && value !== '') {
+      if (!index) {
+        params += `?${key}=${value}`;
+      } else params += `&${key}=${value}`;
+    } else if (allowEmpty && !value) {
+      params += `${key}&`;
+    }
+  });
+  return params;
 }

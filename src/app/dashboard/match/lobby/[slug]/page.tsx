@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Users,
   Trophy,
@@ -20,26 +20,51 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import Chat from "../Components/Message";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
-import { TypeGames } from "../../../../../types/global";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatNumber, setSearchParams } from "@/lib/utils";
+import { getFn } from "@/lib/apiClient";
+import {
+  TypeGames,
+  TypePrivateWager,
+  TypePlayer,
+  TypeChatMessage,
+} from "../../../../../../types/global";
+import { toast } from "sonner";
+import { useLobbySocket } from "@/lib/useLobbySocket";
 
-type TournamentDetails = {
-  id: string | number;
-  amount?: number;
-  match_time?: string | number;
-  number_of_participants?: number;
-  description?: string;
-  game_id?: string | number;
-  name?: string;
-  banner?: string;
+const formatTime = (timeInput: string | number | undefined): string => {
+  const seconds = Number(timeInput);
+  if (isNaN(seconds) || seconds < 0) {
+    return "0:00";
+  }
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
 };
 
-type MockStore = {
-  games: TypeGames[];
-  singleTournament: TournamentDetails | null;
-  dispatch: {
-    getTournament: () => Promise<void>;
-  };
+const reportGameResult = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+};
+
+const countdownVariants = {
+  initial: { scale: 0.5, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  exit: { scale: 1.5, opacity: 0 },
+};
+
+const transitionVariants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+const gameSessionVariants = {
+  initial: { y: 30, opacity: 0 },
+  animate: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 100, damping: 15, delay: 0.1 },
+  },
+  exit: { y: -30, opacity: 0, transition: { duration: 0.2 } },
 };
 
 export default function TournamentLobby() {
@@ -48,7 +73,7 @@ export default function TournamentLobby() {
   const [micEnabled, setMicEnabled] = useState(true);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState<boolean | undefined>(undefined);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [selectedGame, setSelectedGame] = useState<TypeGames | undefined>();
   const [showTransition, setShowTransition] = useState(false);
@@ -56,102 +81,139 @@ export default function TournamentLobby() {
     "win" | "lose" | "dispute" | null
   >(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [privateWager, setPrivateWager] = useState<
+    TypePrivateWager | undefined
+  >();
+  const [isAllowedInLobby, setIsAllowedInLobby] = useState(false);
+  const [players, setPlayers] = useState<TypePlayer[]>([]);
+  const [chatMessages, setChatMessages] = useState<
+    Array<{
+      id: string;
+      sender: string;
+      message: string;
+      time: string;
+      type: "system" | "user";
+    }>
+  >([]);
   // --- Hooks ---
   const router = useRouter();
   const params = useParams();
   const slug = params?.slug as string;
-  const { user, store: mockStore } = useAuth() as unknown as {
-    user: { username?: string; id?: string | number } | null;
-    store: MockStore;
-  };
+  const { user, store } = useAuth();
 
   const playername = user?.username || "Challenger";
+  // playing status
+  const hasEnoughPlayers = useMemo(() => {
+    return players.length >= 2;
+  }, [players]);
 
-  const tournamentDetails = mockStore?.singleTournament;
+  const allPlayersReady = useMemo(() => {
+    return (
+      players.every((player) => player.status === "ready") && hasEnoughPlayers
+    );
+  }, [players, hasEnoughPlayers]);
+
+  const currentLobbyPlayer = useMemo(() => {
+    return players.find((player) => player.id === user?.id);
+  }, [players, user]);
+
+  const copyLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Link copied to clipboard");
+  }, []);
 
   // Filter the specific game based on tournament details
-  const filterGame = () => {
-    if (mockStore.games?.length && mockStore.singleTournament) {
-      const t: TypeGames | undefined = mockStore.games.find(
-        (el) => el.id === mockStore?.singleTournament?.game_id
-      );
-      if (t) {
-        setSelectedGame(t);
-      } else {
-        console.warn(
-          "Game not found for ID:",
-          mockStore.singleTournament.game_id
-        );
-      }
-    }
-  };
 
+  // get wager
   useEffect(() => {
-    const getTournament = async () => {
-      if (
-        !mockStore.singleTournament ||
-        mockStore.singleTournament.id !== slug
-      ) {
-        setLoading(true);
-        try {
-          await mockStore.dispatch.getTournament();
-          console.log("Fetched tournament data for slug:", slug);
-        } catch (error) {
-          console.error("Failed to fetch tournament:", error);
-        } finally {
-          setLoading(false);
+    const getPrivateWager = async () => {
+      setLoading(true);
+      try {
+        const response: TypePrivateWager = await getFn(
+          `/api/privatewagers/view/${slug}`
+        );
+        if (response) {
+          setPrivateWager(response);
         }
-      } else {
+      } finally {
         setLoading(false);
       }
     };
     if (slug) {
-      getTournament();
+      getPrivateWager();
     } else {
-      console.error("Tournament slug is missing!");
+      window.history.back();
       setLoading(false);
     }
-  }, [slug, mockStore.dispatch, mockStore.singleTournament]);
+  }, [slug]);
+
+  // get selected game
+  useEffect(() => {
+    if (
+      privateWager &&
+      privateWager?.game_id &&
+      store.games &&
+      store.games.length > 0
+    ) {
+      const game = store.games.find((game) => game.id === privateWager.game_id);
+      if (game) {
+        setSelectedGame(game);
+      } else {
+        router.push("/dashbord/my-games");
+        toast.error("Game not found!", {
+          position: "top-right",
+          className: "p-4",
+        });
+      }
+    }
+  }, [privateWager, store.games, isAllowedInLobby, router]);
+
+  // check if user is allowed in this slug lobby
+  useEffect(() => {
+    if (
+      privateWager &&
+      privateWager?.users &&
+      selectedGame &&
+      user?.id &&
+      user?.email &&
+      user?.username &&
+      players.length < Number(selectedGame?.maxplayers || 0)
+    ) {
+      const parsedUsers = JSON.parse(privateWager.users);
+      if (
+        parsedUsers.includes(user?.email) ||
+        parsedUsers.includes(user?.username) ||
+        Number(user?.id) === Number(privateWager.user_id)
+      ) {
+        setIsAllowedInLobby(true);
+      } else {
+        setIsAllowedInLobby(false);
+        router.push("/dashbord/my-games");
+        toast.error("You are not allowed to access this lobby", {
+          position: "top-right",
+          className: "p-4",
+        });
+      }
+    }
+  }, [privateWager, user, router, players, selectedGame]);
 
   useEffect(() => {
-    filterGame();
-  }, [mockStore.games, mockStore.singleTournament]);
-
-  useEffect(() => {
-    let countdownTimer: NodeJS.Timeout | null = null;
-
-    if (countdown !== null && countdown > 0) {
-      countdownTimer = setInterval(() => {
-        setCountdown((prev) => (prev !== null ? prev - 1 : null));
-      }, 1000);
-    } else if (countdown === 0) {
-      setShowTransition(true);
-      setTimeout(() => {
-        setIsReady(true);
-        setShowTransition(false);
-        setCountdown(null);
-      }, 2000);
+    if (
+      allPlayersReady &&
+      players.length &&
+      selectedGame &&
+      players.length === Number(selectedGame?.maxplayers) &&
+      !isReady
+    ) {
+      setCountdown(5);
     }
-
-    return () => {
-      if (countdownTimer) clearInterval(countdownTimer);
-    };
-  }, [countdown]);
-
-  const formatTime = (timeInput: string | number | undefined): string => {
-    const seconds = Number(timeInput);
-    if (isNaN(seconds) || seconds < 0) {
-      return "0:00";
-    }
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
+  }, [allPlayersReady, players, selectedGame, isReady]);
 
   const handleReadyClick = () => {
     if (countdown === null) {
-      setCountdown(5);
+      updatePlayerStatus(
+        currentLobbyPlayer?.status === "not ready" ? "ready" : "not ready"
+      );
     }
   };
 
@@ -159,10 +221,9 @@ export default function TournamentLobby() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      await reportGameResult("win");
+      await reportGameResult();
       setGameResult("win");
-    } catch (error) {
-      console.error("Error reporting win:", error);
+    } catch {
       alert("Failed to report win. Please try again.");
       setGameResult(null);
     } finally {
@@ -175,10 +236,9 @@ export default function TournamentLobby() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      await reportGameResult("lose");
+      await reportGameResult();
       setGameResult("lose");
-    } catch (error) {
-      console.error("Error reporting loss:", error);
+    } catch {
       alert("Failed to report loss. Please try again.");
       setGameResult(null);
     } finally {
@@ -196,62 +256,153 @@ export default function TournamentLobby() {
       setTimeout(() => {
         router.push("/dispute-resolution");
       }, 700);
-    } catch (error) {
-      console.error("Error initiating dispute:", error);
+    } catch {
       alert("Failed to initiate dispute. Please try again or contact support.");
       setGameResult(null);
       setIsSubmitting(false);
     }
   };
 
-  const reportGameResult = async (result: "win" | "lose" | "dispute") => {
-    console.log(
-      `Reporting result: ${result} for user: ${user?.id} in tournament: ${tournamentDetails?.id}`
-    );
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log("Report successful (simulated)");
-  };
+  // Create current player object for socket
+  const currentPlayer = useMemo(() => {
+    if (!user?.id || !user?.username || !privateWager || !isAllowedInLobby)
+      return null;
+    return {
+      id: Number(user.id),
+      name: user.username,
+      status: "not ready" as const,
+      captain: Number(user.id) === Number(privateWager.user_id),
+      isConnected: true,
+      previousStatus: "not ready" as const,
+    };
+  }, [user, privateWager, isAllowedInLobby]);
 
-  const players = [
-    { id: 1, name: playername, status: "Ready", captain: true },
-    { id: 2, name: "GhostShadow", status: "Ready", captain: false },
-    { id: 3, name: "VipeR_X", status: "Ready", captain: false },
-    { id: 4, name: "Sniper_Elite", status: "Not Ready", captain: false },
-    { id: 5, name: "", status: "Empty", captain: false },
-  ];
+  // Socket hook for lobby synchronization
+  const {
+    updatePlayerStatus,
+    updatePlayerOnlineStatus,
+    sendChatMessage,
+    leaveLobby,
+    isConnected: socketConnected,
+    updateLobbyGameStarted,
+  } = useLobbySocket(
+    slug,
+    isAllowedInLobby,
+    currentPlayer,
+    privateWager?.title,
+    {
+      onPlayerJoined: useCallback((player: TypePlayer) => {
+        toast.success(`${player.name} joined the lobby`);
+      }, []),
+      onPlayerLeft: useCallback((player: TypePlayer) => {
+        toast.info(`${player.name} left the lobby`);
+      }, []),
+      onPlayerListUpdate: useCallback((playerList: TypePlayer[]) => {
+        setPlayers(playerList);
+      }, []),
+      onGameStarted: useCallback((gameStarted: boolean | undefined) => {
+        setIsReady(gameStarted);
+      }, []),
+      onChatHistory: useCallback((messages: Array<TypeChatMessage>) => {
+        setChatMessages(messages);
+      }, []),
+      onError: useCallback((error: string) => {
+        toast.error(`Socket error: ${error}`);
+      }, []),
+    }
+  );
 
-  const countdownVariants = {
-    initial: { scale: 0.5, opacity: 0 },
-    animate: { scale: 1, opacity: 1 },
-    exit: { scale: 1.5, opacity: 0 },
-  };
+  useEffect(() => {
+    if (isReady === undefined) return;
+    let countdownTimer: NodeJS.Timeout | null = null;
 
-  const transitionVariants = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-  };
+    if (countdown !== null && countdown > 0) {
+      countdownTimer = setInterval(() => {
+        setCountdown((prev) => (prev !== null ? prev - 1 : null));
+      }, 1000);
+    } else if (countdown === 0) {
+      setShowTransition(true);
+      setTimeout(() => {
+        setIsReady(true);
+        setShowTransition(false);
+        updateLobbyGameStarted(true);
+        setCountdown(null);
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+      }, 2000);
+    }
 
-  const gameSessionVariants = {
-    initial: { y: 30, opacity: 0 },
-    animate: {
-      y: 0,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 100, damping: 15, delay: 0.1 },
-    },
-    exit: { y: -30, opacity: 0, transition: { duration: 0.2 } },
-  };
+    return () => {
+      if (countdownTimer) clearInterval(countdownTimer);
+    };
+  }, [countdown, isReady, updateLobbyGameStarted]);
 
-  if (loading || !tournamentDetails || !selectedGame?.id) {
+  // Cleanup on component unmount or navigation
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isAllowedInLobby && socketConnected) {
+        // Show confirmation dialog when user tries to leave
+        event.preventDefault();
+        event.returnValue = "";
+        if (confirm("Are you sure you want to leave the lobby?")) {
+          leaveLobby();
+        }
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (isAllowedInLobby && socketConnected) {
+        if (document.visibilityState === "hidden") {
+          updatePlayerOnlineStatus(false);
+        } else {
+          updatePlayerOnlineStatus(true);
+        }
+      }
+    };
+
+    // Add event listeners for page unload and visibility change
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Cleanup function for component unmount
+    return () => {
+      if (isAllowedInLobby && socketConnected) {
+        leaveLobby();
+      }
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isAllowedInLobby, socketConnected, leaveLobby, updatePlayerOnlineStatus]);
+
+  // handle params
+  useEffect(() => {
+    if (isReady && players.length && privateWager && selectedGame) {
+      const gameParamsObj = {
+        players: JSON.stringify(
+          players.map((player) => ({
+            id: player.id,
+            name: player.name,
+          }))
+        ),
+        wagerInfo: JSON.stringify(privateWager),
+        gameInfo: JSON.stringify(selectedGame),
+      };
+      console.log(setSearchParams(gameParamsObj));
+    }
+  }, [isReady, players, privateWager, selectedGame]);
+
+  if (loading || !privateWager || !selectedGame?.id || !isAllowedInLobby) {
     return <FullScreenLoader isLoading={true} text="Loading Lobby..." />;
   }
 
   // Main component render
   return (
     <>
-      <div className="flex flex-col min-h-screen bg-gray-950 text-gray-100 font-sans">
+      <div className="justify_auto overflow-hidden h-dvh bg-gray-950 text-gray-100 font-sans">
         {/* Header Section */}
-        <header className="bg-gray-900 px-4 py-3 border-b border-gray-800 flex items-center justify-between flex-wrap gap-2 sm:px-6 sm:py-4">
+        <header className="bg-gray-900 px-4 py-3 border-b border-gray-800 flex items-center justify-between flex-wrap gap-2 sm:px-6 sm:py-4 !h-max max-h-max">
           {/* Left Header Content */}
           <div className="flex items-center space-x-4">
             <h1 className="text-xl font-bold text-orange-400 sm:text-2xl">
@@ -274,7 +425,7 @@ export default function TournamentLobby() {
               <span className="text-xs sm:text-sm">
                 Starts in:{" "}
                 <span className="font-bold">
-                  {formatTime(tournamentDetails?.match_time)}
+                  {formatTime(privateWager?.match_time)}
                 </span>
               </span>
             </div>
@@ -284,7 +435,9 @@ export default function TournamentLobby() {
               <span className="text-xs sm:text-sm">
                 Prize:{" "}
                 <span className="font-bold text-green-400">
-                  {formatCurrency(tournamentDetails?.amount || 0)}
+                  {formatCurrency(
+                    players.length * Number(privateWager?.amount || 0)
+                  )}
                 </span>
               </span>
             </div>
@@ -296,6 +449,17 @@ export default function TournamentLobby() {
                 </span>
               </div>
               <span className="font-medium hidden sm:block">{playername}</span>
+              {/* Socket Connection Indicator */}
+              <div className="flex items-center gap-1">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    socketConnected ? "bg-green-400" : "bg-red-400"
+                  }`}
+                ></div>
+                <span className="text-xs text-gray-400 hidden sm:block">
+                  {socketConnected ? "Connected" : "Disconnected"}
+                </span>
+              </div>
             </div>
             {/* Mobile Menu Toggle (Left Panel) */}
             <button
@@ -312,7 +476,7 @@ export default function TournamentLobby() {
         <div className="flex flex-1 overflow-hidden">
           {/* Left Panel - Team Roster */}
           <aside
-            className={`fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 flex flex-col transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 ${
+            className={`fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 flex flex-col transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 h-full overflow-y-auto ${
               isLeftPanelOpen ? "translate-x-0 shadow-xl" : "-translate-x-full"
             }`}
             aria-label="Team Roster Panel"
@@ -337,76 +501,87 @@ export default function TournamentLobby() {
               <div className="text-sm text-gray-400 mb-3">
                 Status:{" "}
                 <span className="text-orange-400 font-medium">
-                  Waiting for Players...
-                </span>{" "}
-                {/* Example Status */}
+                  {hasEnoughPlayers
+                    ? isReady && countdown === null
+                      ? "Game Started!"
+                      : isReady && countdown !== null
+                      ? "Game Starting..."
+                      : allPlayersReady
+                      ? "All Players Ready"
+                      : "Players are not ready"
+                    : "Waiting for Players..."}
+                </span>
               </div>
               {players.map((player) => (
                 <div
                   key={player.id}
-                  className={`p-3 rounded-lg transition-colors ${
-                    player.status === "Ready"
+                  className={`transIn p-3 rounded-lg transition-colors ${
+                    player.status === "ready"
                       ? "bg-gray-800"
-                      : "bg-gray-850 bg-opacity-60 border border-gray-700"
+                      : player.status === "not ready"
+                      ? "bg-gray-850 bg-opacity-60 border border-gray-700"
+                      : "bg-gray-850 bg-opacity-40 border border-gray-600 opacity-60"
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center">
+                    <div className="flex gap-2 sm:gap-3">
                       {/* Player Avatar/Initial */}
-                      <div
-                        className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold sm:w-10 sm:h-10 ${
-                          player.status !== "Empty"
-                            ? "bg-gray-700"
-                            : "bg-gray-600"
-                        }`}
-                      >
-                        {player.status !== "Empty" ? (
-                          <span className="text-orange-400">
-                            {player.name.charAt(0).toUpperCase()}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-gray-400">?</span>
-                        )}
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold sm:w-10 sm:h-10 bg-gray-700">
+                        <span className="text-orange-400">
+                          {player.name.substring(0, 2).toUpperCase()}
+                        </span>
                       </div>
                       {/* Player Name & Status */}
-                      <div className="ml-2 sm:ml-3">
+                      <div className="flex flex-col gap-1">
                         <div className="font-medium flex items-center text-sm sm:text-base">
-                          {player.name || "Invite Player"}
+                          <span className="capitalize elipsis">
+                            {player.name}
+                          </span>
                           {player.captain && (
-                            <span className="ml-2 text-xs px-2 py-0.5 bg-orange-400 bg-opacity-20 text-orange-400 rounded-full font-semibold">
+                            <span className="ml-2 min-w-max text-xs px-2 py-0.5 bg-orange-400 bg-opacity-20 text-orange-400 rounded-full font-semibold">
                               Captain
                             </span>
                           )}
                         </div>
+                        {/* status */}
                         <div
-                          className={`text-xs sm:text-sm font-medium ${
-                            player.status === "Ready"
+                          className={`text-xs sm:text-sm font-medium capitalize ${
+                            player.status === "ready"
                               ? "text-green-400"
-                              : player.status === "Not Ready"
+                              : player.status === "not ready"
                               ? "text-yellow-400"
                               : "text-gray-500"
                           }`}
                         >
-                          {player.status}
+                          {player.status === "disconnected"
+                            ? "Disconnected"
+                            : player.status}
+                          {player.status === "disconnected" && (
+                            <span className="ml-1 text-xs text-gray-400">
+                              (Reconnecting...)
+                            </span>
+                          )}
+                        </div>
+                        {/* online status */}
+                        <div
+                          className={`text-xs sm:text-sm font-medium capitalize  bg-opacity-20 rounded-full px-2 py-0.5 max-w-max ${
+                            player.online
+                              ? "text-green-400 bg-green-400"
+                              : "text-red-400 bg-red-400"
+                          }`}
+                        >
+                          {player.online ? "Online" : "Offline"}
                         </div>
                       </div>
                     </div>
-
-                    {/* Action based on Status */}
-                    {player.status === "Empty" ? (
-                      <button className="px-2 py-1 bg-orange-400 text-gray-900 rounded-full text-xs font-medium hover:bg-orange-500 transition-colors sm:px-3">
-                        Invite
-                      </button>
-                    ) : player.status === "Not Ready" ? (
-                      <span className="text-xs px-2 py-1 bg-gray-700 rounded-full text-gray-400">
-                        Waiting...
-                      </span>
-                    ) : null}
                   </div>
                 </div>
               ))}
               {/* Invite Link Button */}
-              <button className="w-full mt-4 py-2 border border-gray-700 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:border-gray-600 transition-colors">
+              <button
+                onClick={copyLink}
+                className="w-full mt-4 py-2 border border-gray-700 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:border-gray-600 transition-colors"
+              >
                 Copy Invite Link
               </button>
             </div>
@@ -439,7 +614,12 @@ export default function TournamentLobby() {
                 {/* Voice Status Indicator */}
                 <div className="flex items-center">
                   <div className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse mr-1.5"></div>
-                  <span className="text-xs text-gray-400">3 Online</span>{" "}
+                  <span className="text-xs text-gray-400">
+                    {formatNumber(
+                      players.filter((player) => player.online).length
+                    )}{" "}
+                    Online
+                  </span>{" "}
                 </div>
               </div>
             </div>
@@ -451,26 +631,22 @@ export default function TournamentLobby() {
             <div
               className="p-4 flex-1 bg-cover bg-center sm:p-6"
               style={{
+                backgroundColor: "rgba(17, 24, 39, 0.6)",
                 backgroundImage: `url(${
-                  selectedGame?.banner || "/api/placeholder/800/600"
+                  selectedGame?.banner || "/assets/game-banners/cod-main.jpg"
                 })`,
                 backgroundBlendMode: "overlay",
-                backgroundColor: "rgba(17, 24, 39, 0.6)",
               }}
             >
               {" "}
               {/* Content Overlay */}
-              <div className="bg-gray-900 bg-opacity-80 p-4 rounded-xl backdrop-blur-sm sm:p-6 min-h-[70vh] flex flex-col">
-                {" "}
+              <div className="bg-gray-900 bg-opacity-80 p-4 rounded-xl backdrop-blur-sm sm:p-6 flex flex-col">
                 {/* Added min-height and flex */}
                 <h2 className="text-2xl font-bold text-orange-400 mb-4 sm:text-3xl sm:mb-6 flex-shrink-0">
-                  {" "}
-                  {selectedGame?.name} Game Lobby
+                  {privateWager?.title} Lobby
                 </h2>
                 <div className="flex-grow flex items-center justify-center">
-                  {" "}
                   <AnimatePresence mode="wait">
-                    {" "}
                     {!isReady ? (
                       // --- LOBBY VIEW (Before Game Start) ---
                       <motion.div
@@ -481,11 +657,11 @@ export default function TournamentLobby() {
                         transition={{ duration: 0.3 }}
                         className="w-full"
                       >
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 pb-5">
-                          {/* Format Details */}
-                          <div className="bg-gray-800 p-4 rounded-xl sm:p-5">
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 sm:gap-6 pb-5">
+                          {/* game description */}
+                          <div className="bg-gray-800 p-4 rounded-xl sm:p-5 row-span-2">
                             <h3 className="font-semibold mb-3 text-orange-400 text-lg">
-                              Format
+                              Game Description
                             </h3>
                             <ul className="space-y-2 text-sm text-gray-300 sm:space-y-3">
                               <li className="flex items-start">
@@ -493,21 +669,30 @@ export default function TournamentLobby() {
                                   size={16}
                                   className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
                                 />
-                                <span>Best-of-5 rounds; First to 3 wins</span>
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: selectedGame?.description || "",
+                                  }}
+                                />
                               </li>
+                            </ul>
+                          </div>
+                          {/* wager rules */}
+                          <div className="bg-gray-800 p-4 rounded-xl sm:p-5">
+                            <h3 className="font-semibold mb-3 text-orange-400 text-lg">
+                              Wager Rules
+                            </h3>
+                            <ul className="space-y-2 text-sm text-gray-300 sm:space-y-3">
                               <li className="flex items-start">
                                 <CaretDoubleRight
                                   size={16}
                                   className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
                                 />
-                                <span>6 rounds per match</span>
-                              </li>
-                              <li className="flex items-start">
-                                <CaretDoubleRight
-                                  size={16}
-                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: privateWager?.description || "",
+                                  }}
                                 />
-                                <span>Search & Destroy mode</span>
                               </li>
                             </ul>
                           </div>
@@ -522,21 +707,20 @@ export default function TournamentLobby() {
                                   size={16}
                                   className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
                                 />
-                                <span>5 players per team</span>
+                                <span>Minimum of 2 players to start</span>
                               </li>
                               <li className="flex items-start">
                                 <CaretDoubleRight
                                   size={16}
                                   className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
                                 />
-                                <span>Custom loadouts permitted</span>
-                              </li>
-                              <li className="flex items-start">
-                                <CaretDoubleRight
-                                  size={16}
-                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
-                                />
-                                <span>Ready 5 mins before start</span>
+                                <span>
+                                  Maximmum of{" "}
+                                  {formatNumber(
+                                    Number(selectedGame?.maxplayers)
+                                  )}{" "}
+                                  players
+                                </span>
                               </li>
                             </ul>
                           </div>
@@ -556,6 +740,8 @@ export default function TournamentLobby() {
                                 />
                                 Starting in {countdown}...
                               </>
+                            ) : currentLobbyPlayer?.status === "ready" ? (
+                              "Waiting for other players..."
                             ) : (
                               "READY UP"
                             )}
@@ -755,13 +941,13 @@ export default function TournamentLobby() {
 
           {/* Right Panel - Chat */}
           <aside
-            className={`fixed inset-y-0 right-0 w-72 bg-gray-900 border-l border-gray-800 flex flex-col transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 ${
+            className={`fixed inset-y-0 right-0 !w-72 bg-gray-900 border-l border-gray-800 justify_auto transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 h-full overflow-hidden ${
               isRightPanelOpen ? "translate-x-0 shadow-xl" : "translate-x-full"
             }`}
             aria-label="Team Chat Panel"
           >
             {/* Panel Header */}
-            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+            <div className="max-h-max !flex-none !h-max p-4 border-b border-gray-800 flex justify-between items-center">
               <h2 className="text-lg font-semibold flex items-center gap-2 sm:text-xl">
                 <ChatText size={20} className="text-orange-400" />
                 Team Chat
@@ -778,12 +964,12 @@ export default function TournamentLobby() {
               </button>
             </div>
             {/* Chat Component */}
-            <Chat />{" "}
+            <Chat messages={chatMessages} sendChatMessage={sendChatMessage} />
           </aside>
         </div>
 
         {/* Footer Section */}
-        <footer className="bg-gray-900 px-4 py-3 border-t border-gray-800 flex justify-between items-center sm:px-6">
+        <footer className="!max-h-max !h-max !flex-none bg-gray-900 px-4 py-3 border-t border-gray-800 flex justify-between items-center sm:px-6">
           <div className="text-xs text-gray-400 sm:text-sm">
             GameHQ © {new Date().getFullYear()}. All rights reserved.
           </div>
@@ -799,7 +985,14 @@ export default function TournamentLobby() {
             {/* Leave Button */}
             <button
               className="text-red-400 hover:text-red-500 transition-colors text-xs sm:text-sm font-medium"
-              onClick={() => router.back()} // Or navigate to a dashboard/exit page
+              onClick={() => {
+                if (confirm("Are you sure you want to leave the lobby?")) {
+                  if (isAllowedInLobby && socketConnected) {
+                    leaveLobby();
+                  }
+                  router.back();
+                }
+              }}
             >
               Leave Tournament
             </button>

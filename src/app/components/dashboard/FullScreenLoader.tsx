@@ -1,15 +1,16 @@
 // components/FullScreenLoader.jsx
 import Image from "next/image";
 import React from "react";
+import { useAuth } from "@/contexts/AuthContext";
 type TypeLoader = {
-  isLoading: boolean;
+  isLoading?: boolean;
   text?: string;
 };
-const FullScreenLoader = ({
-  isLoading,
-  text = "Ready, Set, Play",
-}: TypeLoader) => {
-  if (!isLoading) return null;
+const FullScreenLoader = ({ isLoading = false, text = "" }: TypeLoader) => {
+  const { store } = useAuth();
+  const message = text || store.fullScreenLoader.message || "Ready, Set, Play";
+  const loader = isLoading || store.fullScreenLoader.loader;
+  if (!loader) return null;
 
   return (
     <section
@@ -18,13 +19,14 @@ const FullScreenLoader = ({
     >
       <div className="flex flex-col items-center">
         <Image
+          priority
           src={"/assets/bouncing-ball.svg"}
           alt="Loading animation"
           width={80}
           height={80}
           className="w-20 h-auto"
         />
-        <p className="text-white font-semibold mt-2 text-lg">{text}</p>
+        <p className="text-white font-semibold mt-2 text-lg">{message}</p>
       </div>
     </section>
   );

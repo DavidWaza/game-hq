@@ -14,6 +14,7 @@ import Login from "@/components/Login";
 import { useAuth } from "@/contexts/AuthContext";
 import Wallet from "@/app/components/dashboard/Wallet";
 import SettingsMenu from "@/app/components/dashboard/SettingsMenu";
+import EmailVerificationModal from "@/app/components/Emailverification";
 
 interface LogoVariant {
   variant: "primary" | "secondary";
@@ -25,6 +26,8 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,7 +78,10 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
                     >
                       Create Account
                     </Button>
-                    <Dialog>
+                    <Dialog
+                      open={isLoginModalOpen}
+                      onOpenChange={setIsLoginModalOpen}
+                    >
                       <DialogTrigger asChild>
                         <Button variant="primary" size="sm">
                           Login
@@ -89,7 +95,10 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
                         <DialogHeader>
                           <DialogTitle className="">LOGIN</DialogTitle>
                         </DialogHeader>
-                        <Login />
+                        <Login
+                          setIsModalOpen={setIsModalOpen}
+                          setIsLoginModalOpen={setIsLoginModalOpen}
+                        />
                       </DialogContent>
                     </Dialog>
                   </div>
@@ -118,6 +127,11 @@ const Navbar: React.FC<LogoVariant> = ({ variant, textColor }) => {
           )}
         </div>
       </nav>
+      <EmailVerificationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        showLogin={false}
+      />
     </div>
   );
 };

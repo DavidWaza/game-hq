@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import ButtonSpinner from "./ButtonSpinner";
+import ButtonSpinner from "@/components/ButtonSpinner";
 
 interface ButtonProps {
   variant?: "primary" | "secondary";

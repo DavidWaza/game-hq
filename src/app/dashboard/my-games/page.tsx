@@ -15,8 +15,8 @@ import {
   Info as InfoIcon,
   UserPlus,
   Eye,
-  User as UserIcon,
-  UsersThree as TournamentIcon,
+  // User as UserIcon,
+  // UsersThree as TournamentIcon,
   CaretLeft,
   CaretRight,
   CaretDoubleLeft,
@@ -27,6 +27,8 @@ import {
   TypeSingleTournament,
 } from "../../../../types/global";
 import { formatCurrency } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { formatDate } from "date-fns";
 
 // Types
 type TabType = "created" | "invitations" | "ongoing";
@@ -37,6 +39,9 @@ interface GameData {
   totalRecords: number;
   recordCount: number;
   totalPages: number;
+  currentPage: number;
+  hasMorePages: boolean;
+  perPage: number;
 }
 
 interface GameState {
@@ -114,7 +119,7 @@ const EmptyState = ({
   message: string;
   icon?: React.ElementType;
 }) => (
-  <div className="flex flex-col items-center justify-center py-12 text-center min-h-[200px]">
+  <div className="transIn flex flex-col items-center justify-center py-12 text-center min-h-[200px]">
     {Icon && (
       <Icon size={48} className="text-gray-600/80 mb-4" weight="light" />
     )}
@@ -169,31 +174,31 @@ const ActionButton = ({
   </motion.button>
 );
 
-const SubTabButton = ({
-  label,
-  icon: Icon,
-  isActive,
-  onClick,
-}: {
-  label: string;
-  icon: React.ElementType;
-  isActive: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 text-xs sm:text-sm rounded-md font-medium transition-all duration-200 ease-in-out focus:outline-none
-              ${
-                isActive
-                  ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
-                  : "bg-gray-700/60 text-gray-300 hover:bg-gray-600/80 hover:text-white"
-              }`}
-    style={{ WebkitTapHighlightColor: "transparent" }}
-  >
-    <Icon size={16} weight={isActive ? "bold" : "regular"} />
-    {label}
-  </button>
-);
+// const SubTabButton = ({
+//   label,
+//   icon: Icon,
+//   isActive,
+//   onClick,
+// }: {
+//   label: string;
+//   icon: React.ElementType;
+//   isActive: boolean;
+//   onClick: () => void;
+// }) => (
+//   <button
+//     onClick={onClick}
+//     className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 text-xs sm:text-sm rounded-md font-medium transition-all duration-200 ease-in-out focus:outline-none
+//               ${
+//                 isActive
+//                   ? "bg-gradient-to-r from-[#ff4500] to-[#ffa500] text-white shadow-md hover:shadow-lg"
+//                   : "bg-gray-700/60 text-gray-300 hover:bg-gray-600/80 hover:text-white"
+//               }`}
+//     style={{ WebkitTapHighlightColor: "transparent" }}
+//   >
+//     <Icon size={16} weight={isActive ? "bold" : "regular"} />
+//     {label}
+//   </button>
+// );
 
 const TabButton = ({
   label,
@@ -239,7 +244,7 @@ const Pagination = ({
   totalPages: number;
   onPageChange: (page: number) => void;
 }) => {
-  if (totalPages <= 1) return null;
+  // if (totalPages <= 1) return null;
 
   const pageNumbers: (number | string)[] = [];
   // maxPagesToShow: Number of actual page number buttons (e.g., 3 means c-1, c, c+1 or similar)
@@ -355,7 +360,8 @@ const Pagination = ({
       ) {
         if (
           typeof uniquePageNumbers[uniquePageNumbers.length - 1] === "number" &&
-          (uniquePageNumbers[uniquePageNumbers.length - 1] as number) < totalPages - 1
+          (uniquePageNumbers[uniquePageNumbers.length - 1] as number) <
+            totalPages - 1
         )
           uniquePageNumbers.push("...", totalPages);
         else uniquePageNumbers.push(totalPages);
@@ -379,9 +385,13 @@ const Pagination = ({
       current === prev + 1 &&
       uniquePageNumbers[i - 2] === "..."
     ) {
-
       const next = uniquePageNumbers[i + 1];
-      if (typeof prev === "string" && prev === "..." && typeof next === "number" && next === current + 1) {
+      if (
+        typeof prev === "string" &&
+        prev === "..." &&
+        typeof next === "number" &&
+        next === current + 1
+      ) {
         finalPages.push(current);
       } else {
         finalPages.push(current);
@@ -407,7 +417,7 @@ const Pagination = ({
   });
 
   return (
-    <div className="mt-6 flex items-center justify-center flex-wrap gap-1 sm:gap-2">
+    <div className="max-h-max pt-6 flex items-center justify-center flex-wrap gap-1 sm:gap-2">
       <button
         onClick={() => onPageChange(1)}
         disabled={currentPage === 1}
@@ -469,47 +479,64 @@ const Pagination = ({
 };
 
 const CreateWagerBanner = () => {
-  const { user, store } = useAuth();
+  const { user } = useAuth();
   const username = user?.username;
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [activeSubTab, setActiveSubTab] = useState<SubTabType>("solo");
-  const [currentPage, setCurrentPage] = useState(1);
   const [data, setData] = useState<GameState>({
     createdWagers: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     createdTournaments: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     invitedWagers: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     invitedTournaments: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     ongoingWagers: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
     ongoingTournaments: {
       records: [],
       totalRecords: 0,
       recordCount: 0,
       totalPages: 1,
+      currentPage: 1,
+      hasMorePages: false,
+      perPage: 10,
     },
   });
   const [loadingStates, setLoadingStates] = useState<LoadingState>({
@@ -520,6 +547,7 @@ const CreateWagerBanner = () => {
     ongoingWagers: false,
     ongoingTournaments: false,
   });
+  const router = useRouter();
 
   const updateData = useCallback((key: keyof GameState, value: GameData) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -538,37 +566,26 @@ const CreateWagerBanner = () => {
         try {
           updateLoadingState("createdWagers", true);
           const response = await getFn(`/api/users/wagers?page=${page}`);
-          updateData("createdWagers", response);
+          if (response) updateData("createdWagers", response);
         } catch {
           toast.error("Error fetching created wagers");
-          updateData("createdWagers", {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
         } finally {
           updateLoadingState("createdWagers", false);
         }
       },
       getCreatedTournaments: async (page = 1) => {
-        try {
-          updateLoadingState("createdTournaments", true);
-          const response = await getFn(
-            `/api/users/tournamentwager?page=${page}`
-          );
-          updateData("createdTournaments", response);
-        } catch {
-          toast.error("Error fetching created tournaments");
-          updateData("createdTournaments", {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
-        } finally {
-          updateLoadingState("createdTournaments", false);
-        }
+        return page;
+        // try {
+        //   updateLoadingState("createdTournaments", true);
+        //   const response = await getFn(
+        //     `/api/users/tournamentwager?page=${page}`
+        //   );
+        //   if (response) updateData("createdTournaments", response);
+        // } catch {
+        //   toast.error("Error fetching created tournaments");
+        // } finally {
+        //   updateLoadingState("createdTournaments", false);
+        // }
       },
       getInvitedWagers: async (page = 1) => {
         try {
@@ -576,40 +593,27 @@ const CreateWagerBanner = () => {
           const response = await getFn(
             `/api/users/invitee_tournament_wager?page=${page}`
           );
-          updateData("invitedWagers", response);
+          if (response) updateData("invitedWagers", response);
         } catch {
           toast.error("Error fetching invited wagers");
-          updateData("invitedWagers", {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
         } finally {
           updateLoadingState("invitedWagers", false);
         }
       },
       getInvitedTournaments: async (page = 1) => {
-        try {
-          updateLoadingState("invitedTournaments", true);
-          const response = await getFn(
-            `/api/users/invited_but_not_played_tournament_wager?page=${page}`
-          );
-          updateData("invitedTournaments", response);
-        } catch {
-          toast.error("Error fetching invited tournaments");
-          updateData("invitedTournaments", {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
-        } finally {
-          updateLoadingState("invitedTournaments", false);
-        }
+        return page;
+        // try {
+        //   updateLoadingState("invitedTournaments", true);
+        //   const response = await getFn(
+        //     `/api/users/invited_but_not_played_tournament_wager?page=${page}`
+        //   );
+        //   if (response) updateData("invitedTournaments", response);
+        // } catch {
+        //   toast.error("Error fetching invited tournaments");
+        // } finally {
+        //   updateLoadingState("invitedTournaments", false);
+        // }
       },
-      // Define getOngoingWagers and getOngoingTournaments when ready
-      // e.g. getOngoingWagers: async (page = 1) => { ... }
     }),
     [updateData, updateLoadingState]
   );
@@ -619,113 +623,113 @@ const CreateWagerBanner = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab, activeSubTab]);
-
-  useEffect(() => {
     const fetchData = async () => {
-      if (!username || !methods) return;
+      if (!methods) return;
 
-      let fetchFunction: ((page: number) => Promise<void>) | undefined;
-      let dataKeyForReset: keyof GameState | undefined;
-      let loadingKeyForReset: keyof LoadingState | undefined;
-
-      if (activeTab === "created") {
-        fetchFunction =
-          activeSubTab === "solo"
-            ? methods.getCreatedWagers
-            : methods.getCreatedTournaments;
-      } else if (activeTab === "invitations") {
-        fetchFunction =
-          activeSubTab === "solo"
-            ? methods.getInvitedWagers
-            : methods.getInvitedTournaments;
-      } else if (activeTab === "ongoing") {
-        if (activeSubTab === "solo") {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          fetchFunction = (methods as any).getOngoingWagers;
-          dataKeyForReset = "ongoingWagers";
-          loadingKeyForReset = "ongoingWagers";
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          fetchFunction = (methods as any).getOngoingTournaments;
-          dataKeyForReset = "ongoingTournaments";
-          loadingKeyForReset = "ongoingTournaments";
-        }
-        if (!fetchFunction && dataKeyForReset && loadingKeyForReset) {
-          updateData(dataKeyForReset, {
-            records: [],
-            totalRecords: 0,
-            recordCount: 0,
-            totalPages: 1,
-          });
-          updateLoadingState(loadingKeyForReset, false);
-        }
-      }
-
-      if (fetchFunction) {
-        await fetchFunction(currentPage);
+      switch (activeTab) {
+        case "created":
+          await Promise.all([
+            methods.getCreatedWagers(),
+            methods.getCreatedTournaments(),
+          ]);
+          break;
+        case "invitations":
+          await Promise.all([
+            methods.getInvitedWagers(),
+            methods.getInvitedTournaments(),
+          ]);
+          break;
+        default:
+          break;
       }
     };
 
-    fetchData();
-  }, [
-    activeTab,
-    activeSubTab,
-    currentPage,
-    username,
-    methods,
-    updateData,
-    updateLoadingState,
-  ]);
+    if (activeTab && methods) fetchData();
+  }, [activeTab, methods]);
 
-  const handleAction = (item: TypePrivateWager | TypeSingleTournament) => {
-    const games = store.games;
-    if (games && games.length > 0) {
-      const game = games.find((game) => game.id === item.game_id);
-      if (game && game.gameurl) {
-        window.location.href = game.gameurl;
+  const handleAction = useCallback(
+    (item: TypePrivateWager | TypeSingleTournament) => {
+      if (activeTab === "created") {
+        if (activeSubTab === "solo") {
+          const gameDate = new Date(item.match_date + "T" + item.match_time);
+          const currentDate = new Date();
+
+          if (currentDate >= gameDate) {
+            router.push(`/dashboard/match/lobby/${item.id}`);
+          } else {
+            toast.warning(
+              `Match time has not arrived yet! Match starts at ${formatDate(
+                gameDate,
+                "MMM do, yyyy"
+              )} at ${item.match_time}`
+            );
+          }
+        }
       }
-    }
-  };
+    },
+    [activeSubTab, activeTab, router]
+  );
 
-  const handlePageChange = (newPage: number) => {
-    // Determine current data list to get totalPages for boundary check
-    let currentDataKey: keyof GameState;
-    switch (activeTab) {
-      case "created":
-        currentDataKey =
-          activeSubTab === "solo" ? "createdWagers" : "createdTournaments";
-        break;
-      case "invitations":
-        currentDataKey =
-          activeSubTab === "solo" ? "invitedWagers" : "invitedTournaments";
-        break;
-      case "ongoing":
-        currentDataKey =
-          activeSubTab === "solo" ? "ongoingWagers" : "ongoingTournaments";
-        break;
-      default:
-        return; // Should not happen
-    }
-    const listTotalPages = data[currentDataKey]?.totalPages ?? 1;
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      // Determine current data list to get totalPages for boundary check
+      let currentDataKey: keyof GameState;
+      switch (activeTab) {
+        case "created":
+          currentDataKey =
+            activeSubTab === "solo" ? "createdWagers" : "createdTournaments";
+          break;
+        case "invitations":
+          currentDataKey =
+            activeSubTab === "solo" ? "invitedWagers" : "invitedTournaments";
+          break;
+        case "ongoing":
+          currentDataKey =
+            activeSubTab === "solo" ? "ongoingWagers" : "ongoingTournaments";
+          break;
+        default:
+          return; // Should not happen
+      }
+      const listTotalPages = data[currentDataKey]?.totalPages ?? 1;
+      let pagenum = newPage;
 
-    if (newPage >= 1 && newPage <= listTotalPages) {
-      setCurrentPage(newPage);
-    } else if (newPage < 1 && listTotalPages > 0) {
-      // Prevent going below 1
-      setCurrentPage(1);
-    } else if (newPage > listTotalPages && listTotalPages > 0) {
-      // Prevent going above totalPages
-      setCurrentPage(listTotalPages);
-    }
-    // if listTotalPages is 0 (e.g. no data), allow setting to 1.
-    else if (listTotalPages === 0 && newPage === 1) {
-      setCurrentPage(1);
-    }
-  };
+      if (newPage >= 1 && newPage <= listTotalPages) {
+        pagenum = newPage;
+      } else if (newPage < 1 && listTotalPages > 0) {
+        // Prevent going below 1
+        pagenum = 1;
+      } else if (newPage > listTotalPages && listTotalPages > 0) {
+        // Prevent going above totalPages
+        pagenum = listTotalPages;
+      }
+      // if listTotalPages is 0 (e.g. no data), allow setting to 1.
+      else if (listTotalPages === 0 && newPage === 1) {
+        pagenum = 1;
+      }
 
-  const renderContent = () => {
+      switch (activeTab) {
+        case "created":
+          if (activeSubTab === "solo") {
+            methods.getCreatedWagers(pagenum);
+          } else {
+            methods.getCreatedTournaments(pagenum);
+          }
+          break;
+        case "invitations":
+          if (activeSubTab === "solo") {
+            methods.getInvitedWagers(pagenum);
+          } else {
+            methods.getInvitedTournaments(pagenum);
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    [activeTab, activeSubTab, data, methods]
+  );
+
+  const renderContent = useCallback(() => {
     let dataList: GameData;
     let isLoading: boolean;
     let baseEmptyMessage: string;
@@ -787,6 +791,9 @@ const CreateWagerBanner = () => {
           totalRecords: 0,
           recordCount: 0,
           totalPages: 0,
+          currentPage: 1,
+          hasMorePages: false,
+          perPage: 10,
         };
         isLoading = false;
         baseEmptyMessage = "Error loading";
@@ -802,6 +809,8 @@ const CreateWagerBanner = () => {
         : "currently ongoing"
     }.`;
 
+    const newCurrentPage = dataList.currentPage;
+
     return (
       <motion.div
         key={`${activeTab}-${activeSubTab}`}
@@ -809,9 +818,9 @@ const CreateWagerBanner = () => {
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="overflow-x-auto bg-black/20 p-3 sm:p-4 rounded-b-lg rounded-tr-lg shadow-2xl backdrop-blur-md border border-gray-700/30 min-h-[350px]"
+        className="overflow-x-auto bg-black/20 p-3 sm:p-4 rounded-b-lg rounded-tr-lg shadow-2xl backdrop-blur-md border border-gray-700/30 min-h-[350px] justify_auto"
       >
-        <div className="mb-4 flex items-center flex-wrap gap-2 sm:flex sm:space-x-2 p-1 bg-gray-800/20 rounded-lg max-w-max w-full">
+        {/* <div className="max-h-max mb-4 flex items-center flex-wrap gap-2 sm:flex sm:space-x-2 p-1 bg-gray-800/20 rounded-lg max-w-max w-full">
           <SubTabButton
             label="Solo Games"
             icon={UserIcon}
@@ -824,80 +833,84 @@ const CreateWagerBanner = () => {
             isActive={activeSubTab === "tournament"}
             onClick={() => setActiveSubTab("tournament")}
           />
-        </div>
+        </div> */}
 
         {isLoading ? (
-          <table className="min-w-full">
-            <tbody>
-              {Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonRow key={i} columns={5} />
-              ))}
-            </tbody>
-          </table>
-        ) : dataList.records.length > 0 ? (
-          <>
+          <div className="transIn">
             <table className="min-w-full">
-              <thead>
-                <tr className="border-b border-gray-800/70">
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Game ID
-                  </th>
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Game Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Total Amount
-                  </th>
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800/50">
-                {dataList.records.map(
-                  (item: TypePrivateWager | TypeSingleTournament) => {
-                    const title = "title" in item ? item.title : "N/A";
-                    const amount = "amount" in item ? item.amount : "0";
-                    const status =
-                      "match_date" in item ? "Scheduled" : "Pending"; // This status logic might need refinement
-
-                    return (
-                      <tr
-                        key={item.id}
-                        className="border-b border-gray-800/70 transition-colors duration-200 hover:bg-gray-700/40"
-                      >
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          {item.id?.substring(0, 8) || "N/A"}...
-                        </td>
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          {title}
-                        </td>
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          {formatCurrency(Number(amount))}
-                        </td>
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          <StatusIndicator statusText={status} />
-                        </td>
-                        <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
-                          <ActionButton
-                            onClick={() => handleAction(item)}
-                            icon={ActionIcon}
-                          >
-                            {actionText}
-                          </ActionButton>
-                        </td>
-                      </tr>
-                    );
-                  }
-                )}
+              <tbody>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonRow key={i} columns={5} />
+                ))}
               </tbody>
             </table>
+          </div>
+        ) : dataList.records.length > 0 ? (
+          <>
+            <div className="">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b border-gray-800/70">
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Game ID
+                    </th>
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Game Name
+                    </th>
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Total Amount
+                    </th>
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-[11px] sm:text-xs font-semibold text-[#ffa500]/80 uppercase tracking-wider">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800/50">
+                  {dataList.records.map(
+                    (item: TypePrivateWager | TypeSingleTournament) => {
+                      const title = "title" in item ? item.title : "N/A";
+                      const amount = "amount" in item ? item.amount : "0";
+                      const status =
+                        "match_date" in item ? "Scheduled" : "Pending"; // This status logic might need refinement
+
+                      return (
+                        <tr
+                          key={item.id}
+                          className="border-b border-gray-800/70 transition-colors duration-200 hover:bg-gray-700/40 transIn"
+                        >
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            {item.id?.substring(0, 8) || "N/A"}...
+                          </td>
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            {title}
+                          </td>
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            {formatCurrency(Number(amount))}
+                          </td>
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            <StatusIndicator statusText={status} />
+                          </td>
+                          <td className="px-4 py-3.5 text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+                            <ActionButton
+                              onClick={() => handleAction(item)}
+                              icon={ActionIcon}
+                            >
+                              {actionText}
+                            </ActionButton>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
+                </tbody>
+              </table>
+            </div>
             {dataList.totalPages > 1 && (
               <Pagination
-                currentPage={currentPage}
+                currentPage={newCurrentPage}
                 totalPages={dataList.totalPages}
                 onPageChange={handlePageChange}
               />
@@ -908,7 +921,15 @@ const CreateWagerBanner = () => {
         )}
       </motion.div>
     );
-  };
+  }, [
+    activeTab,
+    activeSubTab,
+    data,
+    loadingStates,
+    methods,
+    handleAction,
+    handlePageChange,
+  ]);
 
   return (
     <div className="relative min-h-screen bg-[#0f0f0f] overflow-hidden">
