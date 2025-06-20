@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const params = useParams();
   const slug = `${params?.slug}`;
   const isMounted = useRef<boolean>(false);
-  const pathnameRef = useRef<string | null>(null);
+  const pathnameRef = useRef<string | null>(pathname);
   const [user, setUser] = useState<User | null>(null);
   const [store, setStore] = useState<StoreData>({
     // data
@@ -228,17 +228,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [setState]);
 
   useEffect(() => {
-    if (
-      isMounted.current ||
-      setState === undefined ||
-      router === undefined ||
-      pathname === undefined
-    )
+    if (isMounted.current || setState === undefined || router === undefined)
       return;
     isMounted.current = true;
-    pathnameRef.current = pathname;
     const excludeRoutes = ["/join-tournament", "/verify-transaction"];
-    if (excludeRoutes.includes(pathnameRef.current)) return;
+    if (excludeRoutes.includes(pathnameRef.current || "")) return;
     let timer = 1000;
     let message = "";
     const hasValidGooleCred =
