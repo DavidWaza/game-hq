@@ -22,18 +22,14 @@ import Chat from "../Components/Message";
 import FullScreenLoader from "@/app/components/dashboard/FullScreenLoader";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { getFn } from "@/lib/apiClient";
-import { TypeGames, TypePrivateWager } from "../../../../../../types/global";
+import {
+  TypeGames,
+  TypePrivateWager,
+  TypePlayer,
+  TypeChatMessage,
+} from "../../../../../../types/global";
 import { toast } from "sonner";
 import { useLobbySocket } from "@/lib/useLobbySocket";
-
-interface Player {
-  id: number;
-  name: string;
-  status: "ready" | "not ready" | "disconnected";
-  captain: boolean;
-  previousStatus?: "ready" | "not ready";
-  isConnected: boolean;
-}
 
 const formatTime = (timeInput: string | number | undefined): string => {
   const seconds = Number(timeInput);
@@ -63,7 +59,7 @@ export default function TournamentLobby() {
     TypePrivateWager | undefined
   >();
   const [isAllowedInLobby, setIsAllowedInLobby] = useState(false);
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [players, setPlayers] = useState<TypePlayer[]>([]);
   const [chatMessages, setChatMessages] = useState<
     Array<{
       id: string;
@@ -91,6 +87,10 @@ export default function TournamentLobby() {
     );
   }, [players, hasEnoughPlayers]);
 
+  const currentLobbyPlayer = useMemo(() => {
+    return players.find((player) => player.id === user?.id);
+  }, [players, user]);
+
   const copyLink = useCallback(() => {
     navigator.clipboard.writeText(window.location.href);
     toast.success("Link copied to clipboard");
@@ -107,11 +107,8 @@ export default function TournamentLobby() {
           `/api/privatewagers/view/${slug}`
         );
         if (response) {
-          console.log(response);
           setPrivateWager(response);
         }
-      } catch (error) {
-        console.error("Failed to fetch private wager:", error);
       } finally {
         setLoading(false);
       }
@@ -140,14 +137,16 @@ export default function TournamentLobby() {
     }
   }, [privateWager, store.games, isAllowedInLobby]);
 
-  // process allowed in lobby and set players
+  // check if user is allowed in this slug lobby
   useEffect(() => {
     if (
       privateWager &&
       privateWager?.users &&
+      selectedGame &&
       user?.id &&
       user?.email &&
-      user?.username
+      user?.username &&
+      players.length < Number(selectedGame?.maxplayers)
     ) {
       const parsedUsers = JSON.parse(privateWager.users);
       if (
@@ -156,26 +155,6 @@ export default function TournamentLobby() {
         Number(user?.id) === Number(privateWager.user_id)
       ) {
         setIsAllowedInLobby(true);
-        // Use functional state update to avoid dependency on players
-        setPlayers((prevPlayers) => {
-          const currentPlayer = {
-            id: Number(user?.id),
-            name: user?.username,
-            status: "not ready" as const,
-            captain: Number(user?.id) === Number(privateWager.user_id),
-            isConnected: true,
-          };
-
-          // Check if player already exists to avoid duplicates
-          const playerExists = prevPlayers.some(
-            (player) => player.id === currentPlayer.id
-          );
-          if (playerExists) {
-            return prevPlayers; // Don't update if player already exists
-          }
-
-          return [...prevPlayers, currentPlayer];
-        });
       } else {
         setIsAllowedInLobby(false);
         router.push("/");
@@ -185,7 +164,7 @@ export default function TournamentLobby() {
         });
       }
     }
-  }, [privateWager, user, router]);
+  }, [privateWager, user, router, players, selectedGame]);
 
   useEffect(() => {
     let countdownTimer: NodeJS.Timeout | null = null;
@@ -199,6 +178,7 @@ export default function TournamentLobby() {
       setTimeout(() => {
         setIsReady(true);
         setShowTransition(false);
+        updateLobbyGameStarted(true);
         setCountdown(null);
       }, 2000);
     }
@@ -208,11 +188,22 @@ export default function TournamentLobby() {
     };
   }, [countdown]);
 
+  useEffect(() => {
+    if (
+      allPlayersReady &&
+      players.length &&
+      selectedGame &&
+      players.length === Number(selectedGame?.maxplayers)
+    ) {
+      setCountdown(5);
+    }
+  }, [allPlayersReady, players, selectedGame]);
+
   const handleReadyClick = () => {
     if (countdown === null) {
-      setCountdown(5);
-      // Update player status via socket
-      updatePlayerStatus("ready");
+      updatePlayerStatus(
+        currentLobbyPlayer?.status === "not ready" ? "ready" : "not ready"
+      );
     }
   };
 
@@ -220,10 +211,9 @@ export default function TournamentLobby() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      await reportGameResult("win");
+      await reportGameResult();
       setGameResult("win");
-    } catch (error) {
-      console.error("Error reporting win:", error);
+    } catch {
       alert("Failed to report win. Please try again.");
       setGameResult(null);
     } finally {
@@ -236,10 +226,9 @@ export default function TournamentLobby() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      await reportGameResult("lose");
+      await reportGameResult();
       setGameResult("lose");
-    } catch (error) {
-      console.error("Error reporting loss:", error);
+    } catch {
       alert("Failed to report loss. Please try again.");
       setGameResult(null);
     } finally {
@@ -257,20 +246,15 @@ export default function TournamentLobby() {
       setTimeout(() => {
         router.push("/dispute-resolution");
       }, 700);
-    } catch (error) {
-      console.error("Error initiating dispute:", error);
+    } catch {
       alert("Failed to initiate dispute. Please try again or contact support.");
       setGameResult(null);
       setIsSubmitting(false);
     }
   };
 
-  const reportGameResult = async (result: "win" | "lose" | "dispute") => {
-    console.log(
-      `Reporting result: ${result} for user: ${user?.id} in wager: ${privateWager?.id}`
-    );
+  const reportGameResult = async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log("Report successful (simulated)");
   };
 
   const countdownVariants = {
@@ -297,151 +281,97 @@ export default function TournamentLobby() {
 
   // Create current player object for socket
   const currentPlayer = useMemo(() => {
-    if (!user?.id || !user?.username || !privateWager) return null;
+    if (!user?.id || !user?.username || !privateWager || !isAllowedInLobby)
+      return null;
     return {
       id: Number(user.id),
       name: user.username,
       status: "not ready" as const,
       captain: Number(user.id) === Number(privateWager.user_id),
       isConnected: true,
+      previousStatus: "not ready" as const,
     };
-  }, [user, privateWager]);
+  }, [user, privateWager, isAllowedInLobby]);
 
   // Socket hook for lobby synchronization
   const {
     updatePlayerStatus,
+    updatePlayerOnlineStatus,
     sendChatMessage,
+    leaveLobby,
     isConnected: socketConnected,
+    updateLobbyGameStarted,
   } = useLobbySocket(
     slug,
     isAllowedInLobby,
     currentPlayer,
     privateWager?.title,
     {
-      onPlayerJoined: useCallback(
-        (player: {
-          id: number;
-          name: string;
-          status: "ready" | "not ready" | "disconnected";
-          captain: boolean;
-          isConnected?: boolean;
-          previousStatus?: "ready" | "not ready";
-        }) => {
-          setPlayers((prev) => {
-            const existing = prev.find((p) => p.id === player.id);
-            if (existing) {
-              // If previously disconnected, restore previous status
-              return prev.map((p) =>
-                p.id === player.id
-                  ? {
-                      ...p,
-                      status:
-                        p.previousStatus ||
-                        (p.status as "ready" | "not ready" | "disconnected"),
-                      isConnected: true,
-                    }
-                  : p
-              );
-            }
-            // New player
-            return [
-              ...prev,
-              {
-                ...player,
-                isConnected: player.isConnected ?? true,
-                previousStatus: player.previousStatus || "not ready",
-              },
-            ];
-          });
-          toast.success(`${player.name} joined the lobby`);
-        },
-        []
-      ),
-      onPlayerLeft: useCallback((playerId: number) => {
-        setPlayers((prev) => {
-          const playerCount = prev.length;
-          const updated = prev.map((p) =>
-            p.id === playerId
-              ? {
-                  ...p,
-                  previousStatus:
-                    p.status === "disconnected"
-                      ? p.previousStatus
-                      : (p.status as "ready" | "not ready"),
-                  status: "disconnected" as const,
-                  isConnected: false,
-                }
-              : p
-          );
-          // Only remove if this is the only player left
-          if (playerCount === 1) {
-            return updated.filter((p) => p.id !== playerId);
-          }
-          // Otherwise, just mark as disconnected but keep in list
-          return updated;
-        });
-        toast.info("A player left the lobby");
+      onPlayerJoined: useCallback((player: TypePlayer) => {
+        toast.success(`${player.name} joined the lobby`);
       }, []),
-      onPlayerListUpdate: useCallback(
-        (
-          playerList: {
-            id: number;
-            name: string;
-            status: "ready" | "not ready" | "disconnected";
-            captain: boolean;
-            isConnected?: boolean;
-            previousStatus?: "ready" | "not ready";
-          }[]
-        ) => {
-          setPlayers((prev) =>
-            playerList.map((p) => {
-              const existing = prev.find((x) => x.id === p.id);
-              return {
-                ...p,
-                isConnected: p.isConnected ?? true,
-                previousStatus:
-                  p.previousStatus || existing?.previousStatus || "not ready",
-              };
-            })
-          );
-        },
-        []
-      ),
+      onPlayerLeft: useCallback((player: TypePlayer) => {
+        toast.info(`${player.name} left the lobby`);
+      }, []),
+      onPlayerListUpdate: useCallback((playerList: TypePlayer[]) => {
+        setPlayers((prev) =>
+          playerList.map((p) => {
+            const existing = prev.find((x) => x.id === p.id);
+            return {
+              ...p,
+              isConnected: p.isConnected ?? true,
+              previousStatus:
+                p.previousStatus || existing?.previousStatus || "not ready",
+            };
+          })
+        );
+      }, []),
       onGameStarted: useCallback(() => {
         toast.success("Game is starting!");
         // Handle game start logic here
       }, []),
-      onChatMessage: useCallback(
-        (message: {
-          id: string;
-          sender: string;
-          message: string;
-          time: string;
-          type: "system" | "user";
-        }) => {
-          setChatMessages((prev) => [...prev, message]);
-        },
-        []
-      ),
-      onChatHistory: useCallback(
-        (
-          messages: Array<{
-            id: string;
-            sender: string;
-            message: string;
-            time: string;
-            type: "system" | "user";
-          }>
-        ) => {
-          setChatMessages(messages);
-        },
-        []
-      ),
+      onChatHistory: useCallback((messages: Array<TypeChatMessage>) => {
+        setChatMessages(messages);
+      }, []),
       onError: useCallback((error: string) => {
         toast.error(`Socket error: ${error}`);
       }, []),
     }
   );
+
+  // Cleanup on component unmount or navigation
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isAllowedInLobby && socketConnected) {
+        // Show confirmation dialog when user tries to leave
+        event.preventDefault();
+        event.returnValue = "Are you sure you want to leave the lobby?";
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (isAllowedInLobby && socketConnected) {
+        if (document.visibilityState === "hidden") {
+          updatePlayerOnlineStatus(false);
+        } else {
+          updatePlayerOnlineStatus(true);
+        }
+      }
+    };
+
+    // Add event listeners for page unload and visibility change
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Cleanup function for component unmount
+    return () => {
+      if (isAllowedInLobby && socketConnected) {
+        leaveLobby();
+      }
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isAllowedInLobby, socketConnected, leaveLobby, updatePlayerOnlineStatus]);
 
   if (loading || !privateWager || !selectedGame?.id || !isAllowedInLobby) {
     return <FullScreenLoader isLoading={true} text="Loading Lobby..." />;
@@ -450,9 +380,9 @@ export default function TournamentLobby() {
   // Main component render
   return (
     <>
-      <div className="flex flex-col min-h-screen bg-gray-950 text-gray-100 font-sans">
+      <div className="justify_auto overflow-hidden h-dvh bg-gray-950 text-gray-100 font-sans">
         {/* Header Section */}
-        <header className="bg-gray-900 px-4 py-3 border-b border-gray-800 flex items-center justify-between flex-wrap gap-2 sm:px-6 sm:py-4">
+        <header className="bg-gray-900 px-4 py-3 border-b border-gray-800 flex items-center justify-between flex-wrap gap-2 sm:px-6 sm:py-4 !h-max max-h-max">
           {/* Left Header Content */}
           <div className="flex items-center space-x-4">
             <h1 className="text-xl font-bold text-orange-400 sm:text-2xl">
@@ -526,7 +456,7 @@ export default function TournamentLobby() {
         <div className="flex flex-1 overflow-hidden">
           {/* Left Panel - Team Roster */}
           <aside
-            className={`fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 flex flex-col transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 ${
+            className={`fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 flex flex-col transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 h-full overflow-y-auto ${
               isLeftPanelOpen ? "translate-x-0 shadow-xl" : "-translate-x-full"
             }`}
             aria-label="Team Roster Panel"
@@ -570,7 +500,7 @@ export default function TournamentLobby() {
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center">
+                    <div className="flex gap-2 sm:gap-3">
                       {/* Player Avatar/Initial */}
                       <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold sm:w-10 sm:h-10 bg-gray-700">
                         <span className="text-orange-400">
@@ -578,7 +508,7 @@ export default function TournamentLobby() {
                         </span>
                       </div>
                       {/* Player Name & Status */}
-                      <div className="ml-2 sm:ml-3">
+                      <div className="flex flex-col gap-1">
                         <div className="font-medium flex items-center text-sm sm:text-base">
                           <span className="capitalize elipsis">
                             {player.name}
@@ -589,6 +519,7 @@ export default function TournamentLobby() {
                             </span>
                           )}
                         </div>
+                        {/* status */}
                         <div
                           className={`text-xs sm:text-sm font-medium capitalize ${
                             player.status === "ready"
@@ -606,6 +537,16 @@ export default function TournamentLobby() {
                               (Reconnecting...)
                             </span>
                           )}
+                        </div>
+                        {/* online status */}
+                        <div
+                          className={`text-xs sm:text-sm font-medium capitalize  bg-opacity-20 rounded-full px-2 py-0.5 max-w-max ${
+                            player.online
+                              ? "text-green-400 bg-green-400"
+                              : "text-red-400 bg-red-400"
+                          }`}
+                        >
+                          {player.online ? "Online" : "Offline"}
                         </div>
                       </div>
                     </div>
@@ -650,7 +591,10 @@ export default function TournamentLobby() {
                 <div className="flex items-center">
                   <div className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse mr-1.5"></div>
                   <span className="text-xs text-gray-400">
-                    {formatNumber(players.length)} Online
+                    {formatNumber(
+                      players.filter((player) => player.online).length
+                    )}{" "}
+                    Online
                   </span>{" "}
                 </div>
               </div>
@@ -663,26 +607,22 @@ export default function TournamentLobby() {
             <div
               className="p-4 flex-1 bg-cover bg-center sm:p-6"
               style={{
+                backgroundColor: "rgba(17, 24, 39, 0.6)",
                 backgroundImage: `url(${
-                  selectedGame?.banner || "/api/placeholder/800/600"
+                  selectedGame?.banner || "/assets/game-banners/cod-main.jpg"
                 })`,
                 backgroundBlendMode: "overlay",
-                backgroundColor: "rgba(17, 24, 39, 0.6)",
               }}
             >
               {" "}
               {/* Content Overlay */}
-              <div className="bg-gray-900 bg-opacity-80 p-4 rounded-xl backdrop-blur-sm sm:p-6 min-h-[70vh] flex flex-col">
-                {" "}
+              <div className="bg-gray-900 bg-opacity-80 p-4 rounded-xl backdrop-blur-sm sm:p-6 flex flex-col">
                 {/* Added min-height and flex */}
                 <h2 className="text-2xl font-bold text-orange-400 mb-4 sm:text-3xl sm:mb-6 flex-shrink-0">
-                  {" "}
-                  {selectedGame?.name} Game Lobby
+                  {privateWager?.title} Lobby
                 </h2>
                 <div className="flex-grow flex items-center justify-center">
-                  {" "}
                   <AnimatePresence mode="wait">
-                    {" "}
                     {!isReady ? (
                       // --- LOBBY VIEW (Before Game Start) ---
                       <motion.div
@@ -693,11 +633,11 @@ export default function TournamentLobby() {
                         transition={{ duration: 0.3 }}
                         className="w-full"
                       >
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 pb-5">
-                          {/* Format Details */}
-                          <div className="bg-gray-800 p-4 rounded-xl sm:p-5">
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 sm:gap-6 pb-5">
+                          {/* game description */}
+                          <div className="bg-gray-800 p-4 rounded-xl sm:p-5 row-span-2">
                             <h3 className="font-semibold mb-3 text-orange-400 text-lg">
-                              Format
+                              Game Description
                             </h3>
                             <ul className="space-y-2 text-sm text-gray-300 sm:space-y-3">
                               <li className="flex items-start">
@@ -705,21 +645,30 @@ export default function TournamentLobby() {
                                   size={16}
                                   className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
                                 />
-                                <span>Best-of-5 rounds; First to 3 wins</span>
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: selectedGame?.description || "",
+                                  }}
+                                />
                               </li>
+                            </ul>
+                          </div>
+                          {/* wager rules */}
+                          <div className="bg-gray-800 p-4 rounded-xl sm:p-5">
+                            <h3 className="font-semibold mb-3 text-orange-400 text-lg">
+                              Wager Rules
+                            </h3>
+                            <ul className="space-y-2 text-sm text-gray-300 sm:space-y-3">
                               <li className="flex items-start">
                                 <CaretDoubleRight
                                   size={16}
                                   className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
                                 />
-                                <span>6 rounds per match</span>
-                              </li>
-                              <li className="flex items-start">
-                                <CaretDoubleRight
-                                  size={16}
-                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: privateWager?.description || "",
+                                  }}
                                 />
-                                <span>Search & Destroy mode</span>
                               </li>
                             </ul>
                           </div>
@@ -734,21 +683,13 @@ export default function TournamentLobby() {
                                   size={16}
                                   className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
                                 />
-                                <span>5 players per team</span>
-                              </li>
-                              <li className="flex items-start">
-                                <CaretDoubleRight
-                                  size={16}
-                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
-                                />
-                                <span>Custom loadouts permitted</span>
-                              </li>
-                              <li className="flex items-start">
-                                <CaretDoubleRight
-                                  size={16}
-                                  className="mt-0.5 mr-2 text-orange-400 flex-shrink-0"
-                                />
-                                <span>Ready 5 mins before start</span>
+                                <span>
+                                  Max of{" "}
+                                  {formatNumber(
+                                    Number(selectedGame?.maxplayers)
+                                  )}{" "}
+                                  players
+                                </span>
                               </li>
                             </ul>
                           </div>
@@ -768,6 +709,8 @@ export default function TournamentLobby() {
                                 />
                                 Starting in {countdown}...
                               </>
+                            ) : currentLobbyPlayer?.status === "ready" ? (
+                              "Waiting for other players..."
                             ) : (
                               "READY UP"
                             )}
@@ -967,13 +910,13 @@ export default function TournamentLobby() {
 
           {/* Right Panel - Chat */}
           <aside
-            className={`fixed inset-y-0 right-0 w-72 bg-gray-900 border-l border-gray-800 flex flex-col transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 ${
+            className={`fixed inset-y-0 right-0 !w-72 bg-gray-900 border-l border-gray-800 justify_auto transform transition-transform duration-300 ease-in-out lg:static lg:w-80 lg:translate-x-0 z-20 h-full overflow-hidden ${
               isRightPanelOpen ? "translate-x-0 shadow-xl" : "translate-x-full"
             }`}
             aria-label="Team Chat Panel"
           >
             {/* Panel Header */}
-            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+            <div className="max-h-max !flex-none !h-max p-4 border-b border-gray-800 flex justify-between items-center">
               <h2 className="text-lg font-semibold flex items-center gap-2 sm:text-xl">
                 <ChatText size={20} className="text-orange-400" />
                 Team Chat
@@ -995,7 +938,7 @@ export default function TournamentLobby() {
         </div>
 
         {/* Footer Section */}
-        <footer className="bg-gray-900 px-4 py-3 border-t border-gray-800 flex justify-between items-center sm:px-6">
+        <footer className="!max-h-max !h-max !flex-none bg-gray-900 px-4 py-3 border-t border-gray-800 flex justify-between items-center sm:px-6">
           <div className="text-xs text-gray-400 sm:text-sm">
             GameHQ © {new Date().getFullYear()}. All rights reserved.
           </div>
@@ -1011,7 +954,14 @@ export default function TournamentLobby() {
             {/* Leave Button */}
             <button
               className="text-red-400 hover:text-red-500 transition-colors text-xs sm:text-sm font-medium"
-              onClick={() => router.back()} // Or navigate to a dashboard/exit page
+              onClick={() => {
+                if (confirm("Are you sure you want to leave the lobby?")) {
+                  if (isAllowedInLobby && socketConnected) {
+                    leaveLobby();
+                  }
+                  router.back();
+                }
+              }}
             >
               Leave Tournament
             </button>

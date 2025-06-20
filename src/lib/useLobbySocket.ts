@@ -1,22 +1,14 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { TypePlayer } from '../../types/global';
 
-interface LobbyPlayer {
-    id: number;
-    name: string;
-    status: "ready" | "not ready" | "disconnected";
-    captain: boolean;
-    isConnected?: boolean;
-    previousStatus?: "ready" | "not ready";
-}
 
 interface LobbySocketEvents {
-    onPlayerJoined?: (player: LobbyPlayer) => void;
-    onPlayerLeft?: (playerId: number) => void;
+    onPlayerJoined?: (player: TypePlayer) => void;
+    onPlayerLeft?: (player: TypePlayer) => void;
     onPlayerStatusChanged?: (playerId: number, status: "ready" | "not ready") => void;
-    onPlayerListUpdate?: (players: LobbyPlayer[]) => void;
+    onPlayerListUpdate?: (players: TypePlayer[]) => void;
     onGameStarted?: () => void;
-    onChatMessage?: (message: ChatMessage) => void;
     onChatHistory?: (messages: ChatMessage[]) => void;
     onError?: (error: string) => void;
 }
@@ -32,7 +24,7 @@ interface ChatMessage {
 export function useLobbySocket(
     slug: string,
     isConnected: boolean,
-    currentPlayer: LobbyPlayer | null,
+    currentPlayer: TypePlayer | null,
     wagerTitle?: string,
     events: LobbySocketEvents = {}
 ) {
@@ -71,11 +63,9 @@ export function useLobbySocket(
                 path: '/api/socket',
                 transports: ['websocket', 'polling'],
                 auth: {
-                    token: typeof window !== 'undefined' ? localStorage.getItem('token') || undefined : undefined
+                    token: typeof window !== 'undefined' ? sessionStorage.getItem('token') || undefined : undefined
                 }
             });
-
-            socketRef.current = socket;
 
             // Join the specific lobby room
             socket.emit('joinLobby', {
@@ -85,53 +75,36 @@ export function useLobbySocket(
             });
 
             // Set up event listeners
-            socket.on('playerJoined', (player: LobbyPlayer) => {
-                console.log('Player joined lobby:', player);
+            socket.on('playerJoined', (player: TypePlayer) => {
                 eventsRef.current.onPlayerJoined?.(player);
             });
 
-            socket.on('playerLeft', (playerId: number) => {
-                console.log('Player left lobby:', playerId);
-                eventsRef.current.onPlayerLeft?.(playerId);
+            socket.on('playerLeft', (player: TypePlayer) => {
+                eventsRef.current.onPlayerLeft?.(player);
             });
 
             socket.on('playerStatusChanged', (playerId: number, status: "ready" | "not ready") => {
-                console.log('Player status changed:', playerId, status);
                 eventsRef.current.onPlayerStatusChanged?.(playerId, status);
             });
 
-            socket.on('playerListUpdate', (players: LobbyPlayer[]) => {
-                console.log('Player list updated:', players);
+            socket.on('playerListUpdate', (players: TypePlayer[]) => {
                 eventsRef.current.onPlayerListUpdate?.(players);
             });
 
             socket.on('gameStarted', () => {
-                console.log('Game started');
                 eventsRef.current.onGameStarted?.();
             });
 
-            socket.on('chatMessage', (message: ChatMessage) => {
-                console.log('Chat message received:', message);
-                eventsRef.current.onChatMessage?.(message);
-            });
 
             socket.on('chatHistory', (messages: ChatMessage[]) => {
-                console.log('Chat history received:', messages);
                 eventsRef.current.onChatHistory?.(messages);
             });
 
             socket.on('error', (error: string) => {
-                console.error('Socket error:', error);
                 eventsRef.current.onError?.(error);
             });
 
-            socket.on('connect', () => {
-                console.log('Connected to lobby socket');
-            });
-
-            socket.on('disconnect', () => {
-                console.log('Disconnected from lobby socket');
-            });
+            socketRef.current = socket;
         }
 
         // Cleanup function
@@ -152,6 +125,12 @@ export function useLobbySocket(
         }
     }, []);
 
+    const updatePlayerOnlineStatus = useCallback((online: boolean) => {
+        if (socketRef.current) {
+            socketRef.current.emit('updatePlayerOnlineStatus', { slug: slugRef.current, online });
+        }
+    }, []);
+
     const sendChatMessage = useCallback((message: string) => {
         if (socketRef.current) {
             socketRef.current.emit('sendChatMessage', { slug: slugRef.current, message });
@@ -161,13 +140,29 @@ export function useLobbySocket(
     const leaveLobby = useCallback(() => {
         if (socketRef.current) {
             socketRef.current.emit('leaveLobby', { slug: slugRef.current });
+            // Don't disconnect immediately to allow the server to process the leave event
+            setTimeout(() => {
+                if (socketRef.current) {
+                    socketRef.current.disconnect();
+                    socketRef.current = null;
+                }
+            }, 400);
         }
     }, []);
 
+    const updateLobbyGameStarted = useCallback((gameStarted: boolean) => {
+        if (socketRef.current) {
+            socketRef.current.emit('updateLobbyGameStarted', { slug: slugRef.current, gameStarted });
+        }
+    }, []);
+
+
     return {
         updatePlayerStatus,
+        updatePlayerOnlineStatus,
         sendChatMessage,
         leaveLobby,
+        updateLobbyGameStarted,
         isConnected: socketRef.current?.connected || false
     };
 } 

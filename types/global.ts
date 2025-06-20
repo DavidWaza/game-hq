@@ -62,6 +62,23 @@ export type TypeGames = {
   platformtype: string | null;
   maxplayers: number | null | string;
 };
+export type TypePlayer = {
+  id: number;
+  name: string;
+  status: "ready" | "not ready" | "disconnected";
+  captain: boolean;
+  isConnected: boolean;
+  previousStatus?: "ready" | "not ready";
+  socketId?: string;
+  online?: boolean;
+};
+export type TypeChatMessage = {
+  id: string;
+  sender: string;
+  message: string;
+  time: string;
+  type: "system" | "user";
+};
 export type TypeSingleTournament = {
   title: string;
   game: TypeGames,

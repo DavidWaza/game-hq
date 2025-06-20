@@ -43,6 +43,6 @@ app.prepare().then(() => {
     initSocket(io);
 
     server.listen(2025, () => {
-        console.log('> Ready on http://localhost:2025');
+        console.log(`> Ready on ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:2025'}`);
     });
 }); 
